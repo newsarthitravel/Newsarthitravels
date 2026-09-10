@@ -4,7 +4,6 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>NEW SARTHI TRAVELS — Fleet & Professional Billing</title>
-<script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
 <style>
 :root{--ink:#172238;--accent:#b52c2c;--soft:#f5f7fb;--line:#d7dce5;--white:#fff;--muted:#556175;--green:#0b7a42}
 *{box-sizing:border-box}body{margin:0;font-family:system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;background:#eef1f6;color:#182230}
@@ -52,7 +51,7 @@ button,input,select,textarea{font:inherit}button{cursor:pointer}
 .light{background:#eef1f6;color:#25334a}
 .danger{background:#fee4e2;color:#b42318}
 .whatsapp{background:#25D366;color:#fff}
-.scan-btn{background:#e0f2fe;color:#0369a1;border:1px solid #bae6fd;padding:6px 10px;font-size:12px;border-radius:6px}
+.email-btn{background:#0284c7;color:#fff}
 table{width:100%;border-collapse:collapse}
 th,td{padding:11px 9px;border-bottom:1px solid #eaecf0;text-align:left;font-size:13px}
 th{font-size:11px;text-transform:uppercase;color:#475467;background:#fafbfc}
@@ -66,10 +65,11 @@ th{font-size:11px;text-transform:uppercase;color:#475467;background:#fafbfc}
 .sync-tag{font-size:11px;padding:4px 9px;border-radius:20px;background:#e1f9eb;color:#0b7a42;display:inline-block;font-weight:600;margin-left:10px}
 .section-subhead{font-size:14px;font-weight:700;color:var(--ink);margin:18px 0 10px;border-bottom:1px solid var(--line);padding-bottom:5px;display:flex;justify-content:space-between;align-items:center}
 
-/* ATTACHMENT & SCANNER STYLES */
-.receipt-box{background:#f1f5f9;border:1px dashed #94a3b8;border-radius:8px;padding:10px;margin-top:8px}
-.receipt-preview{max-height:80px;border-radius:6px;margin-top:6px;border:1px solid #cbd5e1;display:none}
-.scan-status{font-size:11px;font-weight:600;color:#0284c7;display:none;margin-top:4px}
+/* ATTACHMENT BOXES */
+.receipt-box{background:#f8fafc;border:1px dashed #94a3b8;border-radius:8px;padding:10px;margin-top:8px}
+.preview-gallery{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}
+.preview-gallery img{height:65px;border-radius:4px;border:1px solid #cbd5e1;object-fit:cover}
+.upload-status{font-size:11px;font-weight:600;color:#0284c7;display:none;margin-top:4px}
 
 /* MULTI DUTY CARD IN FORM */
 .duty-item-box{background:#f8fafc;border:1px solid #cfd8e3;border-radius:10px;padding:15px;margin-bottom:15px}
@@ -99,7 +99,7 @@ th{font-size:11px;text-transform:uppercase;color:#475467;background:#fafbfc}
 .total-row.grand { border-top: 2px solid #000; border-bottom: 2px solid #000; font-weight: 800; font-size: 14px; color: #000; padding: 6px 0; }
 .sign-area { margin-top: 36px; text-align: right; font-size: 12px; }
 .attached-docs { margin-top: 20px; padding: 10px; border: 1px dashed #777; border-radius: 6px; }
-.attached-docs img { max-height: 130px; margin: 4px; border: 1px solid #ccc; border-radius: 4px; }
+.attached-docs img { max-height: 120px; margin: 4px; border: 1px solid #ccc; border-radius: 4px; }
 
 /* MOBILE RESPONSIVENESS */
 @media(max-width:1050px){.cards{grid-template-columns:repeat(2,1fr)}}
@@ -239,7 +239,8 @@ th{font-size:11px;text-transform:uppercase;color:#475467;background:#fafbfc}
  <div class="field"><label>Customer GSTIN / Tax ID</label><input id="custGstin" placeholder="e.g. 23AAAAA0000A1Z5 (or Unregistered)"></div>
 </div>
 <div class="grid" style="margin-top:14px">
- <div class="field" style="grid-column: span 2;"><label>Customer / Company Name</label><input id="customer" placeholder="Company / Client Name"></div>
+ <div class="field"><label>Customer / Company Name</label><input id="customer" placeholder="Company / Client Name"></div>
+ <div class="field"><label>Customer Email Address (for sending bills)</label><input id="custEmail" type="email" placeholder="client@domain.com"></div>
 </div>
 
 <div class="section-subhead">
@@ -286,8 +287,9 @@ th{font-size:11px;text-transform:uppercase;color:#475467;background:#fafbfc}
 <section id="customers" class="page">
 <div class="panel">
   <h2>Add / Update Customer</h2>
-  <div class="grid3">
+  <div class="grid4">
     <div class="field"><label>Customer / Company Name</label><input id="clientName" placeholder="Client Name"></div>
+    <div class="field"><label>Email Address</label><input id="clientEmail" type="email" placeholder="client@domain.com"></div>
     <div class="field"><label>Phone Number</label><input id="clientPhone" placeholder="Mobile / WhatsApp"></div>
     <div class="field"><label>GSTIN (Optional)</label><input id="clientGst" placeholder="23AAAAA0000A1Z5"></div>
   </div>
@@ -387,10 +389,11 @@ th{font-size:11px;text-transform:uppercase;color:#475467;background:#fafbfc}
 
 <!-- PREVIEW & PRINT -->
 <section id="preview" class="page">
-<div class="preview-actions no-print" style="text-align:center; margin-bottom:15px; display:flex; justify-content:center; gap:10px;">
+<div class="preview-actions no-print" style="text-align:center; margin-bottom:15px; display:flex; justify-content:center; gap:10px; flex-wrap:wrap;">
   <button class="btn dark" onclick="showPage('newbill')">← Back to Edit</button>
   <button class="btn primary" onclick="window.print()">Print / Save PDF</button>
   <button class="btn whatsapp" onclick="shareBillWhatsApp()">WhatsApp Bill</button>
+  <button class="btn email-btn" onclick="sendInvoiceMail()">✉️ Email Customer</button>
 </div>
 <div class="invoice-wrap"><div id="invoice" class="invoice"></div></div>
 </section>
@@ -492,9 +495,9 @@ async function cloudReq(endpoint, method = 'GET', body = null) {
   }
 }
 
-/* ==================== FILE UPLOAD & OCR SCANNER ==================== */
-async function uploadToStorage(file) {
-  const filename = `${Date.now()}_${file.name.replace(/[^a-zA-Z0-9._-]/g, '')}`;
+/* ==================== MULTI-PHOTO ATTACHMENT ==================== */
+async function uploadSingleFile(file) {
+  const filename = `${Date.now()}_${Math.floor(Math.random()*1000)}_${file.name.replace(/[^a-zA-Z0-9._-]/g, '')}`;
   try {
     const res = await fetch(`${SUPABASE_UPLOAD}/${filename}`, {
       method: 'POST',
@@ -512,75 +515,40 @@ async function uploadToStorage(file) {
   }
 }
 
-async function handleFileScan(boxId, type) {
+async function handleMultiPhotoAttach(boxId, type) {
   const fileInput = document.getElementById(`${type}_file_${boxId}`);
   const statusEl = document.getElementById(`${type}_status_${boxId}`);
-  const previewEl = document.getElementById(`${type}_preview_${boxId}`);
+  const galleryEl = document.getElementById(`${type}_gallery_${boxId}`);
   const urlEl = document.getElementById(`${type}_url_${boxId}`);
 
-  if (!fileInput.files || !fileInput.files[0]) return;
-  const file = fileInput.files[0];
+  if (!fileInput.files || fileInput.files.length === 0) return;
+  const files = Array.from(fileInput.files);
 
-  statusEl.innerText = "⏳ Uploading photo & scanning...";
+  statusEl.innerText = `⏳ Uploading ${files.length} photo(s)...`;
   statusEl.style.display = "block";
 
-  // Show local preview immediately
-  const reader = new FileReader();
-  reader.onload = e => {
-    previewEl.src = e.target.result;
-    previewEl.style.display = "block";
-  };
-  reader.readAsDataURL(file);
+  // Parse existing urls if any
+  let currentUrls = urlEl.value ? urlEl.value.split(',').map(s => s.trim()).filter(Boolean) : [];
 
-  // 1. Upload to Supabase Storage
-  const publicUrl = await uploadToStorage(file);
-  if (publicUrl) {
-    urlEl.value = publicUrl;
-  }
+  for (let file of files) {
+    // Show local thumbnail preview immediately
+    const reader = new FileReader();
+    reader.onload = e => {
+      const img = document.createElement('img');
+      img.src = e.target.result;
+      galleryEl.appendChild(img);
+    };
+    reader.readAsDataURL(file);
 
-  // 2. Perform Client-side OCR via Tesseract.js
-  try {
-    const worker = await Tesseract.createWorker('eng');
-    const ret = await worker.recognize(file);
-    const text = ret.data.text;
-    await worker.terminate();
-
-    const box = document.getElementById(boxId);
-
-    if (type === 'toll') {
-      // Find amounts like 120.00, Rs 95, INR 150
-      const amountMatches = text.match(/(?:rs\.?|inr|₹)?\s?(\d+(\.\d{1,2})?)/gi);
-      if (amountMatches && amountMatches.length) {
-        // extract highest numeric toll candidate
-        let amounts = amountMatches.map(m => parseFloat(m.replace(/[^0-9.]/g, ''))).filter(n => n > 10 && n < 5000);
-        if (amounts.length > 0) {
-          const currentToll = Number(box.querySelector('.duty-toll').value) || 0;
-          box.querySelector('.duty-toll').value = round2(currentToll + amounts[amounts.length - 1]);
-          calculateAmounts();
-          statusEl.innerText = `✅ Auto-read Toll: ₹${amounts[amounts.length - 1]}`;
-        } else {
-          statusEl.innerText = "✅ Photo saved!";
-        }
-      } else {
-        statusEl.innerText = "✅ Photo saved!";
-      }
-    } else if (type === 'slip') {
-      // Look for vehicle numbers (e.g., MP04, DL01, etc.)
-      const vehMatch = text.match(/[A-Z]{2}[-\s]?[0-9]{1,2}[-\s]?[A-Z]{1,3}[-\s]?[0-9]{4}/i);
-      if (vehMatch && !box.querySelector('.duty-veh').value) {
-        box.querySelector('.duty-veh').value = vehMatch[0].toUpperCase();
-      }
-
-      // Look for slip number patterns
-      const slipMatch = text.match(/(?:slip|no|duty)\s*[:#.-]?\s*([0-9]{3,7})/i);
-      if (slipMatch && !box.querySelector('.duty-slip').value) {
-        box.querySelector('.duty-slip').value = slipMatch[1];
-      }
-      statusEl.innerText = "✅ Slip scanned & photo saved!";
+    // Upload to cloud storage
+    const uploadedUrl = await uploadSingleFile(file);
+    if (uploadedUrl) {
+      currentUrls.push(uploadedUrl);
     }
-  } catch(err) {
-    statusEl.innerText = "✅ Photo attached successfully!";
   }
+
+  urlEl.value = currentUrls.join(',');
+  statusEl.innerText = `✅ ${currentUrls.length} file(s) attached & saved to cloud!`;
   isFormDirty = true;
 }
 
@@ -694,6 +662,9 @@ function addDutyItem(initial = {}) {
   dutyCard.className = 'duty-item-box';
   dutyCard.id = id;
 
+  const slipImgs = Array.isArray(initial.slipImgs) ? initial.slipImgs : (initial.slipImg ? initial.slipImg.split(',').filter(Boolean) : []);
+  const tollImgs = Array.isArray(initial.tollImgs) ? initial.tollImgs : (initial.tollImg ? initial.tollImg.split(',').filter(Boolean) : []);
+
   dutyCard.innerHTML = `
     <div class="duty-header">
       <span class="duty-title">Duty / Booking #${container.children.length + 1}</span>
@@ -745,21 +716,25 @@ function addDutyItem(initial = {}) {
       <div class="field"><label>Toll Tax & Parking Charges (₹)</label><input class="duty-toll" type="number" min="0" step="0.01" value="${Number(initial.tollParking) || 0}" oninput="calculateAmounts()"></div>
     </div>
 
-    <!-- DOCUMENT ATTACHMENTS & SCANNER -->
+    <!-- MULTI-IMAGE UPLOADS (DUTY SLIPS & TOLL SLIPS) -->
     <div class="grid" style="margin-top:10px">
       <div class="receipt-box">
-        <label style="font-size:12px; font-weight:700; display:block; margin-bottom:4px;">📷 Duty Slip Photo (Scan / Attach)</label>
-        <input type="file" accept="image/*" capture="environment" id="slip_file_${id}" onchange="handleFileScan('${id}', 'slip')">
-        <input type="hidden" class="duty-slip-img" id="slip_url_${id}" value="${esc(initial.slipImg || '')}">
-        <div id="slip_status_${id}" class="scan-status"></div>
-        <img id="slip_preview_${id}" class="receipt-preview" src="${esc(initial.slipImg || '')}" style="${initial.slipImg ? 'display:block' : 'display:none'}">
+        <label style="font-size:12px; font-weight:700; display:block; margin-bottom:4px;">📷 Duty Slips (Upload 1 or Multiple Photos)</label>
+        <input type="file" accept="image/*" multiple id="slip_file_${id}" onchange="handleMultiPhotoAttach('${id}', 'slip')">
+        <input type="hidden" class="duty-slip-img" id="slip_url_${id}" value="${esc(slipImgs.join(','))}">
+        <div id="slip_status_${id}" class="upload-status"></div>
+        <div id="slip_gallery_${id}" class="preview-gallery">
+          ${slipImgs.map(u => `<img src="${esc(u)}">`).join('')}
+        </div>
       </div>
       <div class="receipt-box">
-        <label style="font-size:12px; font-weight:700; display:block; margin-bottom:4px;">📷 Toll / Parking Slip (Auto-Read Amount)</label>
-        <input type="file" accept="image/*" capture="environment" id="toll_file_${id}" onchange="handleFileScan('${id}', 'toll')">
-        <input type="hidden" class="duty-toll-img" id="toll_url_${id}" value="${esc(initial.tollImg || '')}">
-        <div id="toll_status_${id}" class="scan-status"></div>
-        <img id="toll_preview_${id}" class="receipt-preview" src="${esc(initial.tollImg || '')}" style="${initial.tollImg ? 'display:block' : 'display:none'}">
+        <label style="font-size:12px; font-weight:700; display:block; margin-bottom:4px;">📷 Toll / Parking Receipts (Upload 1 or Multiple Photos)</label>
+        <input type="file" accept="image/*" multiple id="toll_file_${id}" onchange="handleMultiPhotoAttach('${id}', 'toll')">
+        <input type="hidden" class="duty-toll-img" id="toll_url_${id}" value="${esc(tollImgs.join(','))}">
+        <div id="toll_status_${id}" class="upload-status"></div>
+        <div id="toll_gallery_${id}" class="preview-gallery">
+          ${tollImgs.map(u => `<img src="${esc(u)}">`).join('')}
+        </div>
       </div>
     </div>
   `;
@@ -920,6 +895,7 @@ async function syncAllFromCloud(manual = false) {
       data.customers = custRes.data.map(c => ({
         id: String(c.id),
         name: c.name || '',
+        email: c.email || '',
         phone: c.phone || '',
         address: c.address || '',
         gstin: c.gstin || '',
@@ -969,6 +945,7 @@ async function syncAllFromCloud(manual = false) {
           no: String(b.invoice_no),
           date: b.invoice_date || '',
           cust: b.customer_name || '',
+          custEmail: b.customer_email || '',
           custGstin: b.customer_gst || '',
           duties: duties,
           gstType: b.gst_type || 'cgst_sgst_5',
@@ -1025,7 +1002,7 @@ async function syncAllFromCloud(manual = false) {
 /* ==================== CUSTOMERS LOGIC ==================== */
 function clearCustomerForm() {
   editingCustId = null;
-  ['clientName', 'clientPhone', 'clientGst', 'clientAddress', 'clientNotes'].forEach(id => {
+  ['clientName', 'clientEmail', 'clientPhone', 'clientGst', 'clientAddress', 'clientNotes'].forEach(id => {
     const el = document.getElementById(id);
     if (el) el.value = '';
   });
@@ -1039,6 +1016,7 @@ async function saveCustomer() {
   const record = {
     id: id,
     name,
+    email: document.getElementById('clientEmail')?.value.trim() || null,
     phone: document.getElementById('clientPhone')?.value.trim() || null,
     gstin: document.getElementById('clientGst')?.value.trim() || null,
     address: document.getElementById('clientAddress')?.value.trim() || null,
@@ -1074,21 +1052,21 @@ async function saveCustomer() {
 
 function renderCustomersTable() {
   const q = (document.getElementById('customerSearch')?.value || '').toLowerCase();
-  const filtered = data.customers.filter(c => !q || (c.name && c.name.toLowerCase().includes(q)) || (c.phone && c.phone.includes(q)) || (c.gstin && c.gstin.toLowerCase().includes(q)));
+  const filtered = data.customers.filter(c => !q || (c.name && c.name.toLowerCase().includes(q)) || (c.phone && c.phone.includes(q)) || (c.email && c.email.toLowerCase().includes(q)));
   const container = document.getElementById('customerTable');
   if (!container) return;
 
   container.innerHTML = filtered.length ? `
     <table>
-      <thead><tr><th>Customer / Company</th><th>Phone</th><th>GSTIN</th><th>Address</th><th>Notes</th><th class="right">Action</th></tr></thead>
+      <thead><tr><th>Customer / Company</th><th>Email</th><th>Phone</th><th>GSTIN</th><th>Address</th><th class="right">Action</th></tr></thead>
       <tbody>
         ${filtered.map(c => `
           <tr>
             <td><b>${esc(c.name)}</b></td>
+            <td>${esc(c.email || '—')}</td>
             <td>${esc(c.phone || '—')}</td>
             <td>${esc(c.gstin || '—')}</td>
             <td>${esc(c.address || '—')}</td>
-            <td>${esc(c.notes || '—')}</td>
             <td class="right">
               <button class="btn light" onclick="editCustomer('${esc(c.id)}')">Edit</button>
               <button class="btn danger" onclick="deleteCustomer('${esc(c.id)}')">Del</button>
@@ -1103,6 +1081,7 @@ function editCustomer(id) {
   if (!c) return;
   editingCustId = String(c.id);
   if (document.getElementById('clientName')) document.getElementById('clientName').value = c.name || '';
+  if (document.getElementById('clientEmail')) document.getElementById('clientEmail').value = c.email || '';
   if (document.getElementById('clientPhone')) document.getElementById('clientPhone').value = c.phone || '';
   if (document.getElementById('clientGst')) document.getElementById('clientGst').value = c.gstin || '';
   if (document.getElementById('clientAddress')) document.getElementById('clientAddress').value = c.address || '';
@@ -1126,7 +1105,7 @@ function syncCustomerDropdown() {
   const sel = document.getElementById('custSelect');
   if (!sel) return;
   sel.innerHTML = '<option value="">-- Choose registered customer --</option>' +
-    data.customers.map(c => `<option value="${esc(c.id)}">${esc(c.name)} ${c.gstin ? '[GST: ' + esc(c.gstin) + ']' : ''}</option>`).join('');
+    data.customers.map(c => `<option value="${esc(c.id)}">${esc(c.name)} ${c.email ? '(' + esc(c.email) + ')' : ''}</option>`).join('');
 }
 
 function applyCustomerSelection() {
@@ -1135,6 +1114,7 @@ function applyCustomerSelection() {
   const c = data.customers.find(x => String(x.id) === String(id));
   if (c) {
     if (document.getElementById('customer')) document.getElementById('customer').value = c.name;
+    if (document.getElementById('custEmail')) document.getElementById('custEmail').value = c.email || '';
     if (document.getElementById('custGstin')) document.getElementById('custGstin').value = c.gstin || 'Unregistered';
   }
 }
@@ -1436,7 +1416,7 @@ function resetForm() {
   isFormDirty = false;
   const formHeader = document.getElementById('formHeader');
   if (formHeader) formHeader.innerText = "Create New Bill";
-  ['customer', 'custGstin'].forEach(id => {
+  ['customer', 'custEmail', 'custGstin'].forEach(id => {
     const el = document.getElementById(id);
     if (el) el.value = '';
   });
@@ -1459,6 +1439,9 @@ function getBillData() {
   const duties = [];
 
   dutyCards.forEach(card => {
+    const slipRaw = card.querySelector('.duty-slip-img')?.value || '';
+    const tollRaw = card.querySelector('.duty-toll-img')?.value || '';
+
     duties.push({
       dutyType: card.querySelector('.duty-type')?.value || 'Local (8 Hrs / 80 Kms)',
       dutySlip: card.querySelector('.duty-slip')?.value || '',
@@ -1479,8 +1462,8 @@ function getBillData() {
       nightChargesQty: Number(card.querySelector('.duty-nc-qty')?.value) || 0,
       nightChargesRate: round2(card.querySelector('.duty-nc-rate')?.value || 0),
       tollParking: round2(card.querySelector('.duty-toll')?.value || 0),
-      slipImg: card.querySelector('.duty-slip-img')?.value || '',
-      tollImg: card.querySelector('.duty-toll-img')?.value || ''
+      slipImgs: slipRaw ? slipRaw.split(',').filter(Boolean) : [],
+      tollImgs: tollRaw ? tollRaw.split(',').filter(Boolean) : []
     });
   });
 
@@ -1490,6 +1473,7 @@ function getBillData() {
     no: String(document.getElementById('billNo')?.value || nextNo()),
     date: document.getElementById('billDate')?.value || '',
     cust: document.getElementById('customer')?.value || '',
+    custEmail: document.getElementById('custEmail')?.value || '',
     custGstin: document.getElementById('custGstin')?.value || '',
     duties: duties,
     firstDuty: firstDuty,
@@ -1592,8 +1576,16 @@ function shareBillWhatsApp() {
     text += `• Vehicle: ${d.veh || 'N/A'} | Driver: ${d.driver || 'N/A'}\n`;
     text += `• Total KMs: ${d.totalKms} KMs\n`;
     if (d.extraKms > 0) text += `• Extra KMs: ${d.extraKms} @ ₹${d.extraKmRate}/km\n`;
-    if (d.slipImg) text += `• Slip Photo: ${d.slipImg}\n`;
-    if (d.tollImg) text += `• Toll Receipt: ${d.tollImg}\n`;
+    if (d.slipImgs && d.slipImgs.length > 0) {
+      d.slipImgs.forEach((url, idx) => {
+        text += `• Duty Slip #${idx+1}: ${url}\n`;
+      });
+    }
+    if (d.tollImgs && d.tollImgs.length > 0) {
+      d.tollImgs.forEach((url, idx) => {
+        text += `• Toll Slip #${idx+1}: ${url}\n`;
+      });
+    }
     text += `\n`;
   });
 
@@ -1609,6 +1601,50 @@ function shareBillWhatsApp() {
 
   const encoded = encodeURIComponent(text);
   window.open(`https://wa.me/?text=${encoded}`, '_blank');
+}
+
+function sendInvoiceMail() {
+  const b = activePreviewBill || getBillData();
+  if (!b || !b.cust) return alert("Please create or preview a bill first.");
+
+  const recipient = b.custEmail || '';
+  const subject = encodeURIComponent(`Tax Invoice #${b.no} - New Sarthi Travels (${b.cust})`);
+
+  let body = `Dear ${b.cust},\n\n`;
+  body += `Please find the tax invoice details for your booking below:\n\n`;
+  body += `Invoice No: ${b.no}\n`;
+  body += `Invoice Date: ${fmtDate(b.date)}\n`;
+  body += `Customer GSTIN: ${b.custGstin || 'Unregistered'}\n\n`;
+  body += `--- BOOKED DUTIES & TRIPS ---\n`;
+
+  b.duties.forEach((d, idx) => {
+    body += `\nDuty #${idx + 1}: ${d.trip}\n`;
+    body += `Vehicle: ${d.veh || 'N/A'} | Driver: ${d.driver || 'N/A'}\n`;
+    body += `Date: ${fmtDate(d.tdate)} to ${fmtDate(d.tEndDate)}\n`;
+    body += `Total Distance: ${d.totalKms} KMs\n`;
+    if (d.tollParking > 0) body += `Toll & Parking: ${money(d.tollParking)}\n`;
+    
+    if (d.slipImgs && d.slipImgs.length > 0) {
+      body += `Duty Slip Photos:\n`;
+      d.slipImgs.forEach((url, i) => { body += `  [Slip ${i+1}]: ${url}\n`; });
+    }
+    if (d.tollImgs && d.tollImgs.length > 0) {
+      body += `Toll / Parking Photos:\n`;
+      d.tollImgs.forEach((url, i) => { body += `  [Toll ${i+1}]: ${url}\n`; });
+    }
+  });
+
+  body += `\n--- PAYMENT SUMMARY ---\n`;
+  body += `Subtotal: ${money(b.sub)}\n`;
+  if (b.tax > 0) body += `Tax Amount: ${money(b.tax)}\n`;
+  body += `Total Amount: ${money(b.total)}\n`;
+  body += `Advance Paid: ${money(b.paid)}\n`;
+  body += `Balance Due: ${money(b.bal)}\n\n`;
+  body += `Bank Transfer Details:\n${data.settings.bank}\n\n`;
+  body += `Regards,\n${data.settings.name}\n${data.settings.phone}\n${data.settings.address}`;
+
+  const mailtoUrl = `mailto:${encodeURIComponent(recipient)}?subject=${subject}&body=${encodeURIComponent(body)}`;
+  window.location.href = mailtoUrl;
 }
 
 function amountWords(amount) {
@@ -1715,10 +1751,17 @@ function buildInvoice(b) {
       ${d.tollParking > 0 ? `<tr><td style="padding-left:14px;">Toll Tax & Parking Charges</td><td align="center">—</td><td class="right">—</td><td class="right">${money(d.tollParking)}</td></tr>` : ''}
     `;
 
-    if (d.slipImg || d.tollImg) {
-      attachedImagesHtml += `<div style="margin-top:8px;"><b>Duty #${idx+1} Receipts:</b><br>`;
-      if (d.slipImg) attachedImagesHtml += `<a href="${d.slipImg}" target="_blank"><img src="${d.slipImg}" title="Duty Slip #${idx+1}"></a>`;
-      if (d.tollImg) attachedImagesHtml += `<a href="${d.tollImg}" target="_blank"><img src="${d.tollImg}" title="Toll Slip #${idx+1}"></a>`;
+    const slipImgs = Array.isArray(d.slipImgs) ? d.slipImgs : (d.slipImg ? d.slipImg.split(',').filter(Boolean) : []);
+    const tollImgs = Array.isArray(d.tollImgs) ? d.tollImgs : (d.tollImg ? d.tollImg.split(',').filter(Boolean) : []);
+
+    if (slipImgs.length > 0 || tollImgs.length > 0) {
+      attachedImagesHtml += `<div style="margin-top:8px;"><b>Duty #${idx+1} Attached Receipts:</b><br>`;
+      slipImgs.forEach((u, i) => {
+        attachedImagesHtml += `<a href="${u}" target="_blank"><img src="${u}" title="Duty Slip #${i+1}"></a>`;
+      });
+      tollImgs.forEach((u, i) => {
+        attachedImagesHtml += `<a href="${u}" target="_blank"><img src="${u}" title="Toll Slip #${i+1}"></a>`;
+      });
       attachedImagesHtml += `</div>`;
     }
   });
@@ -1740,7 +1783,8 @@ function buildInvoice(b) {
       <div class="meta-box">
         <h4>Billed To (Customer Details):</h4>
         <p style="margin:0; font-size:14px; font-weight:bold;">${esc(b.cust)}</p>
-        <p style="margin:3px 0 0; font-size:12px;"><b>Customer GSTIN:</b> ${esc(b.custGstin) || 'Unregistered / N/A'}</p>
+        <p style="margin:2px 0; font-size:12px;"><b>Email:</b> ${esc(b.custEmail) || 'N/A'}</p>
+        <p style="margin:2px 0; font-size:12px;"><b>Customer GSTIN:</b> ${esc(b.custGstin) || 'Unregistered / N/A'}</p>
       </div>
       <div class="meta-box" style="text-align:right">
         <h4>Invoice Summary:</h4>
@@ -1783,7 +1827,7 @@ function buildInvoice(b) {
       </div>
     </div>
 
-    ${attachedImagesHtml ? `<div class="attached-docs"><b>Verified Attached Duty / Toll Receipts:</b><br>${attachedImagesHtml}</div>` : ''}
+    ${attachedImagesHtml ? `<div class="attached-docs"><b>Attached Duty Slips & Toll Receipts:</b><br>${attachedImagesHtml}</div>` : ''}
 
     <div class="sign-area">
       <p style="margin:0;">For <b>${esc(s.name)}</b></p>
@@ -1862,6 +1906,7 @@ function editBill(no) {
   if (document.getElementById('billNo')) document.getElementById('billNo').value = b.no;
   if (document.getElementById('billDate')) document.getElementById('billDate').value = b.date || '';
   if (document.getElementById('customer')) document.getElementById('customer').value = b.cust || '';
+  if (document.getElementById('custEmail')) document.getElementById('custEmail').value = b.custEmail || '';
   if (document.getElementById('custGstin')) document.getElementById('custGstin').value = b.custGstin || '';
   if (document.getElementById('gstType')) document.getElementById('gstType').value = b.gstType || 'none';
   if (document.getElementById('paid')) document.getElementById('paid').value = b.paid || 0;
@@ -1931,7 +1976,7 @@ document.querySelectorAll('.nav button[data-page]').forEach(b => {
   b.onclick = () => showPage(b.dataset.page);
 });
 
-// Initial startup
+// Startup sequence
 resetForm();
 loadSettings();
 toggleVendorSelect();
