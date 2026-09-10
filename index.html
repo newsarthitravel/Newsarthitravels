@@ -527,11 +527,9 @@ async function handleMultiPhotoAttach(boxId, type) {
   statusEl.innerText = `⏳ Uploading ${files.length} photo(s)...`;
   statusEl.style.display = "block";
 
-  // Parse existing urls if any
   let currentUrls = urlEl.value ? urlEl.value.split(',').map(s => s.trim()).filter(Boolean) : [];
 
   for (let file of files) {
-    // Show local thumbnail preview immediately
     const reader = new FileReader();
     reader.onload = e => {
       const img = document.createElement('img');
@@ -540,7 +538,6 @@ async function handleMultiPhotoAttach(boxId, type) {
     };
     reader.readAsDataURL(file);
 
-    // Upload to cloud storage
     const uploadedUrl = await uploadSingleFile(file);
     if (uploadedUrl) {
       currentUrls.push(uploadedUrl);
@@ -560,7 +557,8 @@ function checkAuth() {
   if (isAuth === 'true') {
     if (overlay) overlay.style.display = 'none';
     if (appRoot) appRoot.style.display = 'flex';
-    syncAllFromCloud();
+    // Automatically trigger cloud synchronization and repaint dashboard on load
+    syncAllFromCloud(false);
   } else {
     if (overlay) overlay.style.display = 'flex';
     if (appRoot) appRoot.style.display = 'none';
@@ -936,8 +934,8 @@ async function syncAllFromCloud(manual = false) {
             nightChargesQty: Number(b.night_charges_qty) || (Number(b.night_charges) > 0 ? 1 : 0),
             nightChargesRate: Number(b.night_charges_rate) || Number(b.night_charges) || 0,
             tollParking: Number(b.toll_parking || b.extra_charges) || 0,
-            slipImg: '',
-            tollImg: ''
+            slipImgs: [],
+            tollImgs: []
           }];
         }
 
@@ -992,6 +990,11 @@ async function syncAllFromCloud(manual = false) {
     renderVendorsTable();
     syncVendorDropdowns();
     syncCustomerDropdown();
+    
+    // Automatically redraw the active tab with newest data
+    const activePage = document.querySelector('.page.active')?.id || 'dashboard';
+    showPage(activePage);
+
     setSyncStatus('Cloud Synced', true);
     if (manual) alert('All data synced successfully!');
   } catch (err) {
@@ -1513,6 +1516,7 @@ async function saveBill() {
     duty_slip_no: b.firstDuty.dutySlip || null,
     duty_type: b.firstDuty.dutyType || 'Local (8 Hrs / 80 Kms)',
     customer_name: b.cust,
+    customer_email: b.custEmail || null,
     customer_gst: b.custGstin || null,
     particulars: b.duties.map((d, i) => `#${i+1}: ${d.trip}`).join(' | '),
     vehicle: b.firstDuty.veh || null,
@@ -1608,7 +1612,7 @@ function sendInvoiceMail() {
   if (!b || !b.cust) return alert("Please create or preview a bill first.");
 
   const recipient = b.custEmail || '';
-  const subject = encodeURIComponent(`Tax Invoice #${b.no} - New Sarthi Travels (${b.cust})`);
+  const subject = `Tax Invoice #${b.no} - New Sarthi Travels (${b.cust})`;
 
   let body = `Dear ${b.cust},\n\n`;
   body += `Please find the tax invoice details for your booking below:\n\n`;
@@ -1643,8 +1647,9 @@ function sendInvoiceMail() {
   body += `Bank Transfer Details:\n${data.settings.bank}\n\n`;
   body += `Regards,\n${data.settings.name}\n${data.settings.phone}\n${data.settings.address}`;
 
-  const mailtoUrl = `mailto:${encodeURIComponent(recipient)}?subject=${subject}&body=${encodeURIComponent(body)}`;
-  window.location.href = mailtoUrl;
+  // Direct Gmail web compose link (opens in Chrome without OS redirection)
+  const gmailUrl = `https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(recipient)}&su=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+  window.open(gmailUrl, '_blank');
 }
 
 function amountWords(amount) {
@@ -1976,13 +1981,13 @@ document.querySelectorAll('.nav button[data-page]').forEach(b => {
   b.onclick = () => showPage(b.dataset.page);
 });
 
-// Startup sequence
+// App initialization sequence
 resetForm();
 loadSettings();
 toggleVendorSelect();
-checkAuth();
+checkAuth(); // Calls syncAllFromCloud() and renders views on session validation
 
-// Polling: background sync every 30s
+// Background sync every 30s for active logins
 setInterval(() => {
   if (sessionStorage.getItem('nst_authenticated') === 'true') {
     syncAllFromCloud(false);
