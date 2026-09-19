@@ -551,14 +551,13 @@ async function handleMultiPhotoAttach(boxId, type) {
 
 /* ==================== AUTH ==================== */
 function checkAuth() {
-  const isAuth = sessionStorage.getItem('nst_authenticated');
+  const isAuth = localStorage.getItem('nst_authenticated') === 'true' || sessionStorage.getItem('nst_authenticated') === 'true';
   const overlay = document.getElementById('loginOverlay');
   const appRoot = document.getElementById('appRoot');
-  if (isAuth === 'true') {
+  if (isAuth) {
     if (overlay) overlay.style.display = 'none';
     if (appRoot) appRoot.style.display = 'flex';
-    // Automatically trigger cloud synchronization and repaint dashboard on load
-    syncAllFromCloud(false);
+    syncAllFromCloud(true);
   } else {
     if (overlay) overlay.style.display = 'flex';
     if (appRoot) appRoot.style.display = 'none';
@@ -586,15 +585,21 @@ async function handleLogin(e) {
   }
 
   if (enteredUser === correctUser && enteredPass === correctPass) {
+    localStorage.setItem('nst_authenticated', 'true');
     sessionStorage.setItem('nst_authenticated', 'true');
     if (errEl) errEl.style.display = 'none';
+    if (document.activeElement && document.activeElement.blur) {
+      document.activeElement.blur();
+    }
     checkAuth();
+    syncAllFromCloud(true);
   } else {
     if (errEl) errEl.style.display = 'block';
   }
 }
 
 function handleLogout() {
+  localStorage.removeItem('nst_authenticated');
   sessionStorage.removeItem('nst_authenticated');
   checkAuth();
 }
@@ -860,8 +865,9 @@ function applyVehicleToDuty(boxId) {
 
 /* ==================== TWO-WAY SYNC CORE ==================== */
 async function syncAllFromCloud(manual = false) {
-  const isTyping = document.activeElement && ['INPUT', 'TEXTAREA', 'SELECT'].includes(document.activeElement.tagName);
-  if (!manual && (isTyping || isFormDirty)) return;
+  // Only skip background sync if the user is actively filling out or editing a bill
+  const isEditingBill = isFormDirty || (document.activeElement && document.activeElement.closest('#newbill'));
+  if (!manual && isEditingBill) return;
 
   setSyncStatus('Syncing...', true);
 
@@ -1985,11 +1991,13 @@ document.querySelectorAll('.nav button[data-page]').forEach(b => {
 resetForm();
 loadSettings();
 toggleVendorSelect();
-checkAuth(); // Calls syncAllFromCloud() and renders views on session validation
+checkAuth();
+syncAllFromCloud(true); // Always sync fresh cloud data on boot
 
 // Background sync every 30s for active logins
 setInterval(() => {
-  if (sessionStorage.getItem('nst_authenticated') === 'true') {
+  const isAuth = localStorage.getItem('nst_authenticated') === 'true' || sessionStorage.getItem('nst_authenticated') === 'true';
+  if (isAuth) {
     syncAllFromCloud(false);
   }
 }, 30000);
