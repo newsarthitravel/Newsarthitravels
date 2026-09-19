@@ -170,9 +170,9 @@ th{font-size:11px;text-transform:uppercase;color:#475467;background:#fafbfc}
     <div style="font-size:32px; margin-bottom:8px;">🔒</div>
     <h2>NEW SARTHI TRAVELS</h2>
     <p>Admin Portal & Invoicing</p>
-    <form onsubmit="handleLogin(event)">
+    <form onsubmit="handleLogin(event)" autocomplete="off">
       <input type="text" id="loginUser" placeholder="Enter User ID" required autofocus autocomplete="off">
-      <input type="password" id="loginPass" placeholder="Enter Password" required autocomplete="off">
+      <input type="password" id="loginPass" placeholder="Enter Password" required autocomplete="new-password">
       <button type="submit">Access System</button>
       <div id="loginError" class="login-err">Invalid User ID or Password. Please try again.</div>
     </form>
@@ -400,6 +400,10 @@ th{font-size:11px;text-transform:uppercase;color:#475467;background:#fafbfc}
 </main></div>
 
 <script>
+// FORCE PURGE ANY LEGACY LOCAL STORAGE AUTH
+localStorage.removeItem('nst_authenticated');
+sessionStorage.removeItem('nst_authenticated');
+
 const SUPABASE_BASE = 'https://tjkgjkeuplqzzzdfqmuc.supabase.co/rest/v1';
 const SUPABASE_STORAGE = 'https://tjkgjkeuplqzzzdfqmuc.supabase.co/storage/v1/object/public/receipts';
 const SUPABASE_UPLOAD = 'https://tjkgjkeuplqzzzdfqmuc.supabase.co/storage/v1/object/receipts';
@@ -439,6 +443,9 @@ let editingVendorId = null;
 let dutyIndex = 0;
 let activePreviewBill = null;
 let isFormDirty = false;
+
+// EPHEMERAL TAB-BOUND AUTH (Lives purely in browser memory)
+let isSystemUnlocked = false;
 
 function round2(num) {
   return Math.round((Number(num) || 0) * 100) / 100;
@@ -549,17 +556,12 @@ async function handleMultiPhotoAttach(boxId, type) {
   isFormDirty = true;
 }
 
-/* ==================== AUTH (SESSION STORAGE ONLY) ==================== */
+/* ==================== BULLETPROOF TAB AUTH ==================== */
 function checkAuth() {
-  // Clear any existing legacy persistent localStorage auth key
-  localStorage.removeItem('nst_authenticated');
-
-  // Verify authentication only from the active tab's session
-  const isAuth = sessionStorage.getItem('nst_authenticated') === 'true';
   const overlay = document.getElementById('loginOverlay');
   const appRoot = document.getElementById('appRoot');
 
-  if (isAuth) {
+  if (isSystemUnlocked === true) {
     if (overlay) overlay.style.display = 'none';
     if (appRoot) appRoot.style.display = 'flex';
     syncAllFromCloud(true);
@@ -590,10 +592,7 @@ async function handleLogin(e) {
   }
 
   if (enteredUser === correctUser && enteredPass === correctPass) {
-    // Session-only persistence: Closing the tab destroys this key
-    sessionStorage.setItem('nst_authenticated', 'true');
-    localStorage.removeItem('nst_authenticated');
-
+    isSystemUnlocked = true;
     if (document.getElementById('loginUser')) document.getElementById('loginUser').value = '';
     if (document.getElementById('loginPass')) document.getElementById('loginPass').value = '';
 
@@ -602,17 +601,22 @@ async function handleLogin(e) {
       document.activeElement.blur();
     }
     checkAuth();
-    syncAllFromCloud(true);
   } else {
     if (errEl) errEl.style.display = 'block';
   }
 }
 
 function handleLogout() {
+  isSystemUnlocked = false;
   localStorage.removeItem('nst_authenticated');
   sessionStorage.removeItem('nst_authenticated');
   checkAuth();
 }
+
+// Ensure tab unloads clear auth instantly
+window.addEventListener('beforeunload', () => {
+  isSystemUnlocked = false;
+});
 
 const money = n => new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 2 }).format(round2(n));
 
@@ -1994,16 +1998,15 @@ document.querySelectorAll('.nav button[data-page]').forEach(b => {
   b.onclick = () => showPage(b.dataset.page);
 });
 
-// App initialization sequence
+// Booting system locked by default
 resetForm();
 loadSettings();
 toggleVendorSelect();
 checkAuth();
 
-// Background sync every 30s for active session
+// Background sync every 30s only if logged in
 setInterval(() => {
-  const isAuth = sessionStorage.getItem('nst_authenticated') === 'true';
-  if (isAuth) {
+  if (isSystemUnlocked) {
     syncAllFromCloud(false);
   }
 }, 30000);
