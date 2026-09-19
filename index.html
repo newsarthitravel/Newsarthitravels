@@ -46,6 +46,7 @@ button,input,select,textarea{font:inherit}button{cursor:pointer}
 .field input:focus,.field select:focus,.field textarea:focus{border-color:var(--accent);box-shadow:0 0 0 3px #b52c2c1a}
 .actions{display:flex;gap:9px;justify-content:flex-end;margin-top:18px}
 .btn{border:0;border-radius:8px;padding:10px 15px;font-weight:600}
+.btn:disabled{opacity:0.6;cursor:not-allowed}
 .primary{background:var(--accent);color:#fff}
 .dark{background:#172238;color:#fff}
 .light{background:#eef1f6;color:#25334a}
@@ -65,10 +66,12 @@ th{font-size:11px;text-transform:uppercase;color:#475467;background:#fafbfc}
 .sync-tag{font-size:11px;padding:4px 9px;border-radius:20px;background:#e1f9eb;color:#0b7a42;display:inline-block;font-weight:600;margin-left:10px}
 .section-subhead{font-size:14px;font-weight:700;color:var(--ink);margin:18px 0 10px;border-bottom:1px solid var(--line);padding-bottom:5px;display:flex;justify-content:space-between;align-items:center}
 
-/* ATTACHMENT BOXES */
+/* ATTACHMENT BOXES & THUMBNAILS */
 .receipt-box{background:#f8fafc;border:1px dashed #94a3b8;border-radius:8px;padding:10px;margin-top:8px}
-.preview-gallery{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}
-.preview-gallery img{height:65px;border-radius:4px;border:1px solid #cbd5e1;object-fit:cover}
+.preview-gallery{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
+.thumb-item{position:relative;display:inline-block}
+.thumb-item img{height:65px;width:65px;border-radius:4px;border:1px solid #cbd5e1;object-fit:cover;display:block}
+.thumb-del{position:absolute;top:-6px;right:-6px;background:#b42318;color:#fff;border-radius:50%;width:18px;height:18px;font-size:10px;border:none;display:flex;align-items:center;justify-content:center;padding:0;line-height:1}
 .upload-status{font-size:11px;font-weight:600;color:#0284c7;display:none;margin-top:4px}
 
 /* MULTI DUTY CARD IN FORM */
@@ -113,11 +116,11 @@ th{font-size:11px;text-transform:uppercase;color:#475467;background:#fafbfc}
   .grid,.grid3,.grid4{grid-template-columns:1fr}
 }
 
-/* HIGH-DENSITY PROFESSIONAL PRINT ENGINE */
+/* HIGH-DENSITY PROFESSIONAL PRINT ENGINE (AUTO-PAGINATED) */
 @media print {
   @page {
     size: A4 portrait;
-    margin: 8mm 10mm;
+    margin: 10mm;
   }
   html, body {
     background: #fff !important;
@@ -125,7 +128,7 @@ th{font-size:11px;text-transform:uppercase;color:#475467;background:#fafbfc}
     margin: 0 !important;
     padding: 0 !important;
     width: 100% !important;
-    font-size: 12pt !important;
+    font-size: 11pt !important;
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
   }
@@ -158,6 +161,12 @@ th{font-size:11px;text-transform:uppercase;color:#475467;background:#fafbfc}
     margin: 0 !important;
     padding: 0 !important;
     color: #000 !important;
+  }
+  .inv-table tr {
+    page-break-inside: avoid !important;
+  }
+  .summary-grid, .sign-area, .attached-docs {
+    page-break-inside: avoid !important;
   }
 }
 </style>
@@ -198,7 +207,7 @@ th{font-size:11px;text-transform:uppercase;color:#475467;background:#fafbfc}
   <div>
     <h1 id="pageTitle" style="display:inline-block">Dashboard</h1>
     <span id="syncStatus" class="sync-tag">Cloud Ready</span>
-    <p>NEW SARTHI TRAVELS — Multi-Device Live Platform</p>
+    <p>NEW SARTHI TRAVELS — Live Platform</p>
   </div>
   <div style="display:flex; gap:10px;">
     <button class="btn light" onclick="syncAllFromCloud(true)">🔄 Sync Cloud</button>
@@ -270,7 +279,7 @@ th{font-size:11px;text-transform:uppercase;color:#475467;background:#fafbfc}
 <div class="actions">
   <button class="btn light" onclick="resetForm()">Clear / New</button>
   <button class="btn dark" onclick="previewBill()">Preview</button>
-  <button class="btn primary" onclick="saveBill()">Save & Print</button>
+  <button class="btn primary" id="saveBillBtn" onclick="saveBill()">Save & Print</button>
 </div>
 </div>
 </section>
@@ -405,7 +414,7 @@ const SUPABASE_STORAGE = 'https://tjkgjkeuplqzzzdfqmuc.supabase.co/storage/v1/ob
 const SUPABASE_UPLOAD = 'https://tjkgjkeuplqzzzdfqmuc.supabase.co/storage/v1/object/receipts';
 const S_KEY = 'sb_publishable_AiO0RJRFusjUSlVZU5QePQ_-7Svkmx8';
 
-const KEY = 'nst_v19';
+const KEY = 'nst_v20';
 const defaults = {
   adminUser: 'admin',
   adminPass: 'sarthi@123',
@@ -439,6 +448,7 @@ let editingVendorId = null;
 let dutyIndex = 0;
 let activePreviewBill = null;
 let isFormDirty = false;
+let activeUploadCount = 0;
 
 function round2(num) {
   return Math.round((Number(num) || 0) * 100) / 100;
@@ -495,18 +505,42 @@ async function cloudReq(endpoint, method = 'GET', body = null) {
   }
 }
 
-/* ==================== MULTI-PHOTO ATTACHMENT ==================== */
+/* ==================== CLIENT-SIDE COMPRESSOR & UPLOADER ==================== */
+async function compressImage(file, maxDim = 1600, quality = 0.8) {
+  if (!file.type.startsWith('image/')) return file;
+  return new Promise(resolve => {
+    const img = new Image();
+    img.onload = () => {
+      let w = img.width, h = img.height;
+      if (w > maxDim || h > maxDim) {
+        if (w > h) { h = Math.round((h * maxDim) / w); w = maxDim; }
+        else { w = Math.round((w * maxDim) / h); h = maxDim; }
+      }
+      const cvs = document.createElement('canvas');
+      cvs.width = w; cvs.height = h;
+      const ctx = cvs.getContext('2d');
+      ctx.drawImage(img, 0, 0, w, h);
+      cvs.toBlob(blob => {
+        resolve(blob || file);
+      }, 'image/jpeg', quality);
+    };
+    img.onerror = () => resolve(file);
+    img.src = URL.createObjectURL(file);
+  });
+}
+
 async function uploadSingleFile(file) {
-  const filename = `${Date.now()}_${Math.floor(Math.random()*1000)}_${file.name.replace(/[^a-zA-Z0-9._-]/g, '')}`;
+  const compressed = await compressImage(file);
+  const filename = `${Date.now()}_${Math.floor(Math.random()*1000)}.jpg`;
   try {
     const res = await fetch(`${SUPABASE_UPLOAD}/${filename}`, {
       method: 'POST',
       headers: {
         'apikey': S_KEY,
         'Authorization': 'Bearer ' + S_KEY,
-        'Content-Type': file.type || 'application/octet-stream'
+        'Content-Type': 'image/jpeg'
       },
-      body: file
+      body: compressed
     });
     if (!res.ok) return null;
     return `${SUPABASE_STORAGE}/${filename}`;
@@ -520,38 +554,59 @@ async function handleMultiPhotoAttach(boxId, type) {
   const statusEl = document.getElementById(`${type}_status_${boxId}`);
   const galleryEl = document.getElementById(`${type}_gallery_${boxId}`);
   const urlEl = document.getElementById(`${type}_url_${boxId}`);
+  const saveBtn = document.getElementById('saveBillBtn');
 
   if (!fileInput.files || fileInput.files.length === 0) return;
   const files = Array.from(fileInput.files);
 
-  statusEl.innerText = `⏳ Uploading ${files.length} photo(s)...`;
+  activeUploadCount++;
+  if (saveBtn) saveBtn.disabled = true;
+
+  statusEl.innerText = `⏳ Compressing & uploading ${files.length} photo(s)...`;
   statusEl.style.display = "block";
 
   let currentUrls = urlEl.value ? urlEl.value.split(',').map(s => s.trim()).filter(Boolean) : [];
 
   for (let file of files) {
-    const reader = new FileReader();
-    reader.onload = e => {
-      const img = document.createElement('img');
-      img.src = e.target.result;
-      galleryEl.appendChild(img);
-    };
-    reader.readAsDataURL(file);
-
     const uploadedUrl = await uploadSingleFile(file);
     if (uploadedUrl) {
       currentUrls.push(uploadedUrl);
+      const thumb = document.createElement('div');
+      thumb.className = 'thumb-item';
+      thumb.dataset.url = uploadedUrl;
+      thumb.innerHTML = `
+        <img src="${uploadedUrl}">
+        <button type="button" class="thumb-del" onclick="removePhoto('${boxId}','${type}','${uploadedUrl}')">✕</button>
+      `;
+      galleryEl.appendChild(thumb);
     }
   }
 
   urlEl.value = currentUrls.join(',');
-  statusEl.innerText = `✅ ${currentUrls.length} file(s) attached & saved to cloud!`;
+  statusEl.innerText = `✅ ${currentUrls.length} file(s) saved to cloud!`;
+  isFormDirty = true;
+
+  activeUploadCount = Math.max(0, activeUploadCount - 1);
+  if (activeUploadCount === 0 && saveBtn) saveBtn.disabled = false;
+}
+
+function removePhoto(boxId, type, url) {
+  const urlEl = document.getElementById(`${type}_url_${boxId}`);
+  const galleryEl = document.getElementById(`${type}_gallery_${boxId}`);
+  if (!urlEl || !galleryEl) return;
+
+  let currentUrls = urlEl.value.split(',').map(s => s.trim()).filter(Boolean);
+  currentUrls = currentUrls.filter(u => u !== url);
+  urlEl.value = currentUrls.join(',');
+
+  const thumb = galleryEl.querySelector(`[data-url="${CSS.escape(url)}"]`);
+  if (thumb) thumb.remove();
   isFormDirty = true;
 }
 
-/* ==================== AUTH ==================== */
+/* ==================== PERSISTENT AUTH ==================== */
 function checkAuth() {
-  const isAuth = localStorage.getItem('nst_authenticated') === 'true' || sessionStorage.getItem('nst_authenticated') === 'true';
+  const isAuth = localStorage.getItem('nst_authenticated') === 'true';
   const overlay = document.getElementById('loginOverlay');
   const appRoot = document.getElementById('appRoot');
   if (isAuth) {
@@ -586,13 +641,9 @@ async function handleLogin(e) {
 
   if (enteredUser === correctUser && enteredPass === correctPass) {
     localStorage.setItem('nst_authenticated', 'true');
-    sessionStorage.setItem('nst_authenticated', 'true');
     if (errEl) errEl.style.display = 'none';
-    if (document.activeElement && document.activeElement.blur) {
-      document.activeElement.blur();
-    }
+    if (document.activeElement && document.activeElement.blur) document.activeElement.blur();
     checkAuth();
-    syncAllFromCloud(true);
   } else {
     if (errEl) errEl.style.display = 'block';
   }
@@ -600,16 +651,17 @@ async function handleLogin(e) {
 
 function handleLogout() {
   localStorage.removeItem('nst_authenticated');
-  sessionStorage.removeItem('nst_authenticated');
   checkAuth();
 }
 
 const money = n => new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 2 }).format(round2(n));
 
+// Timezone-safe local date formatting
 const fmtDate = s => {
   if (!s) return '';
-  let d = new Date(s.includes('T') ? s : s + 'T00:00:00');
-  return isNaN(d) ? '' : d.toLocaleDateString('en-IN', { day: '2-digit', month: '2-digit', year: 'numeric' });
+  const parts = String(s).split('T')[0].split('-');
+  if (parts.length !== 3) return s;
+  return `${parts[2]}/${parts[1]}/${parts[0]}`;
 };
 
 function esc(x) {
@@ -719,24 +771,34 @@ function addDutyItem(initial = {}) {
       <div class="field"><label>Toll Tax & Parking Charges (₹)</label><input class="duty-toll" type="number" min="0" step="0.01" value="${Number(initial.tollParking) || 0}" oninput="calculateAmounts()"></div>
     </div>
 
-    <!-- MULTI-IMAGE UPLOADS (DUTY SLIPS & TOLL SLIPS) -->
+    <!-- DOCUMENT UPLOADS WITH DETACH BUTTONS -->
     <div class="grid" style="margin-top:10px">
       <div class="receipt-box">
-        <label style="font-size:12px; font-weight:700; display:block; margin-bottom:4px;">📷 Duty Slips (Upload 1 or Multiple Photos)</label>
+        <label style="font-size:12px; font-weight:700; display:block; margin-bottom:4px;">📷 Duty Slips (Upload Photos)</label>
         <input type="file" accept="image/*" multiple id="slip_file_${id}" onchange="handleMultiPhotoAttach('${id}', 'slip')">
         <input type="hidden" class="duty-slip-img" id="slip_url_${id}" value="${esc(slipImgs.join(','))}">
         <div id="slip_status_${id}" class="upload-status"></div>
         <div id="slip_gallery_${id}" class="preview-gallery">
-          ${slipImgs.map(u => `<img src="${esc(u)}">`).join('')}
+          ${slipImgs.map(u => `
+            <div class="thumb-item" data-url="${esc(u)}">
+              <img src="${esc(u)}">
+              <button type="button" class="thumb-del" onclick="removePhoto('${id}','slip','${esc(u)}')">✕</button>
+            </div>
+          `).join('')}
         </div>
       </div>
       <div class="receipt-box">
-        <label style="font-size:12px; font-weight:700; display:block; margin-bottom:4px;">📷 Toll / Parking Receipts (Upload 1 or Multiple Photos)</label>
+        <label style="font-size:12px; font-weight:700; display:block; margin-bottom:4px;">📷 Toll / Parking Slips (Upload Photos)</label>
         <input type="file" accept="image/*" multiple id="toll_file_${id}" onchange="handleMultiPhotoAttach('${id}', 'toll')">
         <input type="hidden" class="duty-toll-img" id="toll_url_${id}" value="${esc(tollImgs.join(','))}">
         <div id="toll_status_${id}" class="upload-status"></div>
         <div id="toll_gallery_${id}" class="preview-gallery">
-          ${tollImgs.map(u => `<img src="${esc(u)}">`).join('')}
+          ${tollImgs.map(u => `
+            <div class="thumb-item" data-url="${esc(u)}">
+              <img src="${esc(u)}">
+              <button type="button" class="thumb-del" onclick="removePhoto('${id}','toll','${esc(u)}')">✕</button>
+            </div>
+          `).join('')}
         </div>
       </div>
     </div>
@@ -863,9 +925,8 @@ function applyVehicleToDuty(boxId) {
   isFormDirty = true;
 }
 
-/* ==================== TWO-WAY SYNC CORE ==================== */
+/* ==================== ROBUST DATA REPOSITORY SYNC ==================== */
 async function syncAllFromCloud(manual = false) {
-  // Only skip background sync if the user is actively filling out or editing a bill
   const isEditingBill = isFormDirty || (document.activeElement && document.activeElement.closest('#newbill'));
   if (!manual && isEditingBill) return;
 
@@ -997,12 +1058,11 @@ async function syncAllFromCloud(manual = false) {
     syncVendorDropdowns();
     syncCustomerDropdown();
     
-    // Automatically redraw the active tab with newest data
     const activePage = document.querySelector('.page.active')?.id || 'dashboard';
     showPage(activePage);
 
     setSyncStatus('Cloud Synced', true);
-    if (manual) alert('All data synced successfully!');
+    if (manual) alert('All cloud data refreshed successfully!');
   } catch (err) {
     setSyncStatus('Sync Error', false);
   }
@@ -1499,6 +1559,10 @@ function getBillData() {
 }
 
 async function saveBill() {
+  if (activeUploadCount > 0) {
+    return alert("Please wait for all attached photos to finish uploading before saving!");
+  }
+
   let b = getBillData();
   if (!b.cust) return alert("Customer Name is required.");
   if (!b.duties.length || !b.duties[0].trip) return alert("At least one trip description is required.");
@@ -1653,9 +1717,12 @@ function sendInvoiceMail() {
   body += `Bank Transfer Details:\n${data.settings.bank}\n\n`;
   body += `Regards,\n${data.settings.name}\n${data.settings.phone}\n${data.settings.address}`;
 
-  // Direct Gmail web compose link (opens in Chrome without OS redirection)
+  // Direct Gmail web compose link (falls back to mailto if blocked)
   const gmailUrl = `https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(recipient)}&su=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-  window.open(gmailUrl, '_blank');
+  const opened = window.open(gmailUrl, '_blank');
+  if (!opened) {
+    window.location.href = `mailto:${encodeURIComponent(recipient)}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+  }
 }
 
 function amountWords(amount) {
@@ -1987,16 +2054,15 @@ document.querySelectorAll('.nav button[data-page]').forEach(b => {
   b.onclick = () => showPage(b.dataset.page);
 });
 
-// App initialization sequence
+// Primary boot sequence
 resetForm();
 loadSettings();
 toggleVendorSelect();
 checkAuth();
-syncAllFromCloud(true); // Always sync fresh cloud data on boot
 
-// Background sync every 30s for active logins
+// Safe background polling interval (every 30s)
 setInterval(() => {
-  const isAuth = localStorage.getItem('nst_authenticated') === 'true' || sessionStorage.getItem('nst_authenticated') === 'true';
+  const isAuth = localStorage.getItem('nst_authenticated') === 'true';
   if (isAuth) {
     syncAllFromCloud(false);
   }
