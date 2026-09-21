@@ -578,7 +578,6 @@ async function handleSignUpload(e) {
     document.getElementById('setSignature').value = dataUrl;
     renderSignPreview(dataUrl);
 
-    // Also attempt cloud storage upload
     const uploadedUrl = await uploadSingleFile(file);
     if (uploadedUrl) {
       document.getElementById('setSignature').value = uploadedUrl;
