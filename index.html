@@ -53,7 +53,7 @@ button,input,select,textarea{font:inherit}button{cursor:pointer}
 .light{background:#eef1f6;color:#25334a}
 .danger{background:#fee4e2;color:#b42318}
 .whatsapp{background:#25D366;color:#fff}
-.email-btn{background:#0284c7;color:#fff}
+.email-btn{background:#6001d2;color:#fff}
 table{width:100%;border-collapse:collapse}
 th,td{padding:11px 9px;border-bottom:1px solid #eaecf0;text-align:left;font-size:13px}
 th{font-size:11px;text-transform:uppercase;color:#475467;background:#fafbfc}
@@ -405,7 +405,7 @@ th{font-size:11px;text-transform:uppercase;color:#475467;background:#fafbfc}
   <button class="btn dark" onclick="showPage('newbill')">← Back to Edit</button>
   <button class="btn primary" onclick="window.print()">Print / Save PDF</button>
   <button class="btn whatsapp" onclick="shareBillWhatsApp()">WhatsApp Bill (PDF)</button>
-  <button class="btn email-btn" onclick="sendInvoiceMail()">✉️ Email Customer</button>
+  <button class="btn email-btn" onclick="sendInvoiceMail()">✉️ Yahoo Mail Invoice</button>
 </div>
 <div class="invoice-wrap"><div id="invoice" class="invoice"></div></div>
 </section>
@@ -743,7 +743,6 @@ function addDutyItem(initial = {}) {
   const slipImgs = Array.isArray(initial.slipImgs) ? initial.slipImgs : (initial.slipImg ? initial.slipImg.split(',').filter(Boolean) : []);
   const tollImgs = Array.isArray(initial.tollImgs) ? initial.tollImgs : (initial.tollImg ? initial.tollImg.split(',').filter(Boolean) : []);
 
-  // Pre-fill trip particulars with TAXI HIRE CHARGES by default
   const defaultTripText = (initial.trip !== undefined) ? initial.trip : 'TAXI HIRE CHARGES';
 
   dutyCard.innerHTML = `
@@ -1648,6 +1647,7 @@ function previewBill() {
   showPage('preview');
 }
 
+/* ==================== AUTOMATIC PDF & WHATSAPP ==================== */
 async function shareBillWhatsApp() {
   const b = activePreviewBill || getBillData();
   if (!b || !b.cust) return alert("Please create or preview a bill first.");
@@ -1655,7 +1655,7 @@ async function shareBillWhatsApp() {
   buildInvoice(b);
 
   const invElement = document.getElementById('invoice');
-  const filename = `Tax_Invoice_${b.no}_${b.cust.replace(/[^a-zA-Z0-9]/g, '_')}.pdf`;
+  const filename = `Invoice_${b.no}_${Date.now()}.pdf`;
 
   const opt = {
     margin: [8, 10, 8, 10],
@@ -1665,31 +1665,50 @@ async function shareBillWhatsApp() {
     jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
   };
 
-  setSyncStatus('Generating PDF...', true);
+  setSyncStatus('Generating & uploading PDF...', true);
 
   try {
-    // Generate and trigger download of PDF
-    await html2pdf().set(opt).from(invElement).save();
-    setSyncStatus('PDF Downloaded', true);
+    // 1. Generate local PDF blob
+    const pdfBlob = await html2pdf().set(opt).from(invElement).output('blob');
 
+    // 2. Upload PDF directly to Supabase storage receipts bucket
+    const uploadRes = await fetch(`${SUPABASE_UPLOAD}/${filename}`, {
+      method: 'POST',
+      headers: {
+        'apikey': S_KEY,
+        'Authorization': 'Bearer ' + S_KEY,
+        'Content-Type': 'application/pdf'
+      },
+      body: pdfBlob
+    });
+
+    let pdfLink = `${SUPABASE_STORAGE}/${filename}`;
+
+    // Also download copy for instant local availability
+    await html2pdf().set(opt).from(invElement).save();
+
+    // 3. Formulate WhatsApp text message with direct live PDF attachment link
     let text = `*TAX INVOICE - ${data.settings.name.toUpperCase()}*\n`;
     text += `*Invoice No:* ${b.no} | *Date:* ${fmtDate(b.date)}\n`;
-    text += `*Client:* ${b.cust}\n`;
+    text += `*Customer:* ${b.cust}\n`;
     text += `*Total Amount:* ${money(b.total)}\n`;
+    text += `*Advance Paid:* ${money(b.paid)}\n`;
     text += `*Balance Due:* ${money(b.bal)}\n`;
     text += `--------------------------------\n`;
-    text += `📎 *The PDF invoice has been generated & downloaded.* Please find it attached.\n\n`;
+    text += `📄 *View & Download Official PDF Invoice:*\n${pdfLink}\n`;
+    text += `--------------------------------\n`;
     text += `Bank Transfer Details:\n${data.settings.bank}\n`;
     text += `Contact: ${data.settings.phone}`;
 
-    const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(text)}`;
-    window.open(whatsappUrl, '_blank');
+    setSyncStatus('PDF Sent to Cloud', true);
+    window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
   } catch (err) {
-    alert("Could not generate PDF: " + err.message);
+    alert("Could not process PDF: " + err.message);
     setSyncStatus('PDF Error', false);
   }
 }
 
+/* ==================== YAHOO MAIL COMPOSE ==================== */
 function sendInvoiceMail() {
   const b = activePreviewBill || getBillData();
   if (!b || !b.cust) return alert("Please create or preview a bill first.");
@@ -1730,8 +1749,9 @@ function sendInvoiceMail() {
   body += `Bank Transfer Details:\n${data.settings.bank}\n\n`;
   body += `Regards,\n${data.settings.name}\n${data.settings.phone}\n${data.settings.address}`;
 
-  const gmailUrl = `https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(recipient)}&su=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-  window.open(gmailUrl, '_blank');
+  // Direct Yahoo Mail web composer
+  const yahooUrl = `https://compose.mail.yahoo.com/?to=${encodeURIComponent(recipient)}&subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+  window.open(yahooUrl, '_blank');
 }
 
 function amountWords(amount) {
