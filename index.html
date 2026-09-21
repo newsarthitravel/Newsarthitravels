@@ -176,7 +176,7 @@ th{font-size:11px;text-transform:uppercase;color:#475467;background:#fafbfc}
     <form onsubmit="handleLogin(event)" autocomplete="off">
       <input type="text" id="loginUser" placeholder="Enter User ID" required autofocus autocomplete="off">
       <input type="password" id="loginPass" placeholder="Enter Password" required autocomplete="new-password">
-      <button type="submit">Access System</button>
+      <button type="submit" id="btnLogin">Access System</button>
       <div id="loginError" class="login-err">Invalid User ID or Password. Please try again.</div>
     </form>
   </div>
@@ -413,338 +413,355 @@ th{font-size:11px;text-transform:uppercase;color:#475467;background:#fafbfc}
 </main></div>
 
 <script>
-// FORCE PURGE ANY LEGACY LOCAL STORAGE AUTH[cite: 1, 2, 3]
+// FORCE PURGE LEGACY PERSISTENT LOCAL STORAGE LOGIN
 localStorage.removeItem('nst_authenticated');
-sessionStorage.removeItem('nst_authenticated');
 
-const SUPABASE_BASE = 'https://tjkgjkeuplqzzzdfqmuc.supabase.co/rest/v1';[cite: 1, 2, 3]
-const SUPABASE_STORAGE = 'https://tjkgjkeuplqzzzdfqmuc.supabase.co/storage/v1/object/public/receipts';[cite: 1, 2, 3]
-const SUPABASE_UPLOAD = 'https://tjkgjkeuplqzzzdfqmuc.supabase.co/storage/v1/object/receipts';[cite: 1, 2, 3]
-const S_KEY = 'sb_publishable_AiO0RJRFusjUSlVZU5QePQ_-7Svkmx8';[cite: 1, 2, 3]
+const SUPABASE_BASE = 'https://tjkgjkeuplqzzzdfqmuc.supabase.co/rest/v1';[cite: 5]
+const SUPABASE_STORAGE = 'https://tjkgjkeuplqzzzdfqmuc.supabase.co/storage/v1/object/public/receipts';[cite: 5]
+const SUPABASE_UPLOAD = 'https://tjkgjkeuplqzzzdfqmuc.supabase.co/storage/v1/object/receipts';[cite: 5]
+const S_KEY = 'sb_publishable_AiO0RJRFusjUSlVZU5QePQ_-7Svkmx8';[cite: 5]
 
-const KEY = 'nst_v19';[cite: 1, 2, 3]
-const defaults = {[cite: 1, 2, 3]
-  adminUser: 'admin',[cite: 1, 2, 3]
-  adminPass: 'sarthi@123',[cite: 1, 2, 3]
-  name: 'New Sarthi Travels',[cite: 1, 2, 3]
-  phone: '0755-7960537',[cite: 1, 2, 3]
-  gstin: '23ABYPT3958K1ZO',[cite: 1, 2, 3]
-  sac: '996601',[cite: 1, 2, 3]
-  address: 'E-2/21, Kamdhenu Tower, Arera Colony, Bhopal-462 016',[cite: 1, 2, 3]
-  email: 'newsarthitravels@yahoo.in',[cite: 1, 2, 3]
-  bank: 'ICICI Bank, Zone-II, M.P. Nagar | A/C: 005505001355 | IFSC: ICIC0000055',[cite: 1, 2, 3]
-  start: 1001,[cite: 1, 2, 3]
-  signature: ''[cite: 3]
+const KEY = 'nst_v19';[cite: 5]
+const defaults = {[cite: 5]
+  adminUser: 'admin',[cite: 5]
+  adminPass: 'sarthi@123',[cite: 5]
+  name: 'New Sarthi Travels',[cite: 5]
+  phone: '0755-7960537',[cite: 5]
+  gstin: '23ABYPT3958K1ZO',[cite: 5]
+  sac: '996601',[cite: 5]
+  address: 'E-2/21, Kamdhenu Tower, Arera Colony, Bhopal-462 016',[cite: 5]
+  email: 'newsarthitravels@yahoo.in',[cite: 5]
+  bank: 'ICICI Bank, Zone-II, M.P. Nagar | A/C: 005505001355 | IFSC: ICIC0000055',[cite: 5]
+  start: 1001,[cite: 5]
+  signature: ''[cite: 5]
 };
 
-let data = JSON.parse(localStorage.getItem(KEY)) || {[cite: 1, 2, 3]
-  settings: defaults,[cite: 1, 2, 3]
-  bills: [],[cite: 1, 2, 3]
-  vehicles: [],[cite: 1, 2, 3]
-  vendors: [],[cite: 1, 2, 3]
-  customers: [][cite: 1, 2, 3]
+let data = JSON.parse(localStorage.getItem(KEY)) || {[cite: 5]
+  settings: defaults,[cite: 5]
+  bills: [],[cite: 5]
+  vehicles: [],[cite: 5]
+  vendors: [],[cite: 5]
+  customers: [][cite: 5]
 };
 
-data.settings = { ...defaults, ...data.settings };[cite: 1, 2, 3]
-data.bills = data.bills || [];[cite: 1, 2, 3]
-data.vehicles = data.vehicles || [];[cite: 1, 2, 3]
-data.vendors = data.vendors || [];[cite: 1, 2, 3]
-data.customers = data.customers || [];[cite: 1, 2, 3]
+data.settings = { ...defaults, ...data.settings };[cite: 5]
+data.bills = data.bills || [];[cite: 5]
+data.vehicles = data.vehicles || [];[cite: 5]
+data.vendors = data.vendors || [];[cite: 5]
+data.customers = data.customers || [];[cite: 5]
 
-let editingVehReg = null;[cite: 1, 2, 3]
-let editingCustId = null;[cite: 1, 2, 3]
-let editingVendorId = null;[cite: 1, 2, 3]
-let dutyIndex = 0;[cite: 1, 2, 3]
-let activePreviewBill = null;[cite: 1, 2, 3]
-let isFormDirty = false;[cite: 1, 2, 3]
+let editingVehReg = null;[cite: 5]
+let editingCustId = null;[cite: 5]
+let editingVendorId = null;[cite: 5]
+let dutyIndex = 0;[cite: 5]
+let activePreviewBill = null;[cite: 5]
+let isFormDirty = false;[cite: 5]
 
-// EPHEMERAL TAB-BOUND AUTH[cite: 2, 3]
-let isSystemUnlocked = false;[cite: 2, 3]
-
-function round2(num) {[cite: 1, 2, 3]
-  return Math.round((Number(num) || 0) * 100) / 100;[cite: 1, 2, 3]
+function round2(num) {[cite: 5]
+  return Math.round((Number(num) || 0) * 100) / 100;[cite: 5]
 }
 
-function genUUID() {[cite: 1, 2, 3]
-  if (typeof crypto !== 'undefined' && crypto.randomUUID) return crypto.randomUUID();[cite: 1, 2, 3]
-  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => {[cite: 1, 2, 3]
-    let r = Math.random() * 16 | 0, v = c === 'x' ? r : (r & 0x3 | 0x8);[cite: 1, 2, 3]
-    return v.toString(16);[cite: 1, 2, 3]
+function genUUID() {[cite: 5]
+  if (typeof crypto !== 'undefined' && crypto.randomUUID) return crypto.randomUUID();[cite: 5]
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => {[cite: 5]
+    let r = Math.random() * 16 | 0, v = c === 'x' ? r : (r & 0x3 | 0x8);[cite: 5]
+    return v.toString(16);[cite: 5]
   });
 }
 
-function isValidUUID(s) {[cite: 1, 2, 3]
-  return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(String(s || ''));[cite: 1, 2, 3]
+function isValidUUID(s) {[cite: 5]
+  return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(String(s || ''));[cite: 5]
 }
 
-function setSyncStatus(txt, ok = true) {[cite: 1, 2, 3]
-  const el = document.getElementById('syncStatus');[cite: 1, 2, 3]
-  if (el) {[cite: 1, 2, 3]
-    el.innerText = txt;[cite: 1, 2, 3]
-    el.style.background = ok ? '#e1f9eb' : '#fee4e2';[cite: 1, 2, 3]
-    el.style.color = ok ? '#0b7a42' : '#b42318';[cite: 1, 2, 3]
+function setSyncStatus(txt, ok = true) {[cite: 5]
+  const el = document.getElementById('syncStatus');[cite: 5]
+  if (el) {[cite: 5]
+    el.innerText = txt;[cite: 5]
+    el.style.background = ok ? '#e1f9eb' : '#fee4e2';[cite: 5]
+    el.style.color = ok ? '#0b7a42' : '#b42318';[cite: 5]
   }
 }
 
-async function cloudReq(endpoint, method = 'GET', body = null) {[cite: 1, 2, 3]
-  const headers = {[cite: 1, 2, 3]
-    'apikey': S_KEY,[cite: 1, 2, 3]
-    'Authorization': 'Bearer ' + S_KEY,[cite: 1, 2, 3]
-    'Content-Type': 'application/json'[cite: 1, 2, 3]
+// Resilient Cloud Request with 5-second automatic timeout
+async function cloudReq(endpoint, method = 'GET', body = null) {
+  const headers = {
+    'apikey': S_KEY,[cite: 5]
+    'Authorization': 'Bearer ' + S_KEY,[cite: 5]
+    'Content-Type': 'application/json'[cite: 5]
   };
-  if (method === 'POST') {[cite: 1, 2, 3]
-    headers['Prefer'] = 'resolution=merge-duplicates,return=representation';[cite: 1, 2, 3]
+  if (method === 'POST') {[cite: 5]
+    headers['Prefer'] = 'resolution=merge-duplicates,return=representation';[cite: 5]
   }
-  try {[cite: 1, 2, 3]
-    const res = await fetch(`${SUPABASE_BASE}/${endpoint}`, {[cite: 1, 2, 3]
-      method,[cite: 1, 2, 3]
-      headers,[cite: 1, 2, 3]
-      body: body ? JSON.stringify(body) : null[cite: 1, 2, 3]
+
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 5000);
+
+  try {
+    const res = await fetch(`${SUPABASE_BASE}/${endpoint}`, {
+      method,
+      headers,
+      body: body ? JSON.stringify(body) : null,
+      signal: controller.signal
     });
-    if (!res.ok) {[cite: 1, 2, 3]
-      const err = await res.text();[cite: 1, 2, 3]
-      return { ok: false, error: err };[cite: 1, 2, 3]
+    clearTimeout(timeoutId);
+
+    if (!res.ok) {
+      const err = await res.text();[cite: 5]
+      return { ok: false, error: err };[cite: 5]
     }
-    const contentType = res.headers.get('content-type');[cite: 1, 2, 3]
-    if (contentType && contentType.includes('application/json')) {[cite: 1, 2, 3]
-      const parsed = await res.json().catch(() => true);[cite: 1, 2, 3]
-      return { ok: true, data: parsed };[cite: 1, 2, 3]
+    const contentType = res.headers.get('content-type');[cite: 5]
+    if (contentType && contentType.includes('application/json')) {[cite: 5]
+      const parsed = await res.json().catch(() => true);[cite: 5]
+      return { ok: true, data: parsed };[cite: 5]
     }
-    return { ok: true };[cite: 1, 2, 3]
-  } catch (err) {[cite: 1, 2, 3]
-    return { ok: false, error: err.message };[cite: 1, 2, 3]
+    return { ok: true };[cite: 5]
+  } catch (err) {
+    clearTimeout(timeoutId);
+    return { ok: false, error: err.message };[cite: 5]
   }
 }
 
 /* ==================== MULTI-PHOTO ATTACHMENT ==================== */
-async function uploadSingleFile(file) {[cite: 1, 2, 3]
-  const filename = `${Date.now()}_${Math.floor(Math.random()*1000)}_${file.name.replace(/[^a-zA-Z0-9._-]/g, '')}`;[cite: 1, 2, 3]
-  try {[cite: 1, 2, 3]
-    const res = await fetch(`${SUPABASE_UPLOAD}/${filename}`, {[cite: 1, 2, 3]
-      method: 'POST',[cite: 1, 2, 3]
-      headers: {[cite: 1, 2, 3]
-        'apikey': S_KEY,[cite: 1, 2, 3]
-        'Authorization': 'Bearer ' + S_KEY,[cite: 1, 2, 3]
-        'Content-Type': file.type || 'application/octet-stream'[cite: 1, 2, 3]
+async function uploadSingleFile(file) {[cite: 5]
+  const filename = `${Date.now()}_${Math.floor(Math.random()*1000)}_${file.name.replace(/[^a-zA-Z0-9._-]/g, '')}`;[cite: 5]
+  try {[cite: 5]
+    const res = await fetch(`${SUPABASE_UPLOAD}/${filename}`, {[cite: 5]
+      method: 'POST',[cite: 5]
+      headers: {[cite: 5]
+        'apikey': S_KEY,[cite: 5]
+        'Authorization': 'Bearer ' + S_KEY,[cite: 5]
+        'Content-Type': file.type || 'application/octet-stream'[cite: 5]
       },
-      body: file[cite: 1, 2, 3]
+      body: file[cite: 5]
     });
-    if (!res.ok) return null;[cite: 1, 2, 3]
-    return `${SUPABASE_STORAGE}/${filename}`;[cite: 1, 2, 3]
-  } catch(e) {[cite: 1, 2, 3]
-    return null;[cite: 1, 2, 3]
+    if (!res.ok) return null;[cite: 5]
+    return `${SUPABASE_STORAGE}/${filename}`;[cite: 5]
+  } catch(e) {[cite: 5]
+    return null;[cite: 5]
   }
 }
 
-async function handleMultiPhotoAttach(boxId, type) {[cite: 1, 2, 3]
-  const fileInput = document.getElementById(`${type}_file_${boxId}`);[cite: 1, 2, 3]
-  const statusEl = document.getElementById(`${type}_status_${boxId}`);[cite: 1, 2, 3]
-  const galleryEl = document.getElementById(`${type}_gallery_${boxId}`);[cite: 1, 2, 3]
-  const urlEl = document.getElementById(`${type}_url_${boxId}`);[cite: 1, 2, 3]
+async function handleMultiPhotoAttach(boxId, type) {[cite: 5]
+  const fileInput = document.getElementById(`${type}_file_${boxId}`);[cite: 5]
+  const statusEl = document.getElementById(`${type}_status_${boxId}`);[cite: 5]
+  const galleryEl = document.getElementById(`${type}_gallery_${boxId}`);[cite: 5]
+  const urlEl = document.getElementById(`${type}_url_${boxId}`);[cite: 5]
 
-  if (!fileInput.files || fileInput.files.length === 0) return;[cite: 1, 2, 3]
-  const files = Array.from(fileInput.files);[cite: 1, 2, 3]
+  if (!fileInput.files || fileInput.files.length === 0) return;[cite: 5]
+  const files = Array.from(fileInput.files);[cite: 5]
 
-  statusEl.innerText = `⏳ Uploading ${files.length} photo(s)...`;[cite: 1, 2, 3]
-  statusEl.style.display = "block";[cite: 1, 2, 3]
+  statusEl.innerText = `⏳ Uploading ${files.length} photo(s)...`;[cite: 5]
+  statusEl.style.display = "block";[cite: 5]
 
-  let currentUrls = urlEl.value ? urlEl.value.split(',').map(s => s.trim()).filter(Boolean) : [];[cite: 1, 2, 3]
+  let currentUrls = urlEl.value ? urlEl.value.split(',').map(s => s.trim()).filter(Boolean) : [];[cite: 5]
 
-  for (let file of files) {[cite: 1, 2, 3]
-    const reader = new FileReader();[cite: 1, 2, 3]
-    reader.onload = e => {[cite: 1, 2, 3]
-      const img = document.createElement('img');[cite: 1, 2, 3]
-      img.src = e.target.result;[cite: 1, 2, 3]
-      galleryEl.appendChild(img);[cite: 1, 2, 3]
+  for (let file of files) {[cite: 5]
+    const reader = new FileReader();[cite: 5]
+    reader.onload = e => {[cite: 5]
+      const img = document.createElement('img');[cite: 5]
+      img.src = e.target.result;[cite: 5]
+      galleryEl.appendChild(img);[cite: 5]
     };
-    reader.readAsDataURL(file);[cite: 1, 2, 3]
+    reader.readAsDataURL(file);[cite: 5]
 
-    const uploadedUrl = await uploadSingleFile(file);[cite: 1, 2, 3]
-    if (uploadedUrl) {[cite: 1, 2, 3]
-      currentUrls.push(uploadedUrl);[cite: 1, 2, 3]
+    const uploadedUrl = await uploadSingleFile(file);[cite: 5]
+    if (uploadedUrl) {[cite: 5]
+      currentUrls.push(uploadedUrl);[cite: 5]
     }
   }
 
-  urlEl.value = currentUrls.join(',');[cite: 1, 2, 3]
-  statusEl.innerText = `✅ ${currentUrls.length} file(s) attached & saved to cloud!`;[cite: 1, 2, 3]
-  isFormDirty = true;[cite: 1, 2, 3]
+  urlEl.value = currentUrls.join(',');[cite: 5]
+  statusEl.innerText = `✅ ${currentUrls.length} file(s) attached & saved to cloud!`;[cite: 5]
+  isFormDirty = true;[cite: 5]
 }
 
 /* ==================== DIGITAL SIGNATURE ==================== */
-async function handleSignUpload(e) {[cite: 3]
-  const file = e.target.files?.[0];[cite: 3]
-  if (!file) return;[cite: 3]
+async function handleSignUpload(e) {[cite: 5]
+  const file = e.target.files?.[0];[cite: 5]
+  if (!file) return;[cite: 5]
 
-  const reader = new FileReader();[cite: 3]
-  reader.onload = async evt => {[cite: 3]
-    const dataUrl = evt.target.result;[cite: 3]
-    document.getElementById('setSignature').value = dataUrl;[cite: 3]
-    renderSignPreview(dataUrl);[cite: 3]
+  const reader = new FileReader();[cite: 5]
+  reader.onload = async evt => {[cite: 5]
+    const dataUrl = evt.target.result;[cite: 5]
+    document.getElementById('setSignature').value = dataUrl;[cite: 5]
+    renderSignPreview(dataUrl);[cite: 5]
 
-    const uploadedUrl = await uploadSingleFile(file);[cite: 3]
-    if (uploadedUrl) {[cite: 3]
-      document.getElementById('setSignature').value = uploadedUrl;[cite: 3]
-      data.settings.signature = uploadedUrl;[cite: 3]
+    const uploadedUrl = await uploadSingleFile(file);[cite: 5]
+    if (uploadedUrl) {[cite: 5]
+      document.getElementById('setSignature').value = uploadedUrl;[cite: 5]
+      data.settings.signature = uploadedUrl;[cite: 5]
     } else {
-      data.settings.signature = dataUrl;[cite: 3]
+      data.settings.signature = dataUrl;[cite: 5]
     }
-    persist();[cite: 3]
+    persist();[cite: 5]
   };
-  reader.readAsDataURL(file);[cite: 3]
+  reader.readAsDataURL(file);[cite: 5]
 }
 
-function removeSignature() {[cite: 3]
-  document.getElementById('setSignature').value = '';[cite: 3]
-  document.getElementById('signFileInput').value = '';[cite: 3]
-  data.settings.signature = '';[cite: 3]
-  persist();[cite: 3]
-  renderSignPreview('');[cite: 3]
+function removeSignature() {[cite: 5]
+  document.getElementById('setSignature').value = '';[cite: 5]
+  document.getElementById('signFileInput').value = '';[cite: 5]
+  data.settings.signature = '';[cite: 5]
+  persist();[cite: 5]
+  renderSignPreview('');[cite: 5]
 }
 
-function renderSignPreview(url) {[cite: 3]
-  const img = document.getElementById('signPreviewImg');[cite: 3]
-  const btn = document.getElementById('removeSignBtn');[cite: 3]
-  if (url) {[cite: 3]
-    if (img) { img.src = url; img.style.display = 'block'; }[cite: 3]
-    if (btn) btn.style.display = 'inline-block';[cite: 3]
+function renderSignPreview(url) {[cite: 5]
+  const img = document.getElementById('signPreviewImg');[cite: 5]
+  const btn = document.getElementById('removeSignBtn');[cite: 5]
+  if (url) {[cite: 5]
+    if (img) { img.src = url; img.style.display = 'block'; }[cite: 5]
+    if (btn) btn.style.display = 'inline-block';[cite: 5]
   } else {
-    if (img) { img.src = ''; img.style.display = 'none'; }[cite: 3]
-    if (btn) btn.style.display = 'none';[cite: 3]
+    if (img) { img.src = ''; img.style.display = 'none'; }[cite: 5]
+    if (btn) btn.style.display = 'none';[cite: 5]
   }
 }
 
-/* ==================== BULLETPROOF TAB AUTH ==================== */
-function checkAuth() {[cite: 2, 3]
-  const overlay = document.getElementById('loginOverlay');[cite: 2, 3]
-  const appRoot = document.getElementById('appRoot');[cite: 2, 3]
+/* ==================== FAILSAFE AUTH SYSTEM ==================== */
+function checkAuth() {
+  const isAuth = sessionStorage.getItem('nst_authenticated') === 'true';
+  const overlay = document.getElementById('loginOverlay');
+  const appRoot = document.getElementById('appRoot');
 
-  if (isSystemUnlocked === true) {[cite: 2, 3]
-    if (overlay) overlay.style.display = 'none';[cite: 2, 3]
-    if (appRoot) appRoot.style.display = 'flex';[cite: 2, 3]
-    syncAllFromCloud(true);[cite: 2, 3]
+  if (isAuth) {
+    if (overlay) overlay.style.display = 'none';
+    if (appRoot) appRoot.style.display = 'flex';
+    syncAllFromCloud(false);
   } else {
-    if (overlay) overlay.style.display = 'flex';[cite: 2, 3]
-    if (appRoot) appRoot.style.display = 'none';[cite: 2, 3]
+    if (overlay) overlay.style.display = 'flex';
+    if (appRoot) appRoot.style.display = 'none';
   }
 }
 
-async function handleLogin(e) {[cite: 2, 3]
-  e.preventDefault();[cite: 2, 3]
-  const enteredUser = (document.getElementById('loginUser')?.value || '').trim();[cite: 2, 3]
-  const enteredPass = document.getElementById('loginPass')?.value || '';[cite: 2, 3]
-  const errEl = document.getElementById('loginError');[cite: 2, 3]
+async function handleLogin(e) {
+  if (e && e.preventDefault) e.preventDefault();
+  const enteredUser = (document.getElementById('loginUser')?.value || '').trim();
+  const enteredPass = (document.getElementById('loginPass')?.value || '').trim();
+  const errEl = document.getElementById('loginError');
+  const btn = document.getElementById('btnLogin');
 
-  setSyncStatus('Verifying...', true);[cite: 2, 3]
-  const res = await cloudReq('app_settings?id=eq.global&select=*');[cite: 2, 3]
-  let correctUser = data.settings.adminUser || 'admin';[cite: 2, 3]
-  let correctPass = data.settings.adminPass || 'sarthi@123';[cite: 2, 3]
-
-  if (res.ok && Array.isArray(res.data) && res.data.length > 0) {[cite: 2, 3]
-    const s = res.data[0];[cite: 2, 3]
-    correctUser = s.admin_user || correctUser;[cite: 2, 3]
-    correctPass = s.admin_pass || correctPass;[cite: 2, 3]
-    data.settings.adminUser = correctUser;[cite: 2, 3]
-    data.settings.adminPass = correctPass;[cite: 2, 3]
-    persist();[cite: 2, 3]
+  if (errEl) errEl.style.display = 'none';
+  if (btn) {
+    btn.innerText = 'Verifying...';
+    btn.disabled = true;
   }
 
-  if (enteredUser === correctUser && enteredPass === correctPass) {[cite: 2, 3]
-    isSystemUnlocked = true;[cite: 2, 3]
-    if (document.getElementById('loginUser')) document.getElementById('loginUser').value = '';[cite: 2, 3]
-    if (document.getElementById('loginPass')) document.getElementById('loginPass').value = '';[cite: 2, 3]
+  // Fallback defaults
+  let correctUser = (data.settings && data.settings.adminUser) ? data.settings.adminUser : 'admin';
+  let correctPass = (data.settings && data.settings.adminPass) ? data.settings.adminPass : 'sarthi@123';
 
-    if (errEl) errEl.style.display = 'none';[cite: 2, 3]
-    if (document.activeElement && document.activeElement.blur) {[cite: 2, 3]
-      document.activeElement.blur();[cite: 2, 3]
+  try {
+    const res = await cloudReq('app_settings?id=eq.global&select=*');
+    if (res.ok && Array.isArray(res.data) && res.data.length > 0) {
+      const s = res.data[0];
+      correctUser = s.admin_user || correctUser;
+      correctPass = s.admin_pass || correctPass;
+      data.settings.adminUser = correctUser;
+      data.settings.adminPass = correctPass;
+      persist();
     }
-    checkAuth();[cite: 2, 3]
+  } catch (ex) {
+    console.warn("Using offline authentication fallback");
+  }
+
+  if (btn) {
+    btn.innerText = 'Access System';
+    btn.disabled = false;
+  }
+
+  // Validate credentials
+  if (enteredUser === correctUser && enteredPass === correctPass) {
+    sessionStorage.setItem('nst_authenticated', 'true');
+    if (document.getElementById('loginUser')) document.getElementById('loginUser').value = '';
+    if (document.getElementById('loginPass')) document.getElementById('loginPass').value = '';
+    if (errEl) errEl.style.display = 'none';
+    checkAuth();
   } else {
-    if (errEl) errEl.style.display = 'block';[cite: 2, 3]
+    if (errEl) {
+      errEl.style.display = 'block';
+      errEl.innerText = 'Invalid User ID or Password. Default is admin / sarthi@123';
+    }
   }
 }
 
-function handleLogout() {[cite: 2, 3]
-  isSystemUnlocked = false;[cite: 2, 3]
-  localStorage.removeItem('nst_authenticated');[cite: 2, 3]
-  sessionStorage.removeItem('nst_authenticated');[cite: 2, 3]
-  checkAuth();[cite: 2, 3]
+function handleLogout() {
+  sessionStorage.removeItem('nst_authenticated');
+  localStorage.removeItem('nst_authenticated');
+  checkAuth();
 }
 
-window.addEventListener('beforeunload', () => {[cite: 2, 3]
-  isSystemUnlocked = false;[cite: 2, 3]
-});
+const money = n => new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 2 }).format(round2(n));[cite: 5]
 
-const money = n => new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 2 }).format(round2(n));[cite: 1, 2, 3]
-
-const fmtDate = s => {[cite: 1, 2, 3]
-  if (!s) return '';[cite: 1, 2, 3]
-  let d = new Date(s.includes('T') ? s : s + 'T00:00:00');[cite: 1, 2, 3]
-  return isNaN(d) ? '' : d.toLocaleDateString('en-IN', { day: '2-digit', month: '2-digit', year: 'numeric' });[cite: 1, 2, 3]
+const fmtDate = s => {[cite: 5]
+  if (!s) return '';[cite: 5]
+  let d = new Date(s.includes('T') ? s : s + 'T00:00:00');[cite: 5]
+  return isNaN(d) ? '' : d.toLocaleDateString('en-IN', { day: '2-digit', month: '2-digit', year: 'numeric' });[cite: 5]
 };
 
-function esc(x) {[cite: 1, 2, 3]
-  return String(x ?? '').replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' }[m]));[cite: 1, 2, 3]
+function esc(x) {[cite: 5]
+  return String(x ?? '').replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' }[m]));[cite: 5]
 }
 
-function persist() {  [cite: 1, 2, 3]
-  localStorage.setItem(KEY, JSON.stringify(data)); [cite: 1, 2, 3]
+function persist() {  [cite: 5]
+  localStorage.setItem(KEY, JSON.stringify(data)); [cite: 5]
 }
 
-function nextNo() {[cite: 1, 2, 3]
-  let max = Math.max(Number(data.settings.start) || 1001, ...data.bills.map(b => Number(b.no) || 0));[cite: 1, 2, 3]
-  return max + (data.bills.length ? 1 : 0);[cite: 1, 2, 3]
+function nextNo() {[cite: 5]
+  let max = Math.max(Number(data.settings.start) || 1001, ...data.bills.map(b => Number(b.no) || 0));[cite: 5]
+  return max + (data.bills.length ? 1 : 0);[cite: 5]
 }
 
-function showPage(id) {[cite: 1, 2, 3]
-  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));[cite: 1, 2, 3]
-  const target = document.getElementById(id);[cite: 1, 2, 3]
-  if (target) target.classList.add('active');[cite: 1, 2, 3]
-  document.querySelectorAll('.nav button[data-page]').forEach(b => b.classList.toggle('active', b.dataset.page === id));[cite: 1, 2, 3]
+function showPage(id) {[cite: 5]
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));[cite: 5]
+  const target = document.getElementById(id);[cite: 5]
+  if (target) target.classList.add('active');[cite: 5]
+  document.querySelectorAll('.nav button[data-page]').forEach(b => b.classList.toggle('active', b.dataset.page === id));[cite: 5]
 
-  const titles = {[cite: 1, 2, 3]
-    dashboard: 'Dashboard',[cite: 1, 2, 3]
-    newbill: 'New Bill',[cite: 1, 2, 3]
-    bills: 'Invoice History',[cite: 1, 2, 3]
-    customers: 'Customers',[cite: 1, 2, 3]
-    fleet: 'Fleet Vehicles',[cite: 1, 2, 3]
-    vendors: 'Vendor Partners',[cite: 1, 2, 3]
-    settings: 'Settings',[cite: 1, 2, 3]
-    preview: 'Invoice Preview'[cite: 1, 2, 3]
+  const titles = {[cite: 5]
+    dashboard: 'Dashboard',[cite: 5]
+    newbill: 'New Bill',[cite: 5]
+    bills: 'Invoice History',[cite: 5]
+    customers: 'Customers',[cite: 5]
+    fleet: 'Fleet Vehicles',[cite: 5]
+    vendors: 'Vendor Partners',[cite: 5]
+    settings: 'Settings',[cite: 5]
+    preview: 'Invoice Preview'[cite: 5]
   };
-  const titleEl = document.getElementById('pageTitle');[cite: 1, 2, 3]
-  if (titleEl) titleEl.textContent = titles[id] || 'Invoice';[cite: 1, 2, 3]
+  const titleEl = document.getElementById('pageTitle');[cite: 5]
+  if (titleEl) titleEl.textContent = titles[id] || 'Invoice';[cite: 5]
 
-  if (id === 'dashboard') renderDash();[cite: 1, 2, 3]
-  if (id === 'bills') renderBills();[cite: 1, 2, 3]
-  if (id === 'customers') renderCustomersTable();[cite: 1, 2, 3]
-  if (id === 'fleet') { syncVendorDropdowns(); renderFleetTable(); }[cite: 1, 2, 3]
-  if (id === 'vendors') renderVendorsTable();[cite: 1, 2, 3]
-  if (id === 'newbill') { syncCustomerDropdown(); }[cite: 1, 2, 3]
-  if (id === 'settings') loadSettings();[cite: 1, 2, 3]
+  if (id === 'dashboard') renderDash();[cite: 5]
+  if (id === 'bills') renderBills();[cite: 5]
+  if (id === 'customers') renderCustomersTable();[cite: 5]
+  if (id === 'fleet') { syncVendorDropdowns(); renderFleetTable(); }[cite: 5]
+  if (id === 'vendors') renderVendorsTable();[cite: 5]
+  if (id === 'newbill') { syncCustomerDropdown(); }[cite: 5]
+  if (id === 'settings') loadSettings();[cite: 5]
 }
 
-function startNewBill() {[cite: 2, 3]
-  resetForm();[cite: 2, 3]
-  showPage('newbill');[cite: 2, 3]
-  window.scrollTo({ top: 0, behavior: 'smooth' });[cite: 2, 3]
+function startNewBill() {[cite: 5]
+  resetForm();[cite: 5]
+  showPage('newbill');[cite: 5]
+  window.scrollTo({ top: 0, behavior: 'smooth' });[cite: 5]
 }
 
 /* ==================== MULTI-DUTY BUILDER ==================== */
-function addDutyItem(initial = {}) {[cite: 1, 2, 3]
-  dutyIndex++;[cite: 1, 2, 3]
-  const id = 'duty_' + dutyIndex;[cite: 1, 2, 3]
-  const container = document.getElementById('dutiesContainer');[cite: 1, 2, 3]
-  if (!container) return;[cite: 1, 2, 3]
+function addDutyItem(initial = {}) {[cite: 5]
+  dutyIndex++;[cite: 5]
+  const id = 'duty_' + dutyIndex;[cite: 5]
+  const container = document.getElementById('dutiesContainer');[cite: 5]
+  if (!container) return;[cite: 5]
 
-  const today = new Date().toISOString().slice(0, 10);[cite: 1, 2, 3]
-  const dutyCard = document.createElement('div');[cite: 1, 2, 3]
-  dutyCard.className = 'duty-item-box';[cite: 1, 2, 3]
-  dutyCard.id = id;[cite: 1, 2, 3]
+  const today = new Date().toISOString().slice(0, 10);[cite: 5]
+  const dutyCard = document.createElement('div');[cite: 5]
+  dutyCard.className = 'duty-item-box';[cite: 5]
+  dutyCard.id = id;[cite: 5]
 
-  const slipImgs = Array.isArray(initial.slipImgs) ? initial.slipImgs : (initial.slipImg ? initial.slipImg.split(',').filter(Boolean) : []);[cite: 1, 2, 3]
-  const tollImgs = Array.isArray(initial.tollImgs) ? initial.tollImgs : (initial.tollImg ? initial.tollImg.split(',').filter(Boolean) : []);[cite: 1, 2, 3]
+  const slipImgs = Array.isArray(initial.slipImgs) ? initial.slipImgs : (initial.slipImg ? initial.slipImg.split(',').filter(Boolean) : []);[cite: 5]
+  const tollImgs = Array.isArray(initial.tollImgs) ? initial.tollImgs : (initial.tollImg ? initial.tollImg.split(',').filter(Boolean) : []);[cite: 5]
 
-  const defaultTripText = (initial.trip !== undefined) ? initial.trip : 'TAXI HIRE CHARGES';[cite: 3]
+  const defaultTripText = (initial.trip !== undefined) ? initial.trip : 'TAXI HIRE CHARGES';[cite: 5]
 
   dutyCard.innerHTML = `
     <div class="duty-header">
@@ -818,330 +835,330 @@ function addDutyItem(initial = {}) {[cite: 1, 2, 3]
         </div>
       </div>
     </div>
-  `;[cite: 1, 2, 3]
-  container.appendChild(dutyCard);[cite: 1, 2, 3]
+  `;[cite: 5]
+  container.appendChild(dutyCard);[cite: 5]
 
-  if (initial.dutyType) {[cite: 1, 2, 3]
-    const sel = dutyCard.querySelector('.duty-type');[cite: 1, 2, 3]
-    if (sel) {[cite: 1, 2, 3]
-      if (initial.dutyType === 'Outstation Duty') sel.value = 'Outstation Duty (Min. 250 KMs/Day)';[cite: 1, 2, 3]
-      else sel.value = initial.dutyType;[cite: 1, 2, 3]
+  if (initial.dutyType) {[cite: 5]
+    const sel = dutyCard.querySelector('.duty-type');[cite: 5]
+    if (sel) {[cite: 5]
+      if (initial.dutyType === 'Outstation Duty') sel.value = 'Outstation Duty (Min. 250 KMs/Day)';[cite: 5]
+      else sel.value = initial.dutyType;[cite: 5]
     }
   }
 
-  if (initial.veh) {[cite: 1, 2, 3]
-    const sel = dutyCard.querySelector('.duty-fleet-select');[cite: 1, 2, 3]
-    if (sel) {[cite: 1, 2, 3]
-      const match = data.vehicles.find(v => initial.veh.toUpperCase().startsWith(v.reg.toUpperCase()));[cite: 1, 2, 3]
-      if (match) sel.value = match.reg;[cite: 1, 2, 3]
+  if (initial.veh) {[cite: 5]
+    const sel = dutyCard.querySelector('.duty-fleet-select');[cite: 5]
+    if (sel) {[cite: 5]
+      const match = data.vehicles.find(v => initial.veh.toUpperCase().startsWith(v.reg.toUpperCase()));[cite: 5]
+      if (match) sel.value = match.reg;[cite: 5]
     }
   }
 
-  handleDutyTypeChange(id);[cite: 1, 2, 3]
-  checkVehicleExpiry(id);[cite: 1, 2, 3]
-  calculateAmounts();[cite: 1, 2, 3]
+  handleDutyTypeChange(id);[cite: 5]
+  checkVehicleExpiry(id);[cite: 5]
+  calculateAmounts();[cite: 5]
 }
 
-function removeDutyItem(id) {[cite: 1, 2, 3]
-  const el = document.getElementById(id);[cite: 1, 2, 3]
-  if (el) el.remove();[cite: 1, 2, 3]
-  const container = document.getElementById('dutiesContainer');[cite: 1, 2, 3]
-  Array.from(container.children).forEach((card, i) => {[cite: 1, 2, 3]
-    const title = card.querySelector('.duty-title');[cite: 1, 2, 3]
-    if (title) title.innerText = `Duty / Booking #${i + 1}`;[cite: 1, 2, 3]
+function removeDutyItem(id) {[cite: 5]
+  const el = document.getElementById(id);[cite: 5]
+  if (el) el.remove();[cite: 5]
+  const container = document.getElementById('dutiesContainer');[cite: 5]
+  Array.from(container.children).forEach((card, i) => {[cite: 5]
+    const title = card.querySelector('.duty-title');[cite: 5]
+    if (title) title.innerText = `Duty / Booking #${i + 1}`;[cite: 5]
   });
-  isFormDirty = true;[cite: 1, 2, 3]
-  calculateAmounts();[cite: 1, 2, 3]
+  isFormDirty = true;[cite: 5]
+  calculateAmounts();[cite: 5]
 }
 
-function handleDutyTypeChange(boxId) {[cite: 1, 2, 3]
-  const box = document.getElementById(boxId);[cite: 1, 2, 3]
-  if (!box) return;[cite: 1, 2, 3]
-  const type = box.querySelector('.duty-type')?.value;[cite: 1, 2, 3]
-  const lblRate = document.getElementById('lbl_rate_' + boxId);[cite: 1, 2, 3]
-  const lblQty = document.getElementById('lbl_qty_' + boxId);[cite: 1, 2, 3]
+function handleDutyTypeChange(boxId) {[cite: 5]
+  const box = document.getElementById(boxId);[cite: 5]
+  if (!box) return;[cite: 5]
+  const type = box.querySelector('.duty-type')?.value;[cite: 5]
+  const lblRate = document.getElementById('lbl_rate_' + boxId);[cite: 5]
+  const lblQty = document.getElementById('lbl_qty_' + boxId);[cite: 5]
 
-  if (type === 'Outstation Duty (Min. 250 KMs/Day)') {[cite: 1, 2, 3]
-    if (lblRate) lblRate.innerText = 'Rate Per KM (₹/KM) or Package (₹)';[cite: 1, 2, 3]
-    if (lblQty) lblQty.innerText = 'Duration (Number of Days)';[cite: 1, 2, 3]
+  if (type === 'Outstation Duty (Min. 250 KMs/Day)') {[cite: 5]
+    if (lblRate) lblRate.innerText = 'Rate Per KM (₹/KM) or Package (₹)';[cite: 5]
+    if (lblQty) lblQty.innerText = 'Duration (Number of Days)';[cite: 5]
   } else {
-    if (lblRate) lblRate.innerText = 'Base Package Rate (₹)';[cite: 1, 2, 3]
-    if (lblQty) lblQty.innerText = 'Quantity (Days / Trips)';[cite: 1, 2, 3]
+    if (lblRate) lblRate.innerText = 'Base Package Rate (₹)';[cite: 5]
+    if (lblQty) lblQty.innerText = 'Quantity (Days / Trips)';[cite: 5]
   }
-  handleKmChange(boxId);[cite: 1, 2, 3]
+  handleKmChange(boxId);[cite: 5]
 }
 
-function handleKmChange(boxId) {[cite: 1, 2, 3]
-  const box = document.getElementById(boxId);[cite: 1, 2, 3]
-  if (!box) return;[cite: 1, 2, 3]
-  const type = box.querySelector('.duty-type')?.value;[cite: 1, 2, 3]
-  const days = Number(box.querySelector('.duty-qty')?.value) || 1;[cite: 1, 2, 3]
-  const totalKms = Number(box.querySelector('.duty-totalkms')?.value) || 0;[cite: 1, 2, 3]
-  const extraKmInput = box.querySelector('.duty-extrakms');[cite: 1, 2, 3]
+function handleKmChange(boxId) {[cite: 5]
+  const box = document.getElementById(boxId);[cite: 5]
+  if (!box) return;[cite: 5]
+  const type = box.querySelector('.duty-type')?.value;[cite: 5]
+  const days = Number(box.querySelector('.duty-qty')?.value) || 1;[cite: 5]
+  const totalKms = Number(box.querySelector('.duty-totalkms')?.value) || 0;[cite: 5]
+  const extraKmInput = box.querySelector('.duty-extrakms');[cite: 5]
 
-  if (type === 'Outstation Duty (Min. 250 KMs/Day)') {[cite: 1, 2, 3]
-    const minKmsAllowed = days * 250;[cite: 1, 2, 3]
-    if (totalKms > minKmsAllowed) {[cite: 1, 2, 3]
-      if (extraKmInput) extraKmInput.value = round2(totalKms - minKmsAllowed);[cite: 1, 2, 3]
+  if (type === 'Outstation Duty (Min. 250 KMs/Day)') {[cite: 5]
+    const minKmsAllowed = days * 250;[cite: 5]
+    if (totalKms > minKmsAllowed) {[cite: 5]
+      if (extraKmInput) extraKmInput.value = round2(totalKms - minKmsAllowed);[cite: 5]
     } else {
-      if (extraKmInput) extraKmInput.value = 0;[cite: 1, 2, 3]
+      if (extraKmInput) extraKmInput.value = 0;[cite: 5]
     }
   }
-  isFormDirty = true;[cite: 1, 2, 3]
-  calculateAmounts();[cite: 1, 2, 3]
+  isFormDirty = true;[cite: 5]
+  calculateAmounts();[cite: 5]
 }
 
-function checkVehicleExpiry(boxId) {[cite: 1, 2, 3]
-  const box = document.getElementById(boxId);[cite: 1, 2, 3]
-  if (!box) return;[cite: 1, 2, 3]
-  const reg = box.querySelector('.duty-fleet-select')?.value;[cite: 1, 2, 3]
-  const tripDate = box.querySelector('.duty-tdate')?.value || new Date().toISOString().slice(0, 10);[cite: 1, 2, 3]
-  const warnEl = document.getElementById('warn_' + boxId);[cite: 1, 2, 3]
-  if (!warnEl) return;[cite: 1, 2, 3]
+function checkVehicleExpiry(boxId) {[cite: 5]
+  const box = document.getElementById(boxId);[cite: 5]
+  if (!box) return;[cite: 5]
+  const reg = box.querySelector('.duty-fleet-select')?.value;[cite: 5]
+  const tripDate = box.querySelector('.duty-tdate')?.value || new Date().toISOString().slice(0, 10);[cite: 5]
+  const warnEl = document.getElementById('warn_' + boxId);[cite: 5]
+  if (!warnEl) return;[cite: 5]
 
-  if (!reg) {[cite: 1, 2, 3]
-    warnEl.style.display = 'none';[cite: 1, 2, 3]
-    return;[cite: 1, 2, 3]
+  if (!reg) {[cite: 5]
+    warnEl.style.display = 'none';[cite: 5]
+    return;[cite: 5]
   }
 
-  const car = data.vehicles.find(v => v.reg.toUpperCase() === reg.toUpperCase());[cite: 1, 2, 3]
-  if (!car) {[cite: 1, 2, 3]
-    warnEl.style.display = 'none';[cite: 1, 2, 3]
-    return;[cite: 1, 2, 3]
+  const car = data.vehicles.find(v => v.reg.toUpperCase() === reg.toUpperCase());[cite: 5]
+  if (!car) {[cite: 5]
+    warnEl.style.display = 'none';[cite: 5]
+    return;[cite: 5]
   }
 
-  let warnings = [];[cite: 1, 2, 3]
-  if (car.insurance && car.insurance < tripDate) warnings.push('Insurance Expired (' + fmtDate(car.insurance) + ')');[cite: 1, 2, 3]
-  if (car.permit && car.permit < tripDate) warnings.push('Permit/Fitness Expired (' + fmtDate(car.permit) + ')');[cite: 1, 2, 3]
+  let warnings = [];[cite: 5]
+  if (car.insurance && car.insurance < tripDate) warnings.push('Insurance Expired (' + fmtDate(car.insurance) + ')');[cite: 5]
+  if (car.permit && car.permit < tripDate) warnings.push('Permit/Fitness Expired (' + fmtDate(car.permit) + ')');[cite: 5]
 
-  if (warnings.length > 0) {[cite: 1, 2, 3]
-    warnEl.innerText = '⚠️ ' + warnings.join(' | ');[cite: 1, 2, 3]
-    warnEl.style.display = 'block';[cite: 1, 2, 3]
+  if (warnings.length > 0) {[cite: 5]
+    warnEl.innerText = '⚠️ ' + warnings.join(' | ');[cite: 5]
+    warnEl.style.display = 'block';[cite: 5]
   } else {
-    warnEl.style.display = 'none';[cite: 1, 2, 3]
+    warnEl.style.display = 'none';[cite: 5]
   }
 }
 
-function applyVehicleToDuty(boxId) {[cite: 1, 2, 3]
-  const box = document.getElementById(boxId);[cite: 1, 2, 3]
-  if (!box) return;[cite: 1, 2, 3]
-  const reg = box.querySelector('.duty-fleet-select')?.value;[cite: 1, 2, 3]
-  if (!reg) {[cite: 1, 2, 3]
-    checkVehicleExpiry(boxId);[cite: 1, 2, 3]
-    return;[cite: 1, 2, 3]
+function applyVehicleToDuty(boxId) {[cite: 5]
+  const box = document.getElementById(boxId);[cite: 5]
+  if (!box) return;[cite: 5]
+  const reg = box.querySelector('.duty-fleet-select')?.value;[cite: 5]
+  if (!reg) {[cite: 5]
+    checkVehicleExpiry(boxId);[cite: 5]
+    return;[cite: 5]
   }
-  const car = data.vehicles.find(v => v.reg.toUpperCase() === reg.toUpperCase());[cite: 1, 2, 3]
-  if (car) {[cite: 1, 2, 3]
-    box.querySelector('.duty-veh').value = car.reg + (car.model ? ` (${car.model})` : '');[cite: 1, 2, 3]
-    if (car.driver && !box.querySelector('.duty-driver').value) {[cite: 1, 2, 3]
-      box.querySelector('.duty-driver').value = car.driver;[cite: 1, 2, 3]
+  const car = data.vehicles.find(v => v.reg.toUpperCase() === reg.toUpperCase());[cite: 5]
+  if (car) {[cite: 5]
+    box.querySelector('.duty-veh').value = car.reg + (car.model ? ` (${car.model})` : '');[cite: 5]
+    if (car.driver && !box.querySelector('.duty-driver').value) {[cite: 5]
+      box.querySelector('.duty-driver').value = car.driver;[cite: 5]
     }
   }
-  checkVehicleExpiry(boxId);[cite: 1, 2, 3]
-  isFormDirty = true;[cite: 1, 2, 3]
+  checkVehicleExpiry(boxId);[cite: 5]
+  isFormDirty = true;[cite: 5]
 }
 
 /* ==================== TWO-WAY SYNC CORE ==================== */
-async function syncAllFromCloud(manual = false) {[cite: 1, 2, 3]
-  const isEditingBill = isFormDirty || (document.activeElement && document.activeElement.closest('#newbill'));[cite: 1, 2, 3]
-  if (!manual && isEditingBill) return;[cite: 1, 2, 3]
+async function syncAllFromCloud(manual = false) {[cite: 5]
+  const isEditingBill = isFormDirty || (document.activeElement && document.activeElement.closest('#newbill'));[cite: 5]
+  if (!manual && isEditingBill) return;[cite: 5]
 
-  setSyncStatus('Syncing...', true);[cite: 1, 2, 3]
+  setSyncStatus('Syncing...', true);[cite: 5]
 
-  try {[cite: 1, 2, 3]
-    const [setRes, custRes, billsRes, vehRes, venRes] = await Promise.all([[cite: 1, 2, 3]
-      cloudReq('app_settings?id=eq.global&select=*'),[cite: 1, 2, 3]
-      cloudReq('customers?select=*'),[cite: 1, 2, 3]
-      cloudReq('bills?select=*&order=invoice_no.asc'),[cite: 1, 2, 3]
-      cloudReq('vehicles?select=*'),[cite: 1, 2, 3]
-      cloudReq('vendors?select=*')[cite: 1, 2, 3]
+  try {[cite: 5]
+    const [setRes, custRes, billsRes, vehRes, venRes] = await Promise.all([[cite: 5]
+      cloudReq('app_settings?id=eq.global&select=*'),[cite: 5]
+      cloudReq('customers?select=*'),[cite: 5]
+      cloudReq('bills?select=*&order=invoice_no.asc'),[cite: 5]
+      cloudReq('vehicles?select=*'),[cite: 5]
+      cloudReq('vendors?select=*')[cite: 5]
     ]);
 
-    if (setRes.ok && Array.isArray(setRes.data) && setRes.data.length > 0) {[cite: 1, 2, 3]
-      const s = setRes.data[0];[cite: 1, 2, 3]
-      data.settings.adminUser = s.admin_user || data.settings.adminUser;[cite: 1, 2, 3]
-      data.settings.adminPass = s.admin_pass || data.settings.adminPass;[cite: 1, 2, 3]
-      data.settings.name = s.name || data.settings.name;[cite: 1, 2, 3]
-      data.settings.phone = s.phone || data.settings.phone;[cite: 1, 2, 3]
-      data.settings.gstin = s.gstin || data.settings.gstin;[cite: 1, 2, 3]
-      data.settings.sac = s.sac || data.settings.sac;[cite: 1, 2, 3]
-      data.settings.address = s.address || data.settings.address;[cite: 1, 2, 3]
-      data.settings.email = s.email || data.settings.email;[cite: 1, 2, 3]
-      data.settings.bank = s.bank || data.settings.bank;[cite: 1, 2, 3]
-      data.settings.start = s.start_no || data.settings.start;[cite: 1, 2, 3]
-      data.settings.signature = s.signature || data.settings.signature || '';[cite: 3]
-      loadSettings();[cite: 1, 2, 3]
+    if (setRes.ok && Array.isArray(setRes.data) && setRes.data.length > 0) {[cite: 5]
+      const s = setRes.data[0];[cite: 5]
+      data.settings.adminUser = s.admin_user || data.settings.adminUser;[cite: 5]
+      data.settings.adminPass = s.admin_pass || data.settings.adminPass;[cite: 5]
+      data.settings.name = s.name || data.settings.name;[cite: 5]
+      data.settings.phone = s.phone || data.settings.phone;[cite: 5]
+      data.settings.gstin = s.gstin || data.settings.gstin;[cite: 5]
+      data.settings.sac = s.sac || data.settings.sac;[cite: 5]
+      data.settings.address = s.address || data.settings.address;[cite: 5]
+      data.settings.email = s.email || data.settings.email;[cite: 5]
+      data.settings.bank = s.bank || data.settings.bank;[cite: 5]
+      data.settings.start = s.start_no || data.settings.start;[cite: 5]
+      data.settings.signature = s.signature || data.settings.signature || '';[cite: 5]
+      loadSettings();[cite: 5]
     }
 
-    if (custRes.ok && Array.isArray(custRes.data)) {[cite: 1, 2, 3]
-      data.customers = custRes.data.map(c => ({[cite: 1, 2, 3]
-        id: String(c.id),[cite: 1, 2, 3]
-        name: c.name || '',[cite: 1, 2, 3]
-        email: c.email || '',[cite: 1, 2, 3]
-        phone: c.phone || '',[cite: 1, 2, 3]
-        address: c.address || '',[cite: 1, 2, 3]
-        gstin: c.gstin || '',[cite: 1, 2, 3]
-        notes: c.notes || ''[cite: 1, 2, 3]
+    if (custRes.ok && Array.isArray(custRes.data)) {[cite: 5]
+      data.customers = custRes.data.map(c => ({[cite: 5]
+        id: String(c.id),[cite: 5]
+        name: c.name || '',[cite: 5]
+        email: c.email || '',[cite: 5]
+        phone: c.phone || '',[cite: 5]
+        address: c.address || '',[cite: 5]
+        gstin: c.gstin || '',[cite: 5]
+        notes: c.notes || ''[cite: 5]
       }));
     }
 
-    if (billsRes.ok && Array.isArray(billsRes.data)) {[cite: 1, 2, 3]
-      data.bills = billsRes.data.map(b => {[cite: 1, 2, 3]
-        let duties = [];[cite: 1, 2, 3]
-        try {[cite: 1, 2, 3]
-          if (b.notes && b.notes.startsWith('DUTIES_JSON:')) {[cite: 1, 2, 3]
-            duties = JSON.parse(b.notes.replace('DUTIES_JSON:', ''));[cite: 1, 2, 3]
+    if (billsRes.ok && Array.isArray(billsRes.data)) {[cite: 5]
+      data.bills = billsRes.data.map(b => {[cite: 5]
+        let duties = [];[cite: 5]
+        try {[cite: 5]
+          if (b.notes && b.notes.startsWith('DUTIES_JSON:')) {[cite: 5]
+            duties = JSON.parse(b.notes.replace('DUTIES_JSON:', ''));[cite: 5]
           }
-        } catch(e) {}[cite: 1, 2, 3]
+        } catch(e) {}[cite: 5]
 
-        if (!Array.isArray(duties) || duties.length === 0) {[cite: 1, 2, 3]
-          let dutyTypeLabel = b.duty_type || 'Local (8 Hrs / 80 Kms)';[cite: 1, 2, 3]
-          if (dutyTypeLabel === 'Outstation Duty') dutyTypeLabel = 'Outstation Duty (Min. 250 KMs/Day)';[cite: 1, 2, 3]
+        if (!Array.isArray(duties) || duties.length === 0) {[cite: 5]
+          let dutyTypeLabel = b.duty_type || 'Local (8 Hrs / 80 Kms)';[cite: 5]
+          if (dutyTypeLabel === 'Outstation Duty') dutyTypeLabel = 'Outstation Duty (Min. 250 KMs/Day)';[cite: 5]
 
-          duties = [{[cite: 1, 2, 3]
-            dutyType: dutyTypeLabel,[cite: 1, 2, 3]
-            dutySlip: b.duty_slip_no || '',[cite: 1, 2, 3]
-            tdate: b.travel_date || b.invoice_date || '',[cite: 1, 2, 3]
-            tEndDate: b.travel_end_date || b.travel_date || '',[cite: 1, 2, 3]
-            veh: b.vehicle || '',[cite: 1, 2, 3]
-            driver: b.driver || '',[cite: 1, 2, 3]
-            trip: b.particulars || 'TAXI HIRE CHARGES',[cite: 3]
-            totalKms: Number(b.total_kms) || 0,[cite: 1, 2, 3]
-            rate: Number(b.rate) || 0,[cite: 1, 2, 3]
-            qty: Number(b.quantity) || 1,[cite: 1, 2, 3]
-            extraKms: Number(b.extra_kms) || 0,[cite: 1, 2, 3]
-            extraKmRate: Number(b.extra_km_rate) || 0,[cite: 1, 2, 3]
-            extraHrs: Number(b.extra_hrs) || 0,[cite: 1, 2, 3]
-            extraHrRate: Number(b.extra_hr_rate) || 0,[cite: 1, 2, 3]
-            driverAllowanceQty: Number(b.driver_allowance_qty) || (Number(b.driver_allowance) > 0 ? 1 : 0),[cite: 1, 2, 3]
-            driverAllowanceRate: Number(b.driver_allowance_rate) || Number(b.driver_allowance) || 0,[cite: 1, 2, 3]
-            nightChargesQty: Number(b.night_charges_qty) || (Number(b.night_charges) > 0 ? 1 : 0),[cite: 1, 2, 3]
-            nightChargesRate: Number(b.night_charges_rate) || Number(b.night_charges) || 0,[cite: 1, 2, 3]
-            tollParking: Number(b.toll_parking || b.extra_charges) || 0,[cite: 1, 2, 3]
-            slipImgs: [],[cite: 1, 2, 3]
-            tollImgs: [][cite: 1, 2, 3]
+          duties = [{[cite: 5]
+            dutyType: dutyTypeLabel,[cite: 5]
+            dutySlip: b.duty_slip_no || '',[cite: 5]
+            tdate: b.travel_date || b.invoice_date || '',[cite: 5]
+            tEndDate: b.travel_end_date || b.travel_date || '',[cite: 5]
+            veh: b.vehicle || '',[cite: 5]
+            driver: b.driver || '',[cite: 5]
+            trip: b.particulars || 'TAXI HIRE CHARGES',[cite: 5]
+            totalKms: Number(b.total_kms) || 0,[cite: 5]
+            rate: Number(b.rate) || 0,[cite: 5]
+            qty: Number(b.quantity) || 1,[cite: 5]
+            extraKms: Number(b.extra_kms) || 0,[cite: 5]
+            extraKmRate: Number(b.extra_km_rate) || 0,[cite: 5]
+            extraHrs: Number(b.extra_hrs) || 0,[cite: 5]
+            extraHrRate: Number(b.extra_hr_rate) || 0,[cite: 5]
+            driverAllowanceQty: Number(b.driver_allowance_qty) || (Number(b.driver_allowance) > 0 ? 1 : 0),[cite: 5]
+            driverAllowanceRate: Number(b.driver_allowance_rate) || Number(b.driver_allowance) || 0,[cite: 5]
+            nightChargesQty: Number(b.night_charges_qty) || (Number(b.night_charges) > 0 ? 1 : 0),[cite: 5]
+            nightChargesRate: Number(b.night_charges_rate) || Number(b.night_charges) || 0,[cite: 5]
+            tollParking: Number(b.toll_parking || b.extra_charges) || 0,[cite: 5]
+            slipImgs: [],[cite: 5]
+            tollImgs: [][cite: 5]
           }];
         }
 
-        return {[cite: 1, 2, 3]
-          no: String(b.invoice_no),[cite: 1, 2, 3]
-          date: b.invoice_date || '',[cite: 1, 2, 3]
-          cust: b.customer_name || '',[cite: 1, 2, 3]
-          custEmail: b.customer_email || '',[cite: 1, 2, 3]
-          custPhone: b.customer_phone || '',
-          custGstin: b.customer_gst || '',[cite: 1, 2, 3]
-          duties: duties,[cite: 1, 2, 3]
-          gstType: b.gst_type || 'none',[cite: 2, 3]
-          cgst: Number(b.cgst_amount) || 0,[cite: 1, 2, 3]
-          sgst: Number(b.sgst_amount) || 0,[cite: 1, 2, 3]
-          igst: Number(b.igst_amount) || 0,[cite: 1, 2, 3]
-          tax: Number(b.gst_amount) || 0,[cite: 1, 2, 3]
-          sub: Number(b.subtotal) || 0,[cite: 1, 2, 3]
-          total: Number(b.total) || 0,[cite: 1, 2, 3]
-          paid: Number(b.amount_paid) || 0,[cite: 1, 2, 3]
-          bal: Number(b.balance) || 0[cite: 1, 2, 3]
+        return {[cite: 5]
+          no: String(b.invoice_no),[cite: 5]
+          date: b.invoice_date || '',[cite: 5]
+          cust: b.customer_name || '',[cite: 5]
+          custEmail: b.customer_email || '',[cite: 5]
+          custPhone: b.customer_phone || '',[cite: 5]
+          custGstin: b.customer_gst || '',[cite: 5]
+          duties: duties,[cite: 5]
+          gstType: b.gst_type || 'none',[cite: 5]
+          cgst: Number(b.cgst_amount) || 0,[cite: 5]
+          sgst: Number(b.sgst_amount) || 0,[cite: 5]
+          igst: Number(b.igst_amount) || 0,[cite: 5]
+          tax: Number(b.gst_amount) || 0,[cite: 5]
+          sub: Number(b.subtotal) || 0,[cite: 5]
+          total: Number(b.total) || 0,[cite: 5]
+          paid: Number(b.amount_paid) || 0,[cite: 5]
+          bal: Number(b.balance) || 0[cite: 5]
         };
       });
     }
 
-    if (vehRes.ok && Array.isArray(vehRes.data)) {[cite: 1, 2, 3]
-      data.vehicles = vehRes.data.map(v => ({[cite: 1, 2, 3]
-        reg: String(v.reg),[cite: 1, 2, 3]
-        model: v.model || '',[cite: 1, 2, 3]
-        type: v.type || 'Own',[cite: 1, 2, 3]
-        vendor: v.vendor || '',[cite: 1, 2, 3]
-        driver: v.driver || '',[cite: 1, 2, 3]
-        insurance: v.insurance || '',[cite: 1, 2, 3]
-        permit: v.permit || ''[cite: 1, 2, 3]
+    if (vehRes.ok && Array.isArray(vehRes.data)) {[cite: 5]
+      data.vehicles = vehRes.data.map(v => ({[cite: 5]
+        reg: String(v.reg),[cite: 5]
+        model: v.model || '',[cite: 5]
+        type: v.type || 'Own',[cite: 5]
+        vendor: v.vendor || '',[cite: 5]
+        driver: v.driver || '',[cite: 5]
+        insurance: v.insurance || '',[cite: 5]
+        permit: v.permit || ''[cite: 5]
       }));
     }
 
-    if (venRes.ok && Array.isArray(venRes.data)) {[cite: 1, 2, 3]
-      data.vendors = venRes.data.map(v => ({[cite: 1, 2, 3]
-        id: String(v.id),[cite: 1, 2, 3]
-        name: v.name || '',[cite: 1, 2, 3]
-        contact: v.contact || '',[cite: 1, 2, 3]
-        phone: v.phone || '',[cite: 1, 2, 3]
-        city: v.city || '',[cite: 1, 2, 3]
-        notes: v.notes || ''[cite: 1, 2, 3]
+    if (venRes.ok && Array.isArray(venRes.data)) {[cite: 5]
+      data.vendors = venRes.data.map(v => ({[cite: 5]
+        id: String(v.id),[cite: 5]
+        name: v.name || '',[cite: 5]
+        contact: v.contact || '',[cite: 5]
+        phone: v.phone || '',[cite: 5]
+        city: v.city || '',[cite: 5]
+        notes: v.notes || ''[cite: 5]
       }));
     }
 
-    persist();[cite: 1, 2, 3]
-    renderDash();[cite: 1, 2, 3]
-    renderBills();[cite: 1, 2, 3]
-    renderCustomersTable();[cite: 1, 2, 3]
-    renderFleetTable();[cite: 1, 2, 3]
-    renderVendorsTable();[cite: 1, 2, 3]
-    syncVendorDropdowns();[cite: 1, 2, 3]
-    syncCustomerDropdown();[cite: 1, 2, 3]
+    persist();[cite: 5]
+    renderDash();[cite: 5]
+    renderBills();[cite: 5]
+    renderCustomersTable();[cite: 5]
+    renderFleetTable();[cite: 5]
+    renderVendorsTable();[cite: 5]
+    syncVendorDropdowns();[cite: 5]
+    syncCustomerDropdown();[cite: 5]
     
-    const activePage = document.querySelector('.page.active')?.id || 'dashboard';[cite: 1, 2, 3]
-    showPage(activePage);[cite: 1, 2, 3]
+    const activePage = document.querySelector('.page.active')?.id || 'dashboard';[cite: 5]
+    showPage(activePage);[cite: 5]
 
-    setSyncStatus('Cloud Synced', true);[cite: 1, 2, 3]
-    if (manual) alert('All data synced successfully!');[cite: 1, 2, 3]
-  } catch (err) {[cite: 1, 2, 3]
-    setSyncStatus('Sync Error', false);[cite: 1, 2, 3]
+    setSyncStatus('Cloud Synced', true);[cite: 5]
+    if (manual) alert('All data synced successfully!');[cite: 5]
+  } catch (err) {[cite: 5]
+    setSyncStatus('Sync Error', false);[cite: 5]
   }
 }
 
 /* ==================== CUSTOMERS LOGIC ==================== */
-function clearCustomerForm() {[cite: 1, 2, 3]
-  editingCustId = null;[cite: 1, 2, 3]
-  ['clientName', 'clientEmail', 'clientPhone', 'clientGst', 'clientAddress', 'clientNotes'].forEach(id => {[cite: 1, 2, 3]
-    const el = document.getElementById(id);[cite: 1, 2, 3]
-    if (el) el.value = '';[cite: 1, 2, 3]
+function clearCustomerForm() {[cite: 5]
+  editingCustId = null;[cite: 5]
+  ['clientName', 'clientEmail', 'clientPhone', 'clientGst', 'clientAddress', 'clientNotes'].forEach(id => {[cite: 5]
+    const el = document.getElementById(id);[cite: 5]
+    if (el) el.value = '';[cite: 5]
   });
 }
 
-async function saveCustomer() {[cite: 1, 2, 3]
-  const name = (document.getElementById('clientName')?.value || '').trim();[cite: 1, 2, 3]
-  if (!name) return alert("Please enter Customer / Company Name.");[cite: 1, 2, 3]
+async function saveCustomer() {[cite: 5]
+  const name = (document.getElementById('clientName')?.value || '').trim();[cite: 5]
+  if (!name) return alert("Please enter Customer / Company Name.");[cite: 5]
 
-  const id = (editingCustId && isValidUUID(editingCustId)) ? editingCustId : genUUID();[cite: 1, 2, 3]
-  const record = {[cite: 1, 2, 3]
-    id: id,[cite: 1, 2, 3]
-    name,[cite: 1, 2, 3]
-    email: document.getElementById('clientEmail')?.value.trim() || null,[cite: 1, 2, 3]
-    phone: document.getElementById('clientPhone')?.value.trim() || null,[cite: 1, 2, 3]
-    gstin: document.getElementById('clientGst')?.value.trim() || null,[cite: 1, 2, 3]
-    address: document.getElementById('clientAddress')?.value.trim() || null,[cite: 1, 2, 3]
-    notes: document.getElementById('clientNotes')?.value.trim() || null[cite: 1, 2, 3]
+  const id = (editingCustId && isValidUUID(editingCustId)) ? editingCustId : genUUID();[cite: 5]
+  const record = {[cite: 5]
+    id: id,[cite: 5]
+    name,[cite: 5]
+    email: document.getElementById('clientEmail')?.value.trim() || null,[cite: 5]
+    phone: document.getElementById('clientPhone')?.value.trim() || null,[cite: 5]
+    gstin: document.getElementById('clientGst')?.value.trim() || null,[cite: 5]
+    address: document.getElementById('clientAddress')?.value.trim() || null,[cite: 5]
+    notes: document.getElementById('clientNotes')?.value.trim() || null[cite: 5]
   };
 
-  setSyncStatus('Saving Customer...', true);[cite: 1, 2, 3]
-  const res = await cloudReq('customers?on_conflict=id', 'POST', record);[cite: 1, 2, 3]
+  setSyncStatus('Saving Customer...', true);[cite: 5]
+  const res = await cloudReq('customers?on_conflict=id', 'POST', record);[cite: 5]
 
-  let finalRecord = record;[cite: 1, 2, 3]
-  if (res.ok && Array.isArray(res.data) && res.data.length > 0) {[cite: 1, 2, 3]
-    finalRecord = { ...record, id: String(res.data[0].id) };[cite: 1, 2, 3]
+  let finalRecord = record;[cite: 5]
+  if (res.ok && Array.isArray(res.data) && res.data.length > 0) {[cite: 5]
+    finalRecord = { ...record, id: String(res.data[0].id) };[cite: 5]
   }
 
-  const existingIdx = data.customers.findIndex(c => String(c.id) === String(finalRecord.id));[cite: 1, 2, 3]
-  if (existingIdx > -1) data.customers[existingIdx] = finalRecord;[cite: 1, 2, 3]
-  else data.customers.push(finalRecord);[cite: 1, 2, 3]
-  persist();[cite: 1, 2, 3]
+  const existingIdx = data.customers.findIndex(c => String(c.id) === String(finalRecord.id));[cite: 5]
+  if (existingIdx > -1) data.customers[existingIdx] = finalRecord;[cite: 5]
+  else data.customers.push(finalRecord);[cite: 5]
+  persist();[cite: 5]
 
-  clearCustomerForm();[cite: 1, 2, 3]
-  renderCustomersTable();[cite: 1, 2, 3]
-  syncCustomerDropdown();[cite: 1, 2, 3]
-  renderDash();[cite: 1, 2, 3]
+  clearCustomerForm();[cite: 5]
+  renderCustomersTable();[cite: 5]
+  syncCustomerDropdown();[cite: 5]
+  renderDash();[cite: 5]
 
-  if (res.ok) {[cite: 1, 2, 3]
-    setSyncStatus('Cloud Synced', true);[cite: 1, 2, 3]
-    alert("Customer saved and updated on cloud database!");[cite: 1, 2, 3]
+  if (res.ok) {[cite: 5]
+    setSyncStatus('Cloud Synced', true);[cite: 5]
+    alert("Customer saved and updated on cloud database!");[cite: 5]
   } else {
-    setSyncStatus('Saved locally only', false);[cite: 1, 2, 3]
-    alert("Saved locally, but failed to push to database: " + res.error);[cite: 1, 2, 3]
+    setSyncStatus('Saved locally only', false);[cite: 5]
+    alert("Saved locally, but failed to push to database: " + res.error);[cite: 5]
   }
 }
 
-function renderCustomersTable() {[cite: 1, 2, 3]
-  const q = (document.getElementById('customerSearch')?.value || '').toLowerCase();[cite: 1, 2, 3]
-  const filtered = data.customers.filter(c => !q || (c.name && c.name.toLowerCase().includes(q)) || (c.phone && c.phone.includes(q)) || (c.email && c.email.toLowerCase().includes(q)));[cite: 1, 2, 3]
-  const container = document.getElementById('customerTable');[cite: 1, 2, 3]
-  if (!container) return;[cite: 1, 2, 3]
+function renderCustomersTable() {[cite: 5]
+  const q = (document.getElementById('customerSearch')?.value || '').toLowerCase();[cite: 5]
+  const filtered = data.customers.filter(c => !q || (c.name && c.name.toLowerCase().includes(q)) || (c.phone && c.phone.includes(q)) || (c.email && c.email.toLowerCase().includes(q)));[cite: 5]
+  const container = document.getElementById('customerTable');[cite: 5]
+  if (!container) return;[cite: 5]
 
   container.innerHTML = filtered.length ? `
     <table>
@@ -1160,108 +1177,108 @@ function renderCustomersTable() {[cite: 1, 2, 3]
             </td>
           </tr>`).join('')}
       </tbody>
-    </table>` : '<div class="empty">No registered customers found.</div>';[cite: 1, 2, 3]
+    </table>` : '<div class="empty">No registered customers found.</div>';[cite: 5]
 }
 
-function editCustomer(id) {[cite: 1, 2, 3]
-  const c = data.customers.find(x => String(x.id) === String(id));[cite: 1, 2, 3]
-  if (!c) return;[cite: 1, 2, 3]
-  editingCustId = String(c.id);[cite: 1, 2, 3]
-  if (document.getElementById('clientName')) document.getElementById('clientName').value = c.name || '';[cite: 1, 2, 3]
-  if (document.getElementById('clientEmail')) document.getElementById('clientEmail').value = c.email || '';[cite: 1, 2, 3]
-  if (document.getElementById('clientPhone')) document.getElementById('clientPhone').value = c.phone || '';[cite: 1, 2, 3]
-  if (document.getElementById('clientGst')) document.getElementById('clientGst').value = c.gstin || '';[cite: 1, 2, 3]
-  if (document.getElementById('clientAddress')) document.getElementById('clientAddress').value = c.address || '';[cite: 1, 2, 3]
-  if (document.getElementById('clientNotes')) document.getElementById('clientNotes').value = c.notes || '';[cite: 1, 2, 3]
-  document.getElementById('customers')?.scrollIntoView({ behavior: 'smooth' });[cite: 1, 2, 3]
+function editCustomer(id) {[cite: 5]
+  const c = data.customers.find(x => String(x.id) === String(id));[cite: 5]
+  if (!c) return;[cite: 5]
+  editingCustId = String(c.id);[cite: 5]
+  if (document.getElementById('clientName')) document.getElementById('clientName').value = c.name || '';[cite: 5]
+  if (document.getElementById('clientEmail')) document.getElementById('clientEmail').value = c.email || '';[cite: 5]
+  if (document.getElementById('clientPhone')) document.getElementById('clientPhone').value = c.phone || '';[cite: 5]
+  if (document.getElementById('clientGst')) document.getElementById('clientGst').value = c.gstin || '';[cite: 5]
+  if (document.getElementById('clientAddress')) document.getElementById('clientAddress').value = c.address || '';[cite: 5]
+  if (document.getElementById('clientNotes')) document.getElementById('clientNotes').value = c.notes || '';[cite: 5]
+  document.getElementById('customers')?.scrollIntoView({ behavior: 'smooth' });[cite: 5]
 }
 
-async function deleteCustomer(id) {[cite: 1, 2, 3]
-  if (!confirm("Delete this customer from all devices?")) return;[cite: 1, 2, 3]
-  setSyncStatus('Deleting customer...', true);[cite: 1, 2, 3]
-  const res = await cloudReq(`customers?id=eq.${encodeURIComponent(id)}`, 'DELETE');[cite: 1, 2, 3]
-  data.customers = data.customers.filter(c => String(c.id) !== String(id));[cite: 1, 2, 3]
-  persist();[cite: 1, 2, 3]
-  renderCustomersTable();[cite: 1, 2, 3]
-  syncCustomerDropdown();[cite: 1, 2, 3]
-  renderDash();[cite: 1, 2, 3]
-  setSyncStatus(res.ok ? 'Cloud Synced' : 'Sync Error', res.ok);[cite: 1, 2, 3]
+async function deleteCustomer(id) {[cite: 5]
+  if (!confirm("Delete this customer from all devices?")) return;[cite: 5]
+  setSyncStatus('Deleting customer...', true);[cite: 5]
+  const res = await cloudReq(`customers?id=eq.${encodeURIComponent(id)}`, 'DELETE');[cite: 5]
+  data.customers = data.customers.filter(c => String(c.id) !== String(id));[cite: 5]
+  persist();[cite: 5]
+  renderCustomersTable();[cite: 5]
+  syncCustomerDropdown();[cite: 5]
+  renderDash();[cite: 5]
+  setSyncStatus(res.ok ? 'Cloud Synced' : 'Sync Error', res.ok);[cite: 5]
 }
 
-function syncCustomerDropdown() {[cite: 1, 2, 3]
-  const sel = document.getElementById('custSelect');[cite: 1, 2, 3]
-  if (!sel) return;[cite: 1, 2, 3]
-  sel.innerHTML = '<option value="">-- Choose registered customer --</option>' +[cite: 1, 2, 3]
-    data.customers.map(c => `<option value="${esc(c.id)}">${esc(c.name)} ${c.phone ? '(' + esc(c.phone) + ')' : ''}</option>`).join('');
+function syncCustomerDropdown() {[cite: 5]
+  const sel = document.getElementById('custSelect');[cite: 5]
+  if (!sel) return;[cite: 5]
+  sel.innerHTML = '<option value="">-- Choose registered customer --</option>' +[cite: 5]
+    data.customers.map(c => `<option value="${esc(c.id)}">${esc(c.name)} ${c.phone ? '(' + esc(c.phone) + ')' : ''}</option>`).join('');[cite: 5]
 }
 
-function applyCustomerSelection() {[cite: 1, 2, 3]
-  const id = document.getElementById('custSelect')?.value;[cite: 1, 2, 3]
-  if (!id) return;[cite: 1, 2, 3]
-  const c = data.customers.find(x => String(x.id) === String(id));[cite: 1, 2, 3]
-  if (c) {[cite: 1, 2, 3]
-    if (document.getElementById('customer')) document.getElementById('customer').value = c.name;[cite: 1, 2, 3]
-    if (document.getElementById('custEmail')) document.getElementById('custEmail').value = c.email || '';[cite: 1, 2, 3]
-    if (document.getElementById('custPhone')) document.getElementById('custPhone').value = c.phone || '';
-    if (document.getElementById('custGstin')) document.getElementById('custGstin').value = c.gstin || 'Unregistered';[cite: 1, 2, 3]
+function applyCustomerSelection() {[cite: 5]
+  const id = document.getElementById('custSelect')?.value;[cite: 5]
+  if (!id) return;[cite: 5]
+  const c = data.customers.find(x => String(x.id) === String(id));[cite: 5]
+  if (c) {[cite: 5]
+    if (document.getElementById('customer')) document.getElementById('customer').value = c.name;[cite: 5]
+    if (document.getElementById('custEmail')) document.getElementById('custEmail').value = c.email || '';[cite: 5]
+    if (document.getElementById('custPhone')) document.getElementById('custPhone').value = c.phone || '';[cite: 5]
+    if (document.getElementById('custGstin')) document.getElementById('custGstin').value = c.gstin || 'Unregistered';[cite: 5]
   }
 }
 
 /* ==================== VENDOR LOGIC ==================== */
-function clearVendorForm() {[cite: 1, 2, 3]
-  editingVendorId = null;[cite: 1, 2, 3]
-  ['venName', 'venContact', 'venPhone', 'venCity', 'venNotes'].forEach(id => {[cite: 1, 2, 3]
-    const el = document.getElementById(id);[cite: 1, 2, 3]
-    if (el) el.value = '';[cite: 1, 2, 3]
+function clearVendorForm() {[cite: 5]
+  editingVendorId = null;[cite: 5]
+  ['venName', 'venContact', 'venPhone', 'venCity', 'venNotes'].forEach(id => {[cite: 5]
+    const el = document.getElementById(id);[cite: 5]
+    if (el) el.value = '';[cite: 5]
   });
 }
 
-async function saveVendor() {[cite: 1, 2, 3]
-  const name = (document.getElementById('venName')?.value || '').trim();[cite: 1, 2, 3]
-  if (!name) return alert("Please enter Vendor / Agency Name.");[cite: 1, 2, 3]
+async function saveVendor() {[cite: 5]
+  const name = (document.getElementById('venName')?.value || '').trim();[cite: 5]
+  if (!name) return alert("Please enter Vendor / Agency Name.");[cite: 5]
 
-  const id = (editingVendorId && isValidUUID(editingVendorId)) ? editingVendorId : genUUID();[cite: 1, 2, 3]
-  const record = {[cite: 1, 2, 3]
-    id: id,[cite: 1, 2, 3]
-    name,[cite: 1, 2, 3]
-    contact: document.getElementById('venContact')?.value.trim() || null,[cite: 1, 2, 3]
-    phone: document.getElementById('venPhone')?.value.trim() || null,[cite: 1, 2, 3]
-    city: document.getElementById('venCity')?.value.trim() || null,[cite: 1, 2, 3]
-    notes: document.getElementById('venNotes')?.value.trim() || null[cite: 1, 2, 3]
+  const id = (editingVendorId && isValidUUID(editingVendorId)) ? editingVendorId : genUUID();[cite: 5]
+  const record = {[cite: 5]
+    id: id,[cite: 5]
+    name,[cite: 5]
+    contact: document.getElementById('venContact')?.value.trim() || null,[cite: 5]
+    phone: document.getElementById('venPhone')?.value.trim() || null,[cite: 5]
+    city: document.getElementById('venCity')?.value.trim() || null,[cite: 5]
+    notes: document.getElementById('venNotes')?.value.trim() || null[cite: 5]
   };
 
-  setSyncStatus('Saving Vendor...', true);[cite: 1, 2, 3]
-  const res = await cloudReq('vendors?on_conflict=id', 'POST', record);[cite: 1, 2, 3]
+  setSyncStatus('Saving Vendor...', true);[cite: 5]
+  const res = await cloudReq('vendors?on_conflict=id', 'POST', record);[cite: 5]
 
-  let finalRecord = record;[cite: 1, 2, 3]
-  if (res.ok && Array.isArray(res.data) && res.data.length > 0) {[cite: 1, 2, 3]
-    finalRecord = { ...record, id: String(res.data[0].id) };[cite: 1, 2, 3]
+  let finalRecord = record;[cite: 5]
+  if (res.ok && Array.isArray(res.data) && res.data.length > 0) {[cite: 5]
+    finalRecord = { ...record, id: String(res.data[0].id) };[cite: 5]
   }
 
-  const existingIdx = data.vendors.findIndex(v => String(v.id) === String(finalRecord.id));[cite: 1, 2, 3]
-  if (existingIdx > -1) data.vendors[existingIdx] = finalRecord;[cite: 1, 2, 3]
-  else data.vendors.push(finalRecord);[cite: 1, 2, 3]
-  persist();[cite: 1, 2, 3]
+  const existingIdx = data.vendors.findIndex(v => String(v.id) === String(finalRecord.id));[cite: 5]
+  if (existingIdx > -1) data.vendors[existingIdx] = finalRecord;[cite: 5]
+  else data.vendors.push(finalRecord);[cite: 5]
+  persist();[cite: 5]
 
-  clearVendorForm();[cite: 1, 2, 3]
-  renderVendorsTable();[cite: 1, 2, 3]
-  syncVendorDropdowns();[cite: 1, 2, 3]
-  renderDash();[cite: 1, 2, 3]
+  clearVendorForm();[cite: 5]
+  renderVendorsTable();[cite: 5]
+  syncVendorDropdowns();[cite: 5]
+  renderDash();[cite: 5]
 
-  if (res.ok) {[cite: 1, 2, 3]
-    setSyncStatus('Cloud Synced', true);[cite: 1, 2, 3]
-    alert("Vendor saved and synced successfully!");[cite: 1, 2, 3]
+  if (res.ok) {[cite: 5]
+    setSyncStatus('Cloud Synced', true);[cite: 5]
+    alert("Vendor saved and synced successfully!");[cite: 5]
   } else {
-    setSyncStatus('Saved locally only', false);[cite: 1, 2, 3]
-    alert("Saved locally, but failed to sync to database: " + res.error);[cite: 1, 2, 3]
+    setSyncStatus('Saved locally only', false);[cite: 5]
+    alert("Saved locally, but failed to sync to database: " + res.error);[cite: 5]
   }
 }
 
-function renderVendorsTable() {[cite: 1, 2, 3]
-  const q = (document.getElementById('vendorSearch')?.value || '').toLowerCase();[cite: 1, 2, 3]
-  const filtered = data.vendors.filter(v => !q || (v.name && v.name.toLowerCase().includes(q)) || (v.phone && v.phone.includes(q)));[cite: 1, 2, 3]
-  const container = document.getElementById('vendorTable');[cite: 1, 2, 3]
-  if (!container) return;[cite: 1, 2, 3]
+function renderVendorsTable() {[cite: 5]
+  const q = (document.getElementById('vendorSearch')?.value || '').toLowerCase();[cite: 5]
+  const filtered = data.vendors.filter(v => !q || (v.name && v.name.toLowerCase().includes(q)) || (v.phone && v.phone.includes(q)));[cite: 5]
+  const container = document.getElementById('vendorTable');[cite: 5]
+  if (!container) return;[cite: 5]
 
   container.innerHTML = filtered.length ? `
     <table>
@@ -1280,119 +1297,119 @@ function renderVendorsTable() {[cite: 1, 2, 3]
             </td>
           </tr>`).join('')}
       </tbody>
-    </table>` : '<div class="empty">No vendor records found.</div>';[cite: 1, 2, 3]
+    </table>` : '<div class="empty">No vendor records found.</div>';[cite: 5]
 }
 
-function editVendor(id) {[cite: 1, 2, 3]
-  const v = data.vendors.find(x => String(x.id) === String(id));[cite: 1, 2, 3]
-  if (!v) return;[cite: 1, 2, 3]
-  editingVendorId = String(v.id);[cite: 1, 2, 3]
-  if (document.getElementById('venName')) document.getElementById('venName').value = v.name || '';[cite: 1, 2, 3]
-  if (document.getElementById('venContact')) document.getElementById('venContact').value = v.contact || '';[cite: 1, 2, 3]
-  if (document.getElementById('venPhone')) document.getElementById('venPhone').value = v.phone || '';[cite: 1, 2, 3]
-  if (document.getElementById('venCity')) document.getElementById('venCity').value = v.city || '';[cite: 1, 2, 3]
-  if (document.getElementById('venNotes')) document.getElementById('venNotes').value = v.notes || '';[cite: 1, 2, 3]
-  document.getElementById('vendors')?.scrollIntoView({ behavior: 'smooth' });[cite: 1, 2, 3]
+function editVendor(id) {[cite: 5]
+  const v = data.vendors.find(x => String(x.id) === String(id));[cite: 5]
+  if (!v) return;[cite: 5]
+  editingVendorId = String(v.id);[cite: 5]
+  if (document.getElementById('venName')) document.getElementById('venName').value = v.name || '';[cite: 5]
+  if (document.getElementById('venContact')) document.getElementById('venContact').value = v.contact || '';[cite: 5]
+  if (document.getElementById('venPhone')) document.getElementById('venPhone').value = v.phone || '';[cite: 5]
+  if (document.getElementById('venCity')) document.getElementById('venCity').value = v.city || '';[cite: 5]
+  if (document.getElementById('venNotes')) document.getElementById('venNotes').value = v.notes || '';[cite: 5]
+  document.getElementById('vendors')?.scrollIntoView({ behavior: 'smooth' });[cite: 5]
 }
 
-async function deleteVendor(id) {[cite: 1, 2, 3]
-  if (!confirm("Delete this vendor from all devices?")) return;[cite: 1, 2, 3]
-  setSyncStatus('Deleting vendor...', true);[cite: 1, 2, 3]
-  const res = await cloudReq(`vendors?id=eq.${encodeURIComponent(id)}`, 'DELETE');[cite: 1, 2, 3]
-  data.vendors = data.vendors.filter(v => String(v.id) !== String(id));[cite: 1, 2, 3]
-  persist();[cite: 1, 2, 3]
-  renderVendorsTable();[cite: 1, 2, 3]
-  syncVendorDropdowns();[cite: 1, 2, 3]
-  renderDash();[cite: 1, 2, 3]
-  setSyncStatus(res.ok ? 'Cloud Synced' : 'Sync Error', res.ok);[cite: 1, 2, 3]
+async function deleteVendor(id) {[cite: 5]
+  if (!confirm("Delete this vendor from all devices?")) return;[cite: 5]
+  setSyncStatus('Deleting vendor...', true);[cite: 5]
+  const res = await cloudReq(`vendors?id=eq.${encodeURIComponent(id)}`, 'DELETE');[cite: 5]
+  data.vendors = data.vendors.filter(v => String(v.id) !== String(id));[cite: 5]
+  persist();[cite: 5]
+  renderVendorsTable();[cite: 5]
+  syncVendorDropdowns();[cite: 5]
+  renderDash();[cite: 5]
+  setSyncStatus(res.ok ? 'Cloud Synced' : 'Sync Error', res.ok);[cite: 5]
 }
 
-function syncVendorDropdowns() {[cite: 1, 2, 3]
-  const sel = document.getElementById('vehVendor');[cite: 1, 2, 3]
-  if (!sel) return;[cite: 1, 2, 3]
-  const curr = sel.value;[cite: 1, 2, 3]
-  sel.innerHTML = '<option value="">-- Select Vendor --</option>' + [cite: 1, 2, 3]
-    data.vendors.map(v => `<option value="${esc(v.name)}">${esc(v.name)}</option>`).join('');[cite: 1, 2, 3]
-  if (curr) sel.value = curr;[cite: 1, 2, 3]
+function syncVendorDropdowns() {[cite: 5]
+  const sel = document.getElementById('vehVendor');[cite: 5]
+  if (!sel) return;[cite: 5]
+  const curr = sel.value;[cite: 5]
+  sel.innerHTML = '<option value="">-- Select Vendor --</option>' + [cite: 5]
+    data.vendors.map(v => `<option value="${esc(v.name)}">${esc(v.name)}</option>`).join('');[cite: 5]
+  if (curr) sel.value = curr;[cite: 5]
 }
 
 /* ==================== FLEET LOGIC ==================== */
-function toggleVendorSelect() {[cite: 1, 2, 3]
-  const typeEl = document.getElementById('vehType');[cite: 1, 2, 3]
-  const wrap = document.getElementById('vendorSelectWrap');[cite: 1, 2, 3]
-  if (typeEl && wrap) {[cite: 1, 2, 3]
-    wrap.style.display = (typeEl.value === 'Vendor') ? 'block' : 'none';[cite: 1, 2, 3]
+function toggleVendorSelect() {[cite: 5]
+  const typeEl = document.getElementById('vehType');[cite: 5]
+  const wrap = document.getElementById('vendorSelectWrap');[cite: 5]
+  if (typeEl && wrap) {[cite: 5]
+    wrap.style.display = (typeEl.value === 'Vendor') ? 'block' : 'none';[cite: 5]
   }
 }
 
-function clearVehicleForm() {[cite: 1, 2, 3]
-  editingVehReg = null;[cite: 1, 2, 3]
-  ['vehReg', 'vehModel', 'vehDriver', 'vehInsurance', 'vehPermit'].forEach(id => {[cite: 1, 2, 3]
-    const el = document.getElementById(id);[cite: 1, 2, 3]
-    if (el) el.value = '';[cite: 1, 2, 3]
+function clearVehicleForm() {[cite: 5]
+  editingVehReg = null;[cite: 5]
+  ['vehReg', 'vehModel', 'vehDriver', 'vehInsurance', 'vehPermit'].forEach(id => {[cite: 5]
+    const el = document.getElementById(id);[cite: 5]
+    if (el) el.value = '';[cite: 5]
   });
-  const typeEl = document.getElementById('vehType');[cite: 1, 2, 3]
-  if (typeEl) typeEl.value = 'Own';[cite: 1, 2, 3]
-  const venEl = document.getElementById('vehVendor');[cite: 1, 2, 3]
-  if (venEl) venEl.value = '';[cite: 1, 2, 3]
-  toggleVendorSelect();[cite: 1, 2, 3]
+  const typeEl = document.getElementById('vehType');[cite: 5]
+  if (typeEl) typeEl.value = 'Own';[cite: 5]
+  const venEl = document.getElementById('vehVendor');[cite: 5]
+  if (venEl) venEl.value = '';[cite: 5]
+  toggleVendorSelect();[cite: 5]
 }
 
-async function saveVehicle() {[cite: 1, 2, 3]
-  const regEl = document.getElementById('vehReg');[cite: 1, 2, 3]
-  const reg = (regEl ? regEl.value : '').trim().toUpperCase();[cite: 1, 2, 3]
-  const model = (document.getElementById('vehModel')?.value || '').trim();[cite: 1, 2, 3]
-  const type = document.getElementById('vehType')?.value || 'Own';[cite: 1, 2, 3]
-  const vendor = (type === 'Vendor') ? (document.getElementById('vehVendor')?.value || '') : '';[cite: 1, 2, 3]
+async function saveVehicle() {[cite: 5]
+  const regEl = document.getElementById('vehReg');[cite: 5]
+  const reg = (regEl ? regEl.value : '').trim().toUpperCase();[cite: 5]
+  const model = (document.getElementById('vehModel')?.value || '').trim();[cite: 5]
+  const type = document.getElementById('vehType')?.value || 'Own';[cite: 5]
+  const vendor = (type === 'Vendor') ? (document.getElementById('vehVendor')?.value || '') : '';[cite: 5]
 
-  if (!reg) return alert("Vehicle registration number is required (e.g. MP 04 EA 1234).");[cite: 1, 2, 3]
-  if (type === 'Vendor' && !vendor) return alert("Please select the vendor providing this vehicle.");[cite: 1, 2, 3]
+  if (!reg) return alert("Vehicle registration number is required (e.g. MP 04 EA 1234).");[cite: 5]
+  if (type === 'Vendor' && !vendor) return alert("Please select the vendor providing this vehicle.");[cite: 5]
 
-  const record = {[cite: 1, 2, 3]
-    reg: String(reg),[cite: 1, 2, 3]
-    model: model || null,[cite: 1, 2, 3]
-    type,[cite: 1, 2, 3]
-    vendor: vendor || null,[cite: 1, 2, 3]
-    driver: document.getElementById('vehDriver')?.value.trim() || null,[cite: 1, 2, 3]
-    insurance: document.getElementById('vehInsurance')?.value || null,[cite: 1, 2, 3]
-    permit: document.getElementById('vehPermit')?.value || null[cite: 1, 2, 3]
+  const record = {[cite: 5]
+    reg: String(reg),[cite: 5]
+    model: model || null,[cite: 5]
+    type,[cite: 5]
+    vendor: vendor || null,[cite: 5]
+    driver: document.getElementById('vehDriver')?.value.trim() || null,[cite: 5]
+    insurance: document.getElementById('vehInsurance')?.value || null,[cite: 5]
+    permit: document.getElementById('vehPermit')?.value || null[cite: 5]
   };
 
-  setSyncStatus('Saving vehicle...', true);[cite: 1, 2, 3]
+  setSyncStatus('Saving vehicle...', true);[cite: 5]
 
-  if (editingVehReg && editingVehReg.toUpperCase() !== reg) {[cite: 1, 2, 3]
-    await cloudReq(`vehicles?reg=eq.${encodeURIComponent(editingVehReg)}`, 'DELETE');[cite: 1, 2, 3]
-    data.vehicles = data.vehicles.filter(v => v.reg.toUpperCase() !== editingVehReg.toUpperCase());[cite: 1, 2, 3]
+  if (editingVehReg && editingVehReg.toUpperCase() !== reg) {[cite: 5]
+    await cloudReq(`vehicles?reg=eq.${encodeURIComponent(editingVehReg)}`, 'DELETE');[cite: 5]
+    data.vehicles = data.vehicles.filter(v => v.reg.toUpperCase() !== editingVehReg.toUpperCase());[cite: 5]
   }
 
-  const res = await cloudReq('vehicles?on_conflict=reg', 'POST', record);[cite: 1, 2, 3]
+  const res = await cloudReq('vehicles?on_conflict=reg', 'POST', record);[cite: 5]
 
-  const existingIdx = data.vehicles.findIndex(v => v.reg.toUpperCase() === reg);[cite: 1, 2, 3]
-  if (existingIdx > -1) data.vehicles[existingIdx] = record;[cite: 1, 2, 3]
-  else data.vehicles.push(record);[cite: 1, 2, 3]
-  persist();[cite: 1, 2, 3]
+  const existingIdx = data.vehicles.findIndex(v => v.reg.toUpperCase() === reg);[cite: 5]
+  if (existingIdx > -1) data.vehicles[existingIdx] = record;[cite: 5]
+  else data.vehicles.push(record);[cite: 5]
+  persist();[cite: 5]
 
-  clearVehicleForm();[cite: 1, 2, 3]
-  renderFleetTable();[cite: 1, 2, 3]
-  renderDash();[cite: 1, 2, 3]
+  clearVehicleForm();[cite: 5]
+  renderFleetTable();[cite: 5]
+  renderDash();[cite: 5]
 
-  if (res.ok) {[cite: 1, 2, 3]
-    setSyncStatus('Cloud Synced', true);[cite: 1, 2, 3]
-    alert("Vehicle saved and synced to database!");[cite: 1, 2, 3]
+  if (res.ok) {[cite: 5]
+    setSyncStatus('Cloud Synced', true);[cite: 5]
+    alert("Vehicle saved and synced to database!");[cite: 5]
   } else {
-    setSyncStatus('Saved locally only', false);[cite: 1, 2, 3]
-    alert("Saved locally, but failed to sync to database: " + res.error);[cite: 1, 2, 3]
+    setSyncStatus('Saved locally only', false);[cite: 5]
+    alert("Saved locally, but failed to sync to database: " + res.error);[cite: 5]
   }
 }
 
-function renderFleetTable() {[cite: 1, 2, 3]
-  const q = (document.getElementById('fleetSearch')?.value || '').toLowerCase();[cite: 1, 2, 3]
-  const filtered = data.vehicles.filter(v => !q || (v.reg && v.reg.toLowerCase().includes(q)) || (v.model && v.model.toLowerCase().includes(q)));[cite: 1, 2, 3]
+function renderFleetTable() {[cite: 5]
+  const q = (document.getElementById('fleetSearch')?.value || '').toLowerCase();[cite: 5]
+  const filtered = data.vehicles.filter(v => !q || (v.reg && v.reg.toLowerCase().includes(q)) || (v.model && v.model.toLowerCase().includes(q)));[cite: 5]
   
-  const container = document.getElementById('fleetTable');[cite: 1, 2, 3]
-  if (!container) return;[cite: 1, 2, 3]
+  const container = document.getElementById('fleetTable');[cite: 5]
+  if (!container) return;[cite: 5]
 
-  const today = new Date().toISOString().slice(0, 10);[cite: 1, 2, 3]
+  const today = new Date().toISOString().slice(0, 10);[cite: 5]
 
   container.innerHTML = filtered.length ? `
     <table>
@@ -1417,464 +1434,447 @@ function renderFleetTable() {[cite: 1, 2, 3]
           </tr>`;
         }).join('')}
       </tbody>
-    </table>` : '<div class="empty">No vehicles added to the fleet yet.</div>';[cite: 1, 2, 3]
+    </table>` : '<div class="empty">No vehicles added to the fleet yet.</div>';[cite: 5]
 }
 
-function editVehicle(reg) {[cite: 1, 2, 3]
-  const v = data.vehicles.find(x => x.reg.toUpperCase() === reg.toUpperCase());[cite: 1, 2, 3]
-  if (!v) return;[cite: 1, 2, 3]
-  editingVehReg = v.reg;[cite: 1, 2, 3]
-  if (document.getElementById('vehReg')) document.getElementById('vehReg').value = v.reg || '';[cite: 1, 2, 3]
-  if (document.getElementById('vehModel')) document.getElementById('vehModel').value = v.model || '';[cite: 1, 2, 3]
-  if (document.getElementById('vehType')) document.getElementById('vehType').value = v.type || 'Own';[cite: 1, 2, 3]
+function editVehicle(reg) {[cite: 5]
+  const v = data.vehicles.find(x => x.reg.toUpperCase() === reg.toUpperCase());[cite: 5]
+  if (!v) return;[cite: 5]
+  editingVehReg = v.reg;[cite: 5]
+  if (document.getElementById('vehReg')) document.getElementById('vehReg').value = v.reg || '';[cite: 5]
+  if (document.getElementById('vehModel')) document.getElementById('vehModel').value = v.model || '';[cite: 5]
+  if (document.getElementById('vehType')) document.getElementById('vehType').value = v.type || 'Own';[cite: 5]
   
-  syncVendorDropdowns();[cite: 1, 2, 3]
-  toggleVendorSelect();[cite: 1, 2, 3]
-  if (document.getElementById('vehVendor')) document.getElementById('vehVendor').value = v.vendor || '';[cite: 1, 2, 3]
-  if (document.getElementById('vehDriver')) document.getElementById('vehDriver').value = v.driver || '';[cite: 1, 2, 3]
-  if (document.getElementById('vehInsurance')) document.getElementById('vehInsurance').value = v.insurance || '';[cite: 1, 2, 3]
-  if (document.getElementById('vehPermit')) document.getElementById('vehPermit').value = v.permit || '';[cite: 1, 2, 3]
+  syncVendorDropdowns();[cite: 5]
+  toggleVendorSelect();[cite: 5]
+  if (document.getElementById('vehVendor')) document.getElementById('vehVendor').value = v.vendor || '';[cite: 5]
+  if (document.getElementById('vehDriver')) document.getElementById('vehDriver').value = v.driver || '';[cite: 5]
+  if (document.getElementById('vehInsurance')) document.getElementById('vehInsurance').value = v.insurance || '';[cite: 5]
+  if (document.getElementById('vehPermit')) document.getElementById('vehPermit').value = v.permit || '';[cite: 5]
   
-  document.getElementById('fleet')?.scrollIntoView({ behavior: 'smooth' });[cite: 1, 2, 3]
+  document.getElementById('fleet')?.scrollIntoView({ behavior: 'smooth' });[cite: 5]
 }
 
-async function deleteVehicle(reg) {[cite: 1, 2, 3]
-  if (!confirm("Remove vehicle " + reg + " from all devices?")) return;[cite: 1, 2, 3]
-  setSyncStatus('Deleting vehicle...', true);[cite: 1, 2, 3]
-  const res = await cloudReq(`vehicles?reg=eq.${encodeURIComponent(reg)}`, 'DELETE');[cite: 1, 2, 3]
-  data.vehicles = data.vehicles.filter(v => v.reg.toUpperCase() !== reg.toUpperCase());[cite: 1, 2, 3]
-  persist();[cite: 1, 2, 3]
-  renderFleetTable();[cite: 1, 2, 3]
-  renderDash();[cite: 1, 2, 3]
-  setSyncStatus(res.ok ? 'Cloud Synced' : 'Sync Error', res.ok);[cite: 1, 2, 3]
+async function deleteVehicle(reg) {[cite: 5]
+  if (!confirm("Remove vehicle " + reg + " from all devices?")) return;[cite: 5]
+  setSyncStatus('Deleting vehicle...', true);[cite: 5]
+  const res = await cloudReq(`vehicles?reg=eq.${encodeURIComponent(reg)}`, 'DELETE');[cite: 5]
+  data.vehicles = data.vehicles.filter(v => v.reg.toUpperCase() !== reg.toUpperCase());[cite: 5]
+  persist();[cite: 5]
+  renderFleetTable();[cite: 5]
+  renderDash();[cite: 5]
+  setSyncStatus(res.ok ? 'Cloud Synced' : 'Sync Error', res.ok);[cite: 5]
 }
 
 /* ==================== BILLING / CALCULATION LOGIC ==================== */
-function calculateAmounts() {[cite: 1, 2, 3]
-  let subtotal = 0;[cite: 1, 2, 3]
-  const cards = document.querySelectorAll('.duty-item-box');[cite: 1, 2, 3]
+function calculateAmounts() {[cite: 5]
+  let subtotal = 0;[cite: 5]
+  const cards = document.querySelectorAll('.duty-item-box');[cite: 5]
   
-  cards.forEach(card => {[cite: 1, 2, 3]
-    let rate = Number(card.querySelector('.duty-rate')?.value) || 0;[cite: 1, 2, 3]
-    let qty = Number(card.querySelector('.duty-qty')?.value) || 1;[cite: 1, 2, 3]
-    let extraKms = Number(card.querySelector('.duty-extrakms')?.value) || 0;[cite: 1, 2, 3]
-    let extraKmRate = Number(card.querySelector('.duty-extrakmrate')?.value) || 0;[cite: 1, 2, 3]
-    let extraHrs = Number(card.querySelector('.duty-extrahrs')?.value) || 0;[cite: 1, 2, 3]
-    let extraHrRate = Number(card.querySelector('.duty-extrahrrate')?.value) || 0;[cite: 1, 2, 3]
-    let daQty = Number(card.querySelector('.duty-da-qty')?.value) || 0;[cite: 1, 2, 3]
-    let daRate = Number(card.querySelector('.duty-da-rate')?.value) || 0;[cite: 1, 2, 3]
-    let ncQty = Number(card.querySelector('.duty-nc-qty')?.value) || 0;[cite: 1, 2, 3]
-    let ncRate = Number(card.querySelector('.duty-nc-rate')?.value) || 0;[cite: 1, 2, 3]
-    let toll = Number(card.querySelector('.duty-toll')?.value) || 0;[cite: 1, 2, 3]
+  cards.forEach(card => {[cite: 5]
+    let rate = Number(card.querySelector('.duty-rate')?.value) || 0;[cite: 5]
+    let qty = Number(card.querySelector('.duty-qty')?.value) || 1;[cite: 5]
+    let extraKms = Number(card.querySelector('.duty-extrakms')?.value) || 0;[cite: 5]
+    let extraKmRate = Number(card.querySelector('.duty-extrakmrate')?.value) || 0;[cite: 5]
+    let extraHrs = Number(card.querySelector('.duty-extrahrs')?.value) || 0;[cite: 5]
+    let extraHrRate = Number(card.querySelector('.duty-extrahrrate')?.value) || 0;[cite: 5]
+    let daQty = Number(card.querySelector('.duty-da-qty')?.value) || 0;[cite: 5]
+    let daRate = Number(card.querySelector('.duty-da-rate')?.value) || 0;[cite: 5]
+    let ncQty = Number(card.querySelector('.duty-nc-qty')?.value) || 0;[cite: 5]
+    let ncRate = Number(card.querySelector('.duty-nc-rate')?.value) || 0;[cite: 5]
+    let toll = Number(card.querySelector('.duty-toll')?.value) || 0;[cite: 5]
 
-    let dutyItemTotal = (rate * qty) + (extraKms * extraKmRate) + (extraHrs * extraHrRate) + (daQty * daRate) + (ncQty * ncRate) + toll;[cite: 1, 2, 3]
-    subtotal = round2(subtotal + dutyItemTotal);[cite: 1, 2, 3]
+    let dutyItemTotal = (rate * qty) + (extraKms * extraKmRate) + (extraHrs * extraHrRate) + (daQty * daRate) + (ncQty * ncRate) + toll;[cite: 5]
+    subtotal = round2(subtotal + dutyItemTotal);[cite: 5]
   });
 
-  let gstType = document.getElementById('gstType')?.value || 'none';[cite: 1, 2, 3]
-  let paid = round2(document.getElementById('paid')?.value || 0);[cite: 1, 2, 3]
+  let gstType = document.getElementById('gstType')?.value || 'none';[cite: 5]
+  let paid = round2(document.getElementById('paid')?.value || 0);[cite: 5]
 
-  let cgst = 0, sgst = 0, igst = 0, totalTax = 0;[cite: 1, 2, 3]
-  if (gstType === 'cgst_sgst_5') {[cite: 1, 2, 3]
-    cgst = round2(subtotal * 0.025);[cite: 1, 2, 3]
-    sgst = round2(subtotal * 0.025);[cite: 1, 2, 3]
-    totalTax = round2(cgst + sgst);[cite: 1, 2, 3]
-  } else if (gstType === 'cgst_sgst_12') {[cite: 1, 2, 3]
-    cgst = round2(subtotal * 0.06);[cite: 1, 2, 3]
-    sgst = round2(subtotal * 0.06);[cite: 1, 2, 3]
-    totalTax = round2(cgst + sgst);[cite: 1, 2, 3]
-  } else if (gstType === 'igst_5') {[cite: 1, 2, 3]
-    igst = round2(subtotal * 0.05);[cite: 1, 2, 3]
-    totalTax = igst;[cite: 1, 2, 3]
-  } else if (gstType === 'igst_12') {[cite: 1, 2, 3]
-    igst = round2(subtotal * 0.12);[cite: 1, 2, 3]
-    totalTax = igst;[cite: 1, 2, 3]
+  let cgst = 0, sgst = 0, igst = 0, totalTax = 0;[cite: 5]
+  if (gstType === 'cgst_sgst_5') {[cite: 5]
+    cgst = round2(subtotal * 0.025);[cite: 5]
+    sgst = round2(subtotal * 0.025);[cite: 5]
+    totalTax = round2(cgst + sgst);[cite: 5]
+  } else if (gstType === 'cgst_sgst_12') {[cite: 5]
+    cgst = round2(subtotal * 0.06);[cite: 5]
+    sgst = round2(subtotal * 0.06);[cite: 5]
+    totalTax = round2(cgst + sgst);[cite: 5]
+  } else if (gstType === 'igst_5') {[cite: 5]
+    igst = round2(subtotal * 0.05);[cite: 5]
+    totalTax = igst;[cite: 5]
+  } else if (gstType === 'igst_12') {[cite: 5]
+    igst = round2(subtotal * 0.12);[cite: 5]
+    totalTax = igst;[cite: 5]
   }
 
-  let tot = round2(subtotal + totalTax);[cite: 1, 2, 3]
-  let bal = round2(tot - paid);[cite: 1, 2, 3]
+  let tot = round2(subtotal + totalTax);[cite: 5]
+  let bal = round2(tot - paid);[cite: 5]
 
-  const displayBal = document.getElementById('displayBal');[cite: 1, 2, 3]
-  if (displayBal) displayBal.value = money(bal);[cite: 1, 2, 3]
+  const displayBal = document.getElementById('displayBal');[cite: 5]
+  if (displayBal) displayBal.value = money(bal);[cite: 5]
 
-  return { subtotal, gstType, cgst, sgst, igst, totalTax, tot, bal };[cite: 1, 2, 3]
+  return { subtotal, gstType, cgst, sgst, igst, totalTax, tot, bal };[cite: 5]
 }
 
-function resetForm() {[cite: 1, 2, 3]
-  isFormDirty = false;[cite: 1, 2, 3]
-  const formHeader = document.getElementById('formHeader');[cite: 1, 2, 3]
-  if (formHeader) formHeader.innerText = "Create New Bill";[cite: 1, 2, 3]
-  ['customer', 'custEmail', 'custPhone', 'custGstin'].forEach(id => {
-    const el = document.getElementById(id);[cite: 1, 2, 3]
-    if (el) el.value = '';[cite: 1, 2, 3]
+function resetForm() {[cite: 5]
+  isFormDirty = false;[cite: 5]
+  const formHeader = document.getElementById('formHeader');[cite: 5]
+  if (formHeader) formHeader.innerText = "Create New Bill";[cite: 5]
+  ['customer', 'custEmail', 'custPhone', 'custGstin'].forEach(id => {[cite: 5]
+    const el = document.getElementById(id);[cite: 5]
+    if (el) el.value = '';[cite: 5]
   });
-  if (document.getElementById('custSelect')) document.getElementById('custSelect').value = '';[cite: 2, 3]
-  if (document.getElementById('gstType')) document.getElementById('gstType').value = 'none';[cite: 2, 3]
-  if (document.getElementById('paid')) document.getElementById('paid').value = '0';[cite: 1, 2, 3]
-  if (document.getElementById('billNo')) document.getElementById('billNo').value = nextNo();[cite: 1, 2, 3]
-  const today = new Date().toISOString().slice(0, 10);[cite: 1, 2, 3]
-  if (document.getElementById('billDate')) document.getElementById('billDate').value = today;[cite: 1, 2, 3]
+  if (document.getElementById('custSelect')) document.getElementById('custSelect').value = '';[cite: 5]
+  if (document.getElementById('gstType')) document.getElementById('gstType').value = 'none';[cite: 5]
+  if (document.getElementById('paid')) document.getElementById('paid').value = '0';[cite: 5]
+  if (document.getElementById('billNo')) document.getElementById('billNo').value = nextNo();[cite: 5]
+  const today = new Date().toISOString().slice(0, 10);[cite: 5]
+  if (document.getElementById('billDate')) document.getElementById('billDate').value = today;[cite: 5]
 
-  const container = document.getElementById('dutiesContainer');[cite: 1, 2, 3]
-  if (container) container.innerHTML = '';[cite: 1, 2, 3]
-  addDutyItem();[cite: 1, 2, 3]
-  syncCustomerDropdown();[cite: 1, 2, 3]
-  calculateAmounts();[cite: 1, 2, 3]
+  const container = document.getElementById('dutiesContainer');[cite: 5]
+  if (container) container.innerHTML = '';[cite: 5]
+  addDutyItem();[cite: 5]
+  syncCustomerDropdown();[cite: 5]
+  calculateAmounts();[cite: 5]
 }
 
-function getBillData() {[cite: 1, 2, 3]
-  const c = calculateAmounts();[cite: 1, 2, 3]
-  const dutyCards = document.querySelectorAll('.duty-item-box');[cite: 1, 2, 3]
-  const duties = [];[cite: 1, 2, 3]
+function getBillData() {[cite: 5]
+  const c = calculateAmounts();[cite: 5]
+  const dutyCards = document.querySelectorAll('.duty-item-box');[cite: 5]
+  const duties = [];[cite: 5]
 
-  dutyCards.forEach(card => {[cite: 1, 2, 3]
-    const slipRaw = card.querySelector('.duty-slip-img')?.value || '';[cite: 1, 2, 3]
-    const tollRaw = card.querySelector('.duty-toll-img')?.value || '';[cite: 1, 2, 3]
+  dutyCards.forEach(card => {[cite: 5]
+    const slipRaw = card.querySelector('.duty-slip-img')?.value || '';[cite: 5]
+    const tollRaw = card.querySelector('.duty-toll-img')?.value || '';[cite: 5]
 
-    duties.push({[cite: 1, 2, 3]
-      dutyType: card.querySelector('.duty-type')?.value || 'Local (8 Hrs / 80 Kms)',[cite: 1, 2, 3]
-      dutySlip: card.querySelector('.duty-slip')?.value || '',[cite: 1, 2, 3]
-      tdate: card.querySelector('.duty-tdate')?.value || '',[cite: 1, 2, 3]
-      tEndDate: card.querySelector('.duty-tend')?.value || '',[cite: 1, 2, 3]
-      veh: card.querySelector('.duty-veh')?.value || '',[cite: 1, 2, 3]
-      driver: card.querySelector('.duty-driver')?.value || '',[cite: 1, 2, 3]
-      totalKms: Number(card.querySelector('.duty-totalkms')?.value) || 0,[cite: 1, 2, 3]
-      trip: card.querySelector('.duty-trip')?.value || 'TAXI HIRE CHARGES',[cite: 3]
-      rate: round2(card.querySelector('.duty-rate')?.value || 0),[cite: 1, 2, 3]
-      qty: Number(card.querySelector('.duty-qty')?.value) || 1,[cite: 1, 2, 3]
-      extraKms: Number(card.querySelector('.duty-extrakms')?.value) || 0,[cite: 1, 2, 3]
-      extraKmRate: round2(card.querySelector('.duty-extrakmrate')?.value || 0),[cite: 1, 2, 3]
-      extraHrs: Number(card.querySelector('.duty-extrahrs')?.value) || 0,[cite: 1, 2, 3]
-      extraHrRate: round2(card.querySelector('.duty-extrahrrate')?.value || 0),[cite: 1, 2, 3]
-      driverAllowanceQty: Number(card.querySelector('.duty-da-qty')?.value) || 0,[cite: 1, 2, 3]
-      driverAllowanceRate: round2(card.querySelector('.duty-da-rate')?.value || 0),[cite: 1, 2, 3]
-      nightChargesQty: Number(card.querySelector('.duty-nc-qty')?.value) || 0,[cite: 1, 2, 3]
-      nightChargesRate: round2(card.querySelector('.duty-nc-rate')?.value || 0),[cite: 1, 2, 3]
-      tollParking: round2(card.querySelector('.duty-toll')?.value || 0),[cite: 1, 2, 3]
-      slipImgs: slipRaw ? slipRaw.split(',').filter(Boolean) : [],[cite: 1, 2, 3]
-      tollImgs: tollRaw ? tollRaw.split(',').filter(Boolean) : [][cite: 1, 2, 3]
+    duties.push({[cite: 5]
+      dutyType: card.querySelector('.duty-type')?.value || 'Local (8 Hrs / 80 Kms)',[cite: 5]
+      dutySlip: card.querySelector('.duty-slip')?.value || '',[cite: 5]
+      tdate: card.querySelector('.duty-tdate')?.value || '',[cite: 5]
+      tEndDate: card.querySelector('.duty-tend')?.value || '',[cite: 5]
+      veh: card.querySelector('.duty-veh')?.value || '',[cite: 5]
+      driver: card.querySelector('.duty-driver')?.value || '',[cite: 5]
+      totalKms: Number(card.querySelector('.duty-totalkms')?.value) || 0,[cite: 5]
+      trip: card.querySelector('.duty-trip')?.value || 'TAXI HIRE CHARGES',[cite: 5]
+      rate: round2(card.querySelector('.duty-rate')?.value || 0),[cite: 5]
+      qty: Number(card.querySelector('.duty-qty')?.value) || 1,[cite: 5]
+      extraKms: Number(card.querySelector('.duty-extrakms')?.value) || 0,[cite: 5]
+      extraKmRate: round2(card.querySelector('.duty-extrakmrate')?.value || 0),[cite: 5]
+      extraHrs: Number(card.querySelector('.duty-extrahrs')?.value) || 0,[cite: 5]
+      extraHrRate: round2(card.querySelector('.duty-extrahrrate')?.value || 0),[cite: 5]
+      driverAllowanceQty: Number(card.querySelector('.duty-da-qty')?.value) || 0,[cite: 5]
+      driverAllowanceRate: round2(card.querySelector('.duty-da-rate')?.value || 0),[cite: 5]
+      nightChargesQty: Number(card.querySelector('.duty-nc-qty')?.value) || 0,[cite: 5]
+      nightChargesRate: round2(card.querySelector('.duty-nc-rate')?.value || 0),[cite: 5]
+      tollParking: round2(card.querySelector('.duty-toll')?.value || 0),[cite: 5]
+      slipImgs: slipRaw ? slipRaw.split(',').filter(Boolean) : [],[cite: 5]
+      tollImgs: tollRaw ? tollRaw.split(',').filter(Boolean) : [][cite: 5]
     });
   });
 
-  const firstDuty = duties[0] || {};[cite: 1, 2, 3]
+  const firstDuty = duties[0] || {};[cite: 5]
 
-  return {[cite: 1, 2, 3]
-    no: String(document.getElementById('billNo')?.value || nextNo()),[cite: 1, 2, 3]
-    date: document.getElementById('billDate')?.value || '',[cite: 1, 2, 3]
-    cust: document.getElementById('customer')?.value || '',[cite: 1, 2, 3]
-    custEmail: document.getElementById('custEmail')?.value || '',[cite: 1, 2, 3]
-    custPhone: document.getElementById('custPhone')?.value || '',
-    custGstin: document.getElementById('custGstin')?.value || '',[cite: 1, 2, 3]
-    duties: duties,[cite: 1, 2, 3]
-    firstDuty: firstDuty,[cite: 1, 2, 3]
-    gstType: c.gstType,[cite: 1, 2, 3]
-    cgst: c.cgst,[cite: 1, 2, 3]
-    sgst: c.sgst,[cite: 1, 2, 3]
-    igst: c.igst,[cite: 1, 2, 3]
-    tax: c.totalTax,[cite: 1, 2, 3]
-    sub: c.subtotal,[cite: 1, 2, 3]
-    total: c.tot,[cite: 1, 2, 3]
-    paid: round2(document.getElementById('paid')?.value || 0),[cite: 1, 2, 3]
-    bal: c.bal[cite: 1, 2, 3]
+  return {[cite: 5]
+    no: String(document.getElementById('billNo')?.value || nextNo()),[cite: 5]
+    date: document.getElementById('billDate')?.value || '',[cite: 5]
+    cust: document.getElementById('customer')?.value || '',[cite: 5]
+    custEmail: document.getElementById('custEmail')?.value || '',[cite: 5]
+    custPhone: document.getElementById('custPhone')?.value || '',[cite: 5]
+    custGstin: document.getElementById('custGstin')?.value || '',[cite: 5]
+    duties: duties,[cite: 5]
+    firstDuty: firstDuty,[cite: 5]
+    gstType: c.gstType,[cite: 5]
+    cgst: c.cgst,[cite: 5]
+    sgst: c.sgst,[cite: 5]
+    igst: c.igst,[cite: 5]
+    tax: c.totalTax,[cite: 5]
+    sub: c.subtotal,[cite: 5]
+    total: c.tot,[cite: 5]
+    paid: round2(document.getElementById('paid')?.value || 0),[cite: 5]
+    bal: c.bal[cite: 5]
   };
 }
 
-async function saveBill() {[cite: 1, 2, 3]
-  let b = getBillData();[cite: 1, 2, 3]
-  if (!b.cust) return alert("Customer Name is required.");[cite: 1, 2, 3]
-  if (!b.duties.length || !b.duties[0].trip) return alert("At least one trip description is required.");[cite: 1, 2, 3]
+async function saveBill() {[cite: 5]
+  let b = getBillData();[cite: 5]
+  if (!b.cust) return alert("Customer Name is required.");[cite: 5]
+  if (!b.duties.length || !b.duties[0].trip) return alert("At least one trip description is required.");[cite: 5]
 
-  let idx = data.bills.findIndex(x => String(x.no) === String(b.no));[cite: 1, 2, 3]
-  if (idx > -1) data.bills[idx] = b;[cite: 1, 2, 3]
-  else data.bills.push(b);[cite: 1, 2, 3]
-  persist();[cite: 1, 2, 3]
+  let idx = data.bills.findIndex(x => String(x.no) === String(b.no));[cite: 5]
+  if (idx > -1) data.bills[idx] = b;[cite: 5]
+  else data.bills.push(b);[cite: 5]
+  persist();[cite: 5]
 
-  isFormDirty = false;[cite: 1, 2, 3]
-  activePreviewBill = b;[cite: 1, 2, 3]
-  buildInvoice(b);[cite: 1, 2, 3]
-  showPage('preview');[cite: 1, 2, 3]
+  isFormDirty = false;[cite: 5]
+  activePreviewBill = b;[cite: 5]
+  buildInvoice(b);[cite: 5]
+  showPage('preview');[cite: 5]
 
-  const cleanDate = d => (d && String(d).trim().length === 10) ? d : null;[cite: 1, 2, 3]
+  const cleanDate = d => (d && String(d).trim().length === 10) ? d : null;[cite: 5]
 
-  setSyncStatus('Saving bill to cloud...', true);[cite: 1, 2, 3]
-  const res = await cloudReq('bills?on_conflict=invoice_no', 'POST', {[cite: 1, 2, 3]
-    invoice_no: String(b.no),[cite: 1, 2, 3]
-    invoice_date: cleanDate(b.date),[cite: 1, 2, 3]
-    duty_slip_no: b.firstDuty.dutySlip || null,[cite: 1, 2, 3]
-    duty_type: b.firstDuty.dutyType || 'Local (8 Hrs / 80 Kms)',[cite: 1, 2, 3]
-    customer_name: b.cust,[cite: 1, 2, 3]
-    customer_email: b.custEmail || null,[cite: 1, 2, 3]
-    customer_phone: b.custPhone || null,
-    customer_gst: b.custGstin || null,[cite: 1, 2, 3]
-    particulars: b.duties.map((d, i) => `#${i+1}: ${d.trip}`).join(' | '),[cite: 1, 2, 3]
-    vehicle: b.firstDuty.veh || null,[cite: 1, 2, 3]
-    driver: b.firstDuty.driver || null,[cite: 1, 2, 3]
-    travel_date: cleanDate(b.firstDuty.tdate),[cite: 1, 2, 3]
-    travel_end_date: cleanDate(b.firstDuty.tEndDate),[cite: 1, 2, 3]
-    total_kms: Number(b.firstDuty.totalKms) || 0,[cite: 1, 2, 3]
-    rate: Number(b.firstDuty.rate) || 0,[cite: 1, 2, 3]
-    quantity: Number(b.firstDuty.qty) || 1,[cite: 1, 2, 3]
-    extra_kms: Number(b.firstDuty.extraKms) || 0,[cite: 1, 2, 3]
-    extra_km_rate: Number(b.firstDuty.extraKmRate) || 0,[cite: 1, 2, 3]
-    extra_hrs: Number(b.firstDuty.extraHrs) || 0,[cite: 1, 2, 3]
-    extra_hr_rate: Number(b.firstDuty.extraHrRate) || 0,[cite: 1, 2, 3]
-    driver_allowance_qty: Number(b.firstDuty.driverAllowanceQty) || 0,[cite: 1, 2, 3]
-    driver_allowance_rate: Number(b.firstDuty.driverAllowanceRate) || 0,[cite: 1, 2, 3]
-    driver_allowance: Number(b.firstDuty.driverAllowanceQty * b.firstDuty.driverAllowanceRate) || 0,[cite: 1, 2, 3]
-    night_charges_qty: Number(b.firstDuty.nightChargesQty) || 0,[cite: 1, 2, 3]
-    night_charges_rate: Number(b.firstDuty.nightChargesRate) || 0,[cite: 1, 2, 3]
-    night_charges: Number(b.firstDuty.nightChargesQty * b.firstDuty.nightChargesRate) || 0,[cite: 1, 2, 3]
-    toll_parking: Number(b.firstDuty.tollParking) || 0,[cite: 1, 2, 3]
-    extra_charges: Number(b.firstDuty.tollParking) || 0,[cite: 1, 2, 3]
-    gst_type: b.gstType || 'none',[cite: 1, 2, 3]
-    cgst_amount: Number(b.cgst) || 0,[cite: 1, 2, 3]
-    sgst_amount: Number(b.sgst) || 0,[cite: 1, 2, 3]
-    igst_amount: Number(b.igst) || 0,[cite: 1, 2, 3]
-    gst_amount: Number(b.tax) || 0,[cite: 1, 2, 3]
-    subtotal: Number(b.sub) || 0,[cite: 1, 2, 3]
-    total: Number(b.total) || 0,[cite: 1, 2, 3]
-    amount_paid: Number(b.paid) || 0,[cite: 1, 2, 3]
-    balance: Number(b.bal) || 0,[cite: 1, 2, 3]
-    notes: 'DUTIES_JSON:' + JSON.stringify(b.duties)[cite: 1, 2, 3]
+  setSyncStatus('Saving bill to cloud...', true);[cite: 5]
+  const res = await cloudReq('bills?on_conflict=invoice_no', 'POST', {[cite: 5]
+    invoice_no: String(b.no),[cite: 5]
+    invoice_date: cleanDate(b.date),[cite: 5]
+    duty_slip_no: b.firstDuty.dutySlip || null,[cite: 5]
+    duty_type: b.firstDuty.dutyType || 'Local (8 Hrs / 80 Kms)',[cite: 5]
+    customer_name: b.cust,[cite: 5]
+    customer_email: b.custEmail || null,[cite: 5]
+    customer_phone: b.custPhone || null,[cite: 5]
+    customer_gst: b.custGstin || null,[cite: 5]
+    particulars: b.duties.map((d, i) => `#${i+1}: ${d.trip}`).join(' | '),[cite: 5]
+    vehicle: b.firstDuty.veh || null,[cite: 5]
+    driver: b.firstDuty.driver || null,[cite: 5]
+    travel_date: cleanDate(b.firstDuty.tdate),[cite: 5]
+    travel_end_date: cleanDate(b.firstDuty.tEndDate),[cite: 5]
+    total_kms: Number(b.firstDuty.totalKms) || 0,[cite: 5]
+    rate: Number(b.firstDuty.rate) || 0,[cite: 5]
+    quantity: Number(b.firstDuty.qty) || 1,[cite: 5]
+    extra_kms: Number(b.firstDuty.extraKms) || 0,[cite: 5]
+    extra_km_rate: Number(b.firstDuty.extraKmRate) || 0,[cite: 5]
+    extra_hrs: Number(b.firstDuty.extraHrs) || 0,[cite: 5]
+    extra_hr_rate: Number(b.firstDuty.extraHrRate) || 0,[cite: 5]
+    driver_allowance_qty: Number(b.firstDuty.driverAllowanceQty) || 0,[cite: 5]
+    driver_allowance_rate: Number(b.firstDuty.driverAllowanceRate) || 0,[cite: 5]
+    driver_allowance: Number(b.firstDuty.driverAllowanceQty * b.firstDuty.driverAllowanceRate) || 0,[cite: 5]
+    night_charges_qty: Number(b.firstDuty.nightChargesQty) || 0,[cite: 5]
+    night_charges_rate: Number(b.firstDuty.nightChargesRate) || 0,[cite: 5]
+    night_charges: Number(b.firstDuty.nightChargesQty * b.firstDuty.nightChargesRate) || 0,[cite: 5]
+    toll_parking: Number(b.firstDuty.tollParking) || 0,[cite: 5]
+    extra_charges: Number(b.firstDuty.tollParking) || 0,[cite: 5]
+    gst_type: b.gstType || 'none',[cite: 5]
+    cgst_amount: Number(b.cgst) || 0,[cite: 5]
+    sgst_amount: Number(b.sgst) || 0,[cite: 5]
+    igst_amount: Number(b.igst) || 0,[cite: 5]
+    gst_amount: Number(b.tax) || 0,[cite: 5]
+    subtotal: Number(b.sub) || 0,[cite: 5]
+    total: Number(b.total) || 0,[cite: 5]
+    amount_paid: Number(b.paid) || 0,[cite: 5]
+    balance: Number(b.bal) || 0,[cite: 5]
+    notes: 'DUTIES_JSON:' + JSON.stringify(b.duties)[cite: 5]
   });
 
-  if (res.ok) {[cite: 1, 2, 3]
-    setSyncStatus('Cloud Synced', true);[cite: 1, 2, 3]
+  if (res.ok) {[cite: 5]
+    setSyncStatus('Cloud Synced', true);[cite: 5]
   } else {
-    setSyncStatus('Saved locally only', false);[cite: 1, 2, 3]
-    alert('Bill saved locally, but database sync failed: ' + res.error);[cite: 1, 2, 3]
+    setSyncStatus('Saved locally only', false);[cite: 5]
+    alert('Bill saved locally, but database sync failed: ' + res.error);[cite: 5]
   }
 }
 
-function previewBill() {[cite: 1, 2, 3]
-  activePreviewBill = getBillData();[cite: 1, 2, 3]
-  buildInvoice(activePreviewBill);[cite: 1, 2, 3]
-  showPage('preview');[cite: 1, 2, 3]
+function previewBill() {[cite: 5]
+  activePreviewBill = getBillData();[cite: 5]
+  buildInvoice(activePreviewBill);[cite: 5]
+  showPage('preview');[cite: 5]
 }
 
 /* ==================== AUTOMATIC PDF SENDER TO WHATSAPP ==================== */
-async function shareBillWhatsApp() {
-  const b = activePreviewBill || getBillData();
-  if (!b || !b.cust) return alert("Please create or preview a bill first.");
+async function shareBillWhatsApp() {[cite: 5]
+  const b = activePreviewBill || getBillData();[cite: 5]
+  if (!b || !b.cust) return alert("Please create or preview a bill first.");[cite: 5]
 
-  buildInvoice(b);
+  buildInvoice(b);[cite: 5]
 
-  const invElement = document.getElementById('invoice');
-  const btn = document.getElementById('btnWhatsApp');
-  const originalText = btn ? btn.innerText : 'WhatsApp Bill (PDF)';
+  const invElement = document.getElementById('invoice');[cite: 5]
+  const btn = document.getElementById('btnWhatsApp');[cite: 5]
+  const originalText = btn ? btn.innerText : 'WhatsApp Bill (PDF)';[cite: 5]
   
-  if (btn) {
-    btn.innerText = '⏳ Generating PDF...';
-    btn.disabled = true;
+  if (btn) {[cite: 5]
+    btn.innerText = '⏳ Generating PDF...';[cite: 5]
+    btn.disabled = true;[cite: 5]
   }
 
-  const filename = `Invoice_${b.no}_${Date.now()}.pdf`;
+  const filename = `Invoice_${b.no}_${Date.now()}.pdf`;[cite: 5]
 
-  const opt = {
-    margin: [8, 10, 8, 10],
-    filename: filename,
-    image: { type: 'jpeg', quality: 0.98 },
-    html2canvas: { scale: 2, useCORS: true },
-    jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+  const opt = {[cite: 5]
+    margin: [8, 10, 8, 10],[cite: 5]
+    filename: filename,[cite: 5]
+    image: { type: 'jpeg', quality: 0.98 },[cite: 5]
+    html2canvas: { scale: 2, useCORS: true },[cite: 5]
+    jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }[cite: 5]
   };
 
-  setSyncStatus('Rendering & uploading PDF...', true);
+  setSyncStatus('Rendering & uploading PDF...', true);[cite: 5]
 
   try {
-    // 1. Generate PDF blob completely in memory (no disk download)
-    const pdfBlob = await html2pdf().set(opt).from(invElement).output('blob');
+    const pdfBlob = await html2pdf().set(opt).from(invElement).output('blob');[cite: 5]
 
-    // 2. Upload the PDF file directly to cloud bucket
-    const uploadRes = await fetch(`${SUPABASE_UPLOAD}/${filename}`, {
-      method: 'POST',
-      headers: {
-        'apikey': S_KEY,
-        'Authorization': 'Bearer ' + S_KEY,
-        'Content-Type': 'application/pdf'
+    const uploadRes = await fetch(`${SUPABASE_UPLOAD}/${filename}`, {[cite: 5]
+      method: 'POST',[cite: 5]
+      headers: {[cite: 5]
+        'apikey': S_KEY,[cite: 5]
+        'Authorization': 'Bearer ' + S_KEY,[cite: 5]
+        'Content-Type': 'application/pdf'[cite: 5]
       },
-      body: pdfBlob
+      body: pdfBlob[cite: 5]
     });
 
-    const pdfLink = `${SUPABASE_STORAGE}/${filename}`;
+    const pdfLink = `${SUPABASE_STORAGE}/${filename}`;[cite: 5]
 
-    // Clean customer phone number if available (support 10-digit Indian numbers)
-    let cleanPhone = String(b.custPhone || '').replace(/[^0-9]/g, '');
-    if (cleanPhone.length === 10) {
-      cleanPhone = '91' + cleanPhone;
+    let cleanPhone = String(b.custPhone || '').replace(/[^0-9]/g, '');[cite: 5]
+    if (cleanPhone.length === 10) {[cite: 5]
+      cleanPhone = '91' + cleanPhone;[cite: 5]
     }
 
-    // 3. Native mobile device file share (attaches the PDF file directly on phones)
-    const file = new File([pdfBlob], `Invoice_${b.no}.pdf`, { type: 'application/pdf' });
-    if (navigator.canShare && navigator.canShare({ files: [file] })) {
+    const file = new File([pdfBlob], `Invoice_${b.no}.pdf`, { type: 'application/pdf' });[cite: 5]
+    if (navigator.canShare && navigator.canShare({ files: [file] })) {[cite: 5]
       try {
-        await navigator.share({
-          files: [file],
-          title: `Tax Invoice #${b.no}`,
-          text: `Dear ${b.cust}, please find your official Tax Invoice #${b.no} from ${data.settings.name}. Total: ${money(b.total)}`
+        await navigator.share({[cite: 5]
+          files: [file],[cite: 5]
+          title: `Tax Invoice #${b.no}`,[cite: 5]
+          text: `Dear ${b.cust}, please find your official Tax Invoice #${b.no} from ${data.settings.name}. Total: ${money(b.total)}`[cite: 5]
         });
-        setSyncStatus('Sent via WhatsApp', true);
-        if (btn) { btn.innerText = originalText; btn.disabled = false; }
-        return;
-      } catch (err) {
-        // Fallback to direct link if user cancels share sheet
+        setSyncStatus('Sent via WhatsApp', true);[cite: 5]
+        if (btn) { btn.innerText = originalText; btn.disabled = false; }[cite: 5]
+        return;[cite: 5]
+      } catch (err) {[cite: 5]
       }
     }
 
-    // 4. Desktop WhatsApp Web / Direct Link fallback
-    let text = `*TAX INVOICE - ${data.settings.name.toUpperCase()}*\n`;
-    text += `*Invoice No:* ${b.no} | *Date:* ${fmtDate(b.date)}\n`;
-    text += `*Customer:* ${b.cust}\n`;
-    text += `*Total Amount:* ${money(b.total)}\n`;
-    text += `*Advance Paid:* ${money(b.paid)}\n`;
-    text += `*Balance Due:* ${money(b.bal)}\n`;
-    text += `--------------------------------\n`;
-    text += `📄 *Download / View Official PDF Invoice:*\n${pdfLink}\n`;
-    text += `--------------------------------\n`;
-    text += `Bank Transfer Details:\n${data.settings.bank}\n`;
-    text += `Contact: ${data.settings.phone}`;
+    let text = `*TAX INVOICE - ${data.settings.name.toUpperCase()}*\n`;[cite: 5]
+    text += `*Invoice No:* ${b.no} | *Date:* ${fmtDate(b.date)}\n`;[cite: 5]
+    text += `*Customer:* ${b.cust}\n`;[cite: 5]
+    text += `*Total Amount:* ${money(b.total)}\n`;[cite: 5]
+    text += `*Advance Paid:* ${money(b.paid)}\n`;[cite: 5]
+    text += `*Balance Due:* ${money(b.bal)}\n`;[cite: 5]
+    text += `--------------------------------\n`;[cite: 5]
+    text += `📄 *Download / View Official PDF Invoice:*\n${pdfLink}\n`;[cite: 5]
+    text += `--------------------------------\n`;[cite: 5]
+    text += `Bank Transfer Details:\n${data.settings.bank}\n`;[cite: 5]
+    text += `Contact: ${data.settings.phone}`;[cite: 5]
 
-    let waTarget = cleanPhone ? `https://wa.me/${cleanPhone}?text=` : `https://wa.me/?text=`;
-    const whatsappUrl = `${waTarget}${encodeURIComponent(text)}`;
+    let waTarget = cleanPhone ? `https://wa.me/${cleanPhone}?text=` : `https://wa.me/?text=`;[cite: 5]
+    const whatsappUrl = `${waTarget}${encodeURIComponent(text)}`;[cite: 5]
     
-    setSyncStatus('PDF Cloud Linked', true);
-    window.open(whatsappUrl, '_blank');
+    setSyncStatus('PDF Cloud Linked', true);[cite: 5]
+    window.open(whatsappUrl, '_blank');[cite: 5]
   } catch (err) {
-    alert("Could not process PDF for WhatsApp: " + err.message);
-    setSyncStatus('PDF Error', false);
+    alert("Could not process PDF for WhatsApp: " + err.message);[cite: 5]
+    setSyncStatus('PDF Error', false);[cite: 5]
   } finally {
-    if (btn) {
-      btn.innerText = originalText;
-      btn.disabled = false;
+    if (btn) {[cite: 5]
+      btn.innerText = originalText;[cite: 5]
+      btn.disabled = false;[cite: 5]
     }
   }
 }
 
 /* ==================== YAHOO MAIL COMPOSE ==================== */
-function sendInvoiceMail() {
-  const b = activePreviewBill || getBillData();
-  if (!b || !b.cust) return alert("Please create or preview a bill first.");
+function sendInvoiceMail() {[cite: 5]
+  const b = activePreviewBill || getBillData();[cite: 5]
+  if (!b || !b.cust) return alert("Please create or preview a bill first.");[cite: 5]
 
-  const recipient = b.custEmail || '';
-  const subject = `Tax Invoice #${b.no} - New Sarthi Travels (${b.cust})`;
+  const recipient = b.custEmail || '';[cite: 5]
+  const subject = `Tax Invoice #${b.no} - New Sarthi Travels (${b.cust})`;[cite: 5]
 
-  let body = `Dear ${b.cust},\n\n`;
-  body += `Please find the tax invoice details for your booking below:\n\n`;
-  body += `Invoice No: ${b.no}\n`;
-  body += `Invoice Date: ${fmtDate(b.date)}\n`;
-  body += `Customer GSTIN: ${b.custGstin || 'Unregistered'}\n\n`;
-  body += `--- BOOKED DUTIES & TRIPS ---\n`;
+  let body = `Dear ${b.cust},\n\n`;[cite: 5]
+  body += `Please find the tax invoice details for your booking below:\n\n`;[cite: 5]
+  body += `Invoice No: ${b.no}\n`;[cite: 5]
+  body += `Invoice Date: ${fmtDate(b.date)}\n`;[cite: 5]
+  body += `Customer GSTIN: ${b.custGstin || 'Unregistered'}\n\n`;[cite: 5]
+  body += `--- BOOKED DUTIES & TRIPS ---\n`;[cite: 5]
 
-  b.duties.forEach((d, idx) => {
-    body += `\nDuty #${idx + 1}: ${d.trip}\n`;
-    body += `Vehicle: ${d.veh || 'N/A'} | Driver: ${d.driver || 'N/A'}\n`;
-    body += `Date: ${fmtDate(d.tdate)} to ${fmtDate(d.tEndDate)}\n`;
-    body += `Total Distance: ${d.totalKms} KMs\n`;
-    if (d.tollParking > 0) body += `Toll & Parking: ${money(d.tollParking)}\n`;
-    
-    if (d.slipImgs && d.slipImgs.length > 0) {
-      body += `Duty Slip Photos:\n`;
-      d.slipImgs.forEach((url, i) => { body += `  [Slip ${i+1}]: ${url}\n`; });
-    }
-    if (d.tollImgs && d.tollImgs.length > 0) {
-      body += `Toll / Parking Photos:\n`;
-      d.tollImgs.forEach((url, i) => { body += `  [Toll ${i+1}]: ${url}\n`; });
-    }
+  b.duties.forEach((d, idx) => {[cite: 5]
+    body += `\nDuty #${idx + 1}: ${d.trip}\n`;[cite: 5]
+    body += `Vehicle: ${d.veh || 'N/A'} | Driver: ${d.driver || 'N/A'}\n`;[cite: 5]
+    body += `Date: ${fmtDate(d.tdate)} to ${fmtDate(d.tEndDate)}\n`;[cite: 5]
+    body += `Total Distance: ${d.totalKms} KMs\n`;[cite: 5]
+    if (d.tollParking > 0) body += `Toll & Parking: ${money(d.tollParking)}\n`;[cite: 5]
   });
 
-  body += `\n--- PAYMENT SUMMARY ---\n`;
-  body += `Subtotal: ${money(b.sub)}\n`;
-  if (b.tax > 0) body += `Tax Amount: ${money(b.tax)}\n`;
-  body += `Total Amount: ${money(b.total)}\n`;
-  body += `Advance Paid: ${money(b.paid)}\n`;
-  body += `Balance Due: ${money(b.bal)}\n\n`;
-  body += `Bank Transfer Details:\n${data.settings.bank}\n\n`;
-  body += `Regards,\n${data.settings.name}\n${data.settings.phone}\n${data.settings.address}`;
+  body += `\n--- PAYMENT SUMMARY ---\n`;[cite: 5]
+  body += `Subtotal: ${money(b.sub)}\n`;[cite: 5]
+  if (b.tax > 0) body += `Tax Amount: ${money(b.tax)}\n`;[cite: 5]
+  body += `Total Amount: ${money(b.total)}\n`;[cite: 5]
+  body += `Advance Paid: ${money(b.paid)}\n`;[cite: 5]
+  body += `Balance Due: ${money(b.bal)}\n\n`;[cite: 5]
+  body += `Bank Transfer Details:\n${data.settings.bank}\n\n`;[cite: 5]
+  body += `Regards,\n${data.settings.name}\n${data.settings.phone}\n${data.settings.address}`;[cite: 5]
 
-  // Direct Yahoo Mail web composer
-  const yahooUrl = `https://compose.mail.yahoo.com/?to=${encodeURIComponent(recipient)}&subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-  window.open(yahooUrl, '_blank');
+  const yahooUrl = `https://compose.mail.yahoo.com/?to=${encodeURIComponent(recipient)}&subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;[cite: 5]
+  window.open(yahooUrl, '_blank');[cite: 5]
 }
 
-function amountWords(amount) {[cite: 1, 2, 3]
-  let val = round2(amount);[cite: 1, 2, 3]
-  if (val <= 0) return 'Rupees Zero Only';[cite: 1, 2, 3]
+function amountWords(amount) {[cite: 5]
+  let val = round2(amount);[cite: 5]
+  if (val <= 0) return 'Rupees Zero Only';[cite: 5]
 
-  const ones = ['', 'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight', 'Nine', 'Ten', 'Eleven', 'Twelve', 'Thirteen', 'Fourteen', 'Fifteen', 'Sixteen', 'Seventeen', 'Eighteen', 'Nineteen'];[cite: 1, 2, 3]
-  const tens = ['', '', 'Twenty', 'Thirty', 'Forty', 'Fifty', 'Sixty', 'Seventy', 'Eighty', 'Ninety'];[cite: 1, 2, 3]
+  const ones = ['', 'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight', 'Nine', 'Ten', 'Eleven', 'Twelve', 'Thirteen', 'Fourteen', 'Fifteen', 'Sixteen', 'Seventeen', 'Eighteen', 'Nineteen'];[cite: 5]
+  const tens = ['', '', 'Twenty', 'Thirty', 'Forty', 'Fifty', 'Sixty', 'Seventy', 'Eighty', 'Ninety'];[cite: 5]
   
-  function convertUnderThousand(num) {[cite: 1, 2, 3]
-    let s = '';[cite: 1, 2, 3]
-    if (num >= 100) {[cite: 1, 2, 3]
-      s += ones[Math.floor(num / 100)] + ' Hundred ';[cite: 1, 2, 3]
-      num %= 100;[cite: 1, 2, 3]
+  function convertUnderThousand(num) {[cite: 5]
+    let s = '';[cite: 5]
+    if (num >= 100) {[cite: 5]
+      s += ones[Math.floor(num / 100)] + ' Hundred ';[cite: 5]
+      num %= 100;[cite: 5]
     }
-    if (num >= 20) {[cite: 1, 2, 3]
-      s += tens[Math.floor(num / 10)] + ' ';[cite: 1, 2, 3]
-      num %= 10;[cite: 1, 2, 3]
+    if (num >= 20) {[cite: 5]
+      s += tens[Math.floor(num / 10)] + ' ';[cite: 5]
+      num %= 10;[cite: 5]
     }
-    if (num > 0) {[cite: 1, 2, 3]
-      s += ones[num] + ' ';[cite: 1, 2, 3]
+    if (num > 0) {[cite: 5]
+      s += ones[num] + ' ';[cite: 5]
     }
-    return s;[cite: 1, 2, 3]
+    return s;[cite: 5]
   }
 
-  let rupees = Math.floor(val);[cite: 1, 2, 3]
-  let paise = Math.round((val - rupees) * 100);[cite: 1, 2, 3]
+  let rupees = Math.floor(val);[cite: 5]
+  let paise = Math.round((val - rupees) * 100);[cite: 5]
 
-  let out = '';[cite: 1, 2, 3]
-  const cr = Math.floor(rupees / 10000000); rupees %= 10000000;[cite: 1, 2, 3]
-  const lk = Math.floor(rupees / 100000); rupees %= 100000;[cite: 1, 2, 3]
-  const th = Math.floor(rupees / 1000); rupees %= 1000;[cite: 1, 2, 3]
+  let out = '';[cite: 5]
+  const cr = Math.floor(rupees / 10000000); rupees %= 10000000;[cite: 5]
+  const lk = Math.floor(rupees / 100000); rupees %= 100000;[cite: 5]
+  const th = Math.floor(rupees / 1000); rupees %= 1000;[cite: 5]
+  if (cr) out += convertUnderThousand(cr) + 'Crore ';[cite: 5]
+  if (lk) out += convertUnderThousand(lk) + 'Lakh ';[cite: 5]
+  if (th) out += convertUnderThousand(th) + 'Thousand ';[cite: 5]
+  if (rupees) out += convertUnderThousand(rupees);[cite: 5]
 
-  if (cr) out += convertUnderThousand(cr) + 'Crore ';[cite: 1, 2, 3]
-  if (lk) out += convertUnderThousand(lk) + 'Lakh ';[cite: 1, 2, 3]
-  if (th) out += convertUnderThousand(th) + 'Thousand ';[cite: 1, 2, 3]
-  if (rupees) out += convertUnderThousand(rupees);[cite: 1, 2, 3]
-
-  out = 'Rupees ' + (out.trim() || 'Zero');[cite: 1, 2, 3]
-  if (paise > 0) {[cite: 1, 2, 3]
-    out += ' and ' + convertUnderThousand(paise).trim() + ' Paise';[cite: 1, 2, 3]
+  out = 'Rupees ' + (out.trim() || 'Zero');[cite: 5]
+  if (paise > 0) {[cite: 5]
+    out += ' and ' + convertUnderThousand(paise).trim() + ' Paise';[cite: 5]
   }
-  return out + ' Only';[cite: 1, 2, 3]
+  return out + ' Only';[cite: 5]
 }
 
-function buildInvoice(b) {[cite: 1, 2, 3]
-  let s = data.settings;[cite: 1, 2, 3]
-  const invEl = document.getElementById('invoice');[cite: 1, 2, 3]
-  if (!invEl) return;[cite: 1, 2, 3]
+function buildInvoice(b) {[cite: 5]
+  let s = data.settings;[cite: 5]
+  const invEl = document.getElementById('invoice');[cite: 5]
+  if (!invEl) return;[cite: 5]
 
-  let gstRows = '';[cite: 1, 2, 3]
-  if (b.gstType === 'cgst_sgst_5') {[cite: 1, 2, 3]
+  let gstRows = '';[cite: 5]
+  if (b.gstType === 'cgst_sgst_5') {[cite: 5]
     gstRows = `
       <div class="total-row"><span>CGST (2.5%)</span><span>${money(b.cgst)}</span></div>
       <div class="total-row"><span>SGST (2.5%)</span><span>${money(b.sgst)}</span></div>
-    `;[cite: 1, 2, 3]
-  } else if (b.gstType === 'cgst_sgst_12') {[cite: 1, 2, 3]
+    `;[cite: 5]
+  } else if (b.gstType === 'cgst_sgst_12') {[cite: 5]
     gstRows = `
       <div class="total-row"><span>CGST (6.0%)</span><span>${money(b.cgst)}</span></div>
       <div class="total-row"><span>SGST (6.0%)</span><span>${money(b.sgst)}</span></div>
-    `;[cite: 1, 2, 3]
-  } else if (b.gstType === 'igst_5') {[cite: 1, 2, 3]
-    gstRows = `<div class="total-row"><span>IGST (5.0%)</span><span>${money(b.igst)}</span></div>`;[cite: 1, 2, 3]
-  } else if (b.gstType === 'igst_12') {[cite: 1, 2, 3]
-    gstRows = `<div class="total-row"><span>IGST (12.0%)</span><span>${money(b.igst)}</span></div>`;[cite: 1, 2, 3]
+    `;[cite: 5]
+  } else if (b.gstType === 'igst_5') {[cite: 5]
+    gstRows = `<div class="total-row"><span>IGST (5.0%)</span><span>${money(b.igst)}</span></div>`;[cite: 5]
+  } else if (b.gstType === 'igst_12') {[cite: 5]
+    gstRows = `<div class="total-row"><span>IGST (12.0%)</span><span>${money(b.igst)}</span></div>`;[cite: 5]
   }
 
-  let tableRows = '';[cite: 1, 2, 3]
-  let attachedImagesHtml = '';[cite: 1, 2, 3]
+  let tableRows = '';[cite: 5]
+  let attachedImagesHtml = '';[cite: 5]
 
-  b.duties.forEach((d, idx) => {[cite: 1, 2, 3]
-    const span = (d.tdate && d.tEndDate && d.tdate !== d.tEndDate)  [cite: 1, 2, 3]
-      ? `${fmtDate(d.tdate)} to ${fmtDate(d.tEndDate)}` [cite: 1, 2, 3]
-      : fmtDate(d.tdate || b.date);[cite: 1, 2, 3]
+  b.duties.forEach((d, idx) => {[cite: 5]
+    const span = (d.tdate && d.tEndDate && d.tdate !== d.tEndDate)   [cite: 5]
+      ? `${fmtDate(d.tdate)} to ${fmtDate(d.tEndDate)}` [cite: 5]
+      : fmtDate(d.tdate || b.date);[cite: 5]
 
-    let displayDutyType = d.dutyType;[cite: 1, 2, 3]
-    if (displayDutyType === 'Outstation Duty') {[cite: 1, 2, 3]
-      displayDutyType = 'Outstation Duty (Min. 250 KMs/Day)';[cite: 1, 2, 3]
+    let displayDutyType = d.dutyType;[cite: 5]
+    if (displayDutyType === 'Outstation Duty') {[cite: 5]
+      displayDutyType = 'Outstation Duty (Min. 250 KMs/Day)';[cite: 5]
     }
 
-    const daTotal = round2((Number(d.driverAllowanceQty) || 0) * (Number(d.driverAllowanceRate) || 0));[cite: 1, 2, 3]
-    const ncTotal = round2((Number(d.nightChargesQty) || 0) * (Number(d.nightChargesRate) || 0));[cite: 1, 2, 3]
+    const daTotal = round2((Number(d.driverAllowanceQty) || 0) * (Number(d.driverAllowanceRate) || 0));[cite: 5]
+    const ncTotal = round2((Number(d.nightChargesQty) || 0) * (Number(d.nightChargesRate) || 0));[cite: 5]
 
     tableRows += `
       <tr style="background:#f4f4f4; font-weight:bold;">
@@ -1897,26 +1897,26 @@ function buildInvoice(b) {[cite: 1, 2, 3]
       ${daTotal > 0 ? `<tr><td style="padding-left:14px;">Driver Allowance</td><td align="center">${d.driverAllowanceQty} Day(s)</td><td class="right">${money(d.driverAllowanceRate)}</td><td class="right">${money(daTotal)}</td></tr>` : ''}
       ${ncTotal > 0 ? `<tr><td style="padding-left:14px;">Night Charges</td><td align="center">${d.nightChargesQty} Night(s)</td><td class="right">${money(d.nightChargesRate)}</td><td class="right">${money(ncTotal)}</td></tr>` : ''}
       ${d.tollParking > 0 ? `<tr><td style="padding-left:14px;">Toll Tax & Parking Charges</td><td align="center">—</td><td class="right">—</td><td class="right">${money(d.tollParking)}</td></tr>` : ''}
-    `;[cite: 1, 2, 3]
+    `;[cite: 5]
 
-    const slipImgs = Array.isArray(d.slipImgs) ? d.slipImgs : (d.slipImg ? d.slipImg.split(',').filter(Boolean) : []);[cite: 1, 2, 3]
-    const tollImgs = Array.isArray(d.tollImgs) ? d.tollImgs : (d.tollImg ? d.tollImg.split(',').filter(Boolean) : []);[cite: 1, 2, 3]
+    const slipImgs = Array.isArray(d.slipImgs) ? d.slipImgs : (d.slipImg ? d.slipImg.split(',').filter(Boolean) : []);[cite: 5]
+    const tollImgs = Array.isArray(d.tollImgs) ? d.tollImgs : (d.tollImg ? d.tollImg.split(',').filter(Boolean) : []);[cite: 5]
 
-    if (slipImgs.length > 0 || tollImgs.length > 0) {[cite: 1, 2, 3]
-      attachedImagesHtml += `<div style="margin-top:8px;"><b>Duty #${idx+1} Attached Receipts:</b><br>`;[cite: 1, 2, 3]
-      slipImgs.forEach((u, i) => {[cite: 1, 2, 3]
-        attachedImagesHtml += `<a href="${u}" target="_blank"><img src="${u}" title="Duty Slip #${i+1}"></a>`;[cite: 1, 2, 3]
+    if (slipImgs.length > 0 || tollImgs.length > 0) {[cite: 5]
+      attachedImagesHtml += `<div style="margin-top:8px;"><b>Duty #${idx+1} Attached Receipts:</b><br>`;[cite: 5]
+      slipImgs.forEach((u, i) => {[cite: 5]
+        attachedImagesHtml += `<a href="${u}" target="_blank"><img src="${u}" title="Duty Slip #${i+1}"></a>`;[cite: 5]
       });
-      tollImgs.forEach((u, i) => {[cite: 1, 2, 3]
-        attachedImagesHtml += `<a href="${u}" target="_blank"><img src="${u}" title="Toll Slip #${i+1}"></a>`;[cite: 1, 2, 3]
+      tollImgs.forEach((u, i) => {[cite: 5]
+        attachedImagesHtml += `<a href="${u}" target="_blank"><img src="${u}" title="Toll Slip #${i+1}"></a>`;[cite: 5]
       });
-      attachedImagesHtml += `</div>`;[cite: 1, 2, 3]
+      attachedImagesHtml += `</div>`;[cite: 5]
     }
   });
 
-  const signatureHtml = s.signature [cite: 3]
-    ? `<div><img src="${esc(s.signature)}" class="sign-img" alt="Digital Signature"></div>` [cite: 3]
-    : `<div style="height:45px"></div>`;[cite: 3]
+  const signatureHtml = s.signature [cite: 5]
+    ? `<div><img src="${esc(s.signature)}" class="sign-img" alt="Digital Signature"></div>` [cite: 5]
+    : `<div style="height:45px"></div>`;[cite: 5]
 
   invEl.innerHTML = `
     <div class="inv-header">
@@ -1987,45 +1987,45 @@ function buildInvoice(b) {[cite: 1, 2, 3]
       ${signatureHtml}
       <p style="margin:0; font-size:12px;"><b>Authorized Signatory</b></p>
     </div>
-  `;[cite: 1, 2, 3]
+  `;[cite: 5]
 }
 
-function renderDash() {[cite: 1, 2, 3]
-  if (document.getElementById('statBills')) document.getElementById('statBills').innerText = data.bills.length;[cite: 1, 2, 3]
-  const now = new Date(), ym = now.toISOString().slice(0, 7);[cite: 1, 2, 3]
-  const mTotal = data.bills.filter(b => b.date && b.date.startsWith(ym)).reduce((a, b) => a + (Number(b.total) || 0), 0);[cite: 1, 2, 3]
-  if (document.getElementById('statMonth')) document.getElementById('statMonth').innerText = money(mTotal);[cite: 1, 2, 3]
-  if (document.getElementById('statCustomers')) document.getElementById('statCustomers').innerText = data.customers.length;[cite: 1, 2, 3]
-  if (document.getElementById('statVehicles')) document.getElementById('statVehicles').innerText = data.vehicles.length;[cite: 1, 2, 3]
-  if (document.getElementById('statVendors')) document.getElementById('statVendors').innerText = data.vendors.length;[cite: 1, 2, 3]
+function renderDash() {[cite: 5]
+  if (document.getElementById('statBills')) document.getElementById('statBills').innerText = data.bills.length;[cite: 5]
+  const now = new Date(), ym = now.toISOString().slice(0, 7);[cite: 5]
+  const mTotal = data.bills.filter(b => b.date && b.date.startsWith(ym)).reduce((a, b) => a + (Number(b.total) || 0), 0);[cite: 5]
+  if (document.getElementById('statMonth')) document.getElementById('statMonth').innerText = money(mTotal);[cite: 5]
+  if (document.getElementById('statCustomers')) document.getElementById('statCustomers').innerText = data.customers.length;[cite: 5]
+  if (document.getElementById('statVehicles')) document.getElementById('statVehicles').innerText = data.vehicles.length;[cite: 5]
+  if (document.getElementById('statVendors')) document.getElementById('statVendors').innerText = data.vendors.length;[cite: 5]
 
-  const list = data.bills.slice(-5).reverse();[cite: 1, 2, 3]
-  const recentEl = document.getElementById('recent');[cite: 1, 2, 3]
-  if (recentEl) {[cite: 1, 2, 3]
+  const list = data.bills.slice(-5).reverse();[cite: 5]
+  const recentEl = document.getElementById('recent');[cite: 5]
+  if (recentEl) {[cite: 5]
     recentEl.innerHTML = list.length ? `
       <table>
         <thead><tr><th>No</th><th>Customer</th><th>Duties</th><th>Date</th><th class="right">Amount</th><th></th></tr></thead>
         <tbody>
           ${list.map(b => `<tr><td>${esc(b.no)}</td><td>${esc(b.cust)}</td><td>${b.duties.length}</td><td>${fmtDate(b.date)}</td><td class="right">${money(b.total)}</td><td class="right"><button class="btn light" onclick="editBill('${esc(b.no)}')">Edit</button> <button class="btn dark" onclick="viewBill('${esc(b.no)}')">View</button></td></tr>`).join('')}
         </tbody>
-      </table>` : '<div class="empty">No invoices recorded yet.</div>';[cite: 1, 2, 3]
+      </table>` : '<div class="empty">No invoices recorded yet.</div>';[cite: 5]
   }
 }
 
-function viewBill(no) {[cite: 1, 2, 3]
-  const b = data.bills.find(x => String(x.no) === String(no));[cite: 1, 2, 3]
-  if (b) {[cite: 1, 2, 3]
-    activePreviewBill = b;[cite: 1, 2, 3]
-    buildInvoice(b);[cite: 1, 2, 3]
-    showPage('preview');[cite: 1, 2, 3]
+function viewBill(no) {[cite: 5]
+  const b = data.bills.find(x => String(x.no) === String(no));[cite: 5]
+  if (b) {[cite: 5]
+    activePreviewBill = b;[cite: 5]
+    buildInvoice(b);[cite: 5]
+    showPage('preview');[cite: 5]
   }
 }
 
-function renderBills() {[cite: 1, 2, 3]
-  const q = (document.getElementById('billSearch')?.value || '').toLowerCase();[cite: 1, 2, 3]
-  const filtered = data.bills.filter(b => !q || (b.cust && b.cust.toLowerCase().includes(q)) || String(b.no).includes(q));[cite: 1, 2, 3]
-  const tableEl = document.getElementById('billTable');[cite: 1, 2, 3]
-  if (!tableEl) return;[cite: 1, 2, 3]
+function renderBills() {[cite: 5]
+  const q = (document.getElementById('billSearch')?.value || '').toLowerCase();[cite: 5]
+  const filtered = data.bills.filter(b => !q || (b.cust && b.cust.toLowerCase().includes(q)) || String(b.no).includes(q));[cite: 5]
+  const tableEl = document.getElementById('billTable');[cite: 5]
+  if (!tableEl) return;[cite: 5]
 
   tableEl.innerHTML = filtered.length ? `
     <table>
@@ -2046,106 +2046,105 @@ function renderBills() {[cite: 1, 2, 3]
             </td>
           </tr>`).join('')}
       </tbody>
-    </table>` : '<div class="empty">No matching invoices found.</div>';[cite: 1, 2, 3]
+    </table>` : '<div class="empty">No matching invoices found.</div>';[cite: 5]
 }
 
-function editBill(no) {[cite: 1, 2, 3]
-  const b = data.bills.find(x => String(x.no) === String(no));[cite: 1, 2, 3]
-  if (!b) return;[cite: 1, 2, 3]
+function editBill(no) {[cite: 5]
+  const b = data.bills.find(x => String(x.no) === String(no));[cite: 5]
+  if (!b) return;[cite: 5]
 
-  showPage('newbill');[cite: 1, 2, 3]
-  isFormDirty = true;[cite: 1, 2, 3]
-  if (document.getElementById('formHeader')) document.getElementById('formHeader').innerText = "Editing Bill: " + b.no;[cite: 1, 2, 3]
-  if (document.getElementById('billNo')) document.getElementById('billNo').value = b.no;[cite: 1, 2, 3]
-  if (document.getElementById('billDate')) document.getElementById('billDate').value = b.date || '';[cite: 1, 2, 3]
-  if (document.getElementById('customer')) document.getElementById('customer').value = b.cust || '';[cite: 1, 2, 3]
-  if (document.getElementById('custEmail')) document.getElementById('custEmail').value = b.custEmail || '';[cite: 1, 2, 3]
-  if (document.getElementById('custPhone')) document.getElementById('custPhone').value = b.custPhone || '';
-  if (document.getElementById('custGstin')) document.getElementById('custGstin').value = b.custGstin || '';[cite: 1, 2, 3]
-  if (document.getElementById('gstType')) document.getElementById('gstType').value = b.gstType || 'none';[cite: 1, 2, 3]
-  if (document.getElementById('paid')) document.getElementById('paid').value = b.paid || 0;[cite: 1, 2, 3]
+  showPage('newbill');[cite: 5]
+  isFormDirty = true;[cite: 5]
+  if (document.getElementById('formHeader')) document.getElementById('formHeader').innerText = "Editing Bill: " + b.no;[cite: 5]
+  if (document.getElementById('billNo')) document.getElementById('billNo').value = b.no;[cite: 5]
+  if (document.getElementById('billDate')) document.getElementById('billDate').value = b.date || '';[cite: 5]
+  if (document.getElementById('customer')) document.getElementById('customer').value = b.cust || '';[cite: 5]
+  if (document.getElementById('custEmail')) document.getElementById('custEmail').value = b.custEmail || '';[cite: 5]
+  if (document.getElementById('custPhone')) document.getElementById('custPhone').value = b.custPhone || '';[cite: 5]
+  if (document.getElementById('custGstin')) document.getElementById('custGstin').value = b.custGstin || '';[cite: 5]
+  if (document.getElementById('gstType')) document.getElementById('gstType').value = b.gstType || 'none';[cite: 5]
+  if (document.getElementById('paid')) document.getElementById('paid').value = b.paid || 0;[cite: 5]
 
-  const container = document.getElementById('dutiesContainer');[cite: 1, 2, 3]
-  if (container) {[cite: 1, 2, 3]
-    container.innerHTML = '';[cite: 1, 2, 3]
-    b.duties.forEach(d => addDutyItem(d));[cite: 1, 2, 3]
+  const container = document.getElementById('dutiesContainer');[cite: 5]
+  if (container) {[cite: 5]
+    container.innerHTML = '';[cite: 5]
+    b.duties.forEach(d => addDutyItem(d));[cite: 5]
   }
-  calculateAmounts();[cite: 1, 2, 3]
+  calculateAmounts();[cite: 5]
 }
 
-async function deleteBill(no) {[cite: 1, 2, 3]
-  if (!confirm("Are you sure you want to delete Bill " + no + "? It will be deleted from all devices.")) return;[cite: 1, 2, 3]
-  setSyncStatus('Deleting bill...', true);[cite: 1, 2, 3]
-  const res = await cloudReq(`bills?invoice_no=eq.${encodeURIComponent(no)}`, 'DELETE');[cite: 1, 2, 3]
-  data.bills = data.bills.filter(x => String(x.no) !== String(no));[cite: 1, 2, 3]
-  persist();[cite: 1, 2, 3]
-  renderBills();[cite: 1, 2, 3]
-  renderDash();[cite: 1, 2, 3]
-  setSyncStatus(res.ok ? 'Cloud Synced' : 'Sync Error', res.ok);[cite: 1, 2, 3]
+async function deleteBill(no) {[cite: 5]
+  if (!confirm("Are you sure you want to delete Bill " + no + "? It will be deleted from all devices.")) return;[cite: 5]
+  setSyncStatus('Deleting bill...', true);[cite: 5]
+  const res = await cloudReq(`bills?invoice_no=eq.${encodeURIComponent(no)}`, 'DELETE');[cite: 5]
+  data.bills = data.bills.filter(x => String(x.no) !== String(no));[cite: 5]
+  persist();[cite: 5]
+  renderBills();[cite: 5]
+  renderDash();[cite: 5]
+  setSyncStatus(res.ok ? 'Cloud Synced' : 'Sync Error', res.ok);[cite: 5]
 }
 
-function loadSettings() {[cite: 1, 2, 3]
-  const s = data.settings;[cite: 1, 2, 3]
-  [['setUser', 'adminUser'], ['setPass', 'adminPass'], ['setName', 'name'], ['setPhone', 'phone'], ['setGSTIN', 'gstin'], ['setSAC', 'sac'], ['setAddress', 'address'], ['setEmail', 'email'], ['setBank', 'bank'], ['setStart', 'start'], ['setSignature', 'signature']].forEach(([id, k]) => {[cite: 3]
-    const el = document.getElementById(id);[cite: 1, 2, 3]
-    if (el) el.value = s[k] || '';[cite: 1, 2, 3]
+function loadSettings() {[cite: 5]
+  const s = data.settings;[cite: 5]
+  [['setUser', 'adminUser'], ['setPass', 'adminPass'], ['setName', 'name'], ['setPhone', 'phone'], ['setGSTIN', 'gstin'], ['setSAC', 'sac'], ['setAddress', 'address'], ['setEmail', 'email'], ['setBank', 'bank'], ['setStart', 'start'], ['setSignature', 'signature']].forEach(([id, k]) => {[cite: 5]
+    const el = document.getElementById(id);[cite: 5]
+    if (el) el.value = s[k] || '';[cite: 5]
   });
-  renderSignPreview(s.signature || '');[cite: 3]
+  renderSignPreview(s.signature || '');[cite: 5]
 }
 
-async function saveSettings() {[cite: 1, 2, 3]
-  const s = data.settings;[cite: 1, 2, 3]
-  [['setUser', 'adminUser'], ['setPass', 'adminPass'], ['setName', 'name'], ['setPhone', 'phone'], ['setGSTIN', 'gstin'], ['setSAC', 'sac'], ['setAddress', 'address'], ['setEmail', 'email'], ['setBank', 'bank'], ['setStart', 'start'], ['setSignature', 'signature']].forEach(([id, k]) => {[cite: 3]
-    const el = document.getElementById(id);[cite: 1, 2, 3]
-    if (el) s[k] = el.value;[cite: 1, 2, 3]
+async function saveSettings() {[cite: 5]
+  const s = data.settings;[cite: 5]
+  [['setUser', 'adminUser'], ['setPass', 'adminPass'], ['setName', 'name'], ['setPhone', 'phone'], ['setGSTIN', 'gstin'], ['setSAC', 'sac'], ['setAddress', 'address'], ['setEmail', 'email'], ['setBank', 'bank'], ['setStart', 'start'], ['setSignature', 'signature']].forEach(([id, k]) => {[cite: 5]
+    const el = document.getElementById(id);[cite: 5]
+    if (el) s[k] = el.value;[cite: 5]
   });
-  s.start = +s.start || 1001;[cite: 1, 2, 3]
-  persist();[cite: 1, 2, 3]
+  s.start = +s.start || 1001;[cite: 5]
+  persist();[cite: 5]
 
-  setSyncStatus('Saving Settings...', true);[cite: 1, 2, 3]
-  const res = await cloudReq('app_settings?on_conflict=id', 'POST', {[cite: 1, 2, 3]
-    id: 'global',[cite: 1, 2, 3]
-    admin_user: s.adminUser,[cite: 1, 2, 3]
-    admin_pass: s.adminPass,[cite: 1, 2, 3]
-    name: s.name,[cite: 1, 2, 3]
-    phone: s.phone,[cite: 1, 2, 3]
-    gstin: s.gstin,[cite: 1, 2, 3]
-    sac: s.sac,[cite: 1, 2, 3]
-    address: s.address,[cite: 1, 2, 3]
-    email: s.email,[cite: 1, 2, 3]
-    bank: s.bank,[cite: 1, 2, 3]
-    start_no: Number(s.start) || 1001,[cite: 1, 2, 3]
-    signature: s.signature || null[cite: 3]
+  setSyncStatus('Saving Settings...', true);[cite: 5]
+  const res = await cloudReq('app_settings?on_conflict=id', 'POST', {[cite: 5]
+    id: 'global',[cite: 5]
+    admin_user: s.adminUser,[cite: 5]
+    admin_pass: s.adminPass,[cite: 5]
+    name: s.name,[cite: 5]
+    phone: s.phone,[cite: 5]
+    gstin: s.gstin,[cite: 5]
+    sac: s.sac,[cite: 5]
+    address: s.address,[cite: 5]
+    email: s.email,[cite: 5]
+    bank: s.bank,[cite: 5]
+    start_no: Number(s.start) || 1001,[cite: 5]
+    signature: s.signature || null[cite: 5]
   });
 
-  if (res.ok) {[cite: 1, 2, 3]
-    setSyncStatus('Cloud Synced', true);[cite: 1, 2, 3]
-    alert("Settings & credentials saved to cloud successfully!");[cite: 1, 2, 3]
+  if (res.ok) {[cite: 5]
+    setSyncStatus('Cloud Synced', true);[cite: 5]
+    alert("Settings & credentials saved to cloud successfully!");[cite: 5]
   } else {
-    setSyncStatus('Saved locally only', false);[cite: 1, 2, 3]
-    alert("Settings saved locally, but database sync failed: " + res.error);[cite: 1, 2, 3]
+    setSyncStatus('Saved locally only', false);[cite: 5]
+    alert("Settings saved locally, but database sync failed: " + res.error);[cite: 5]
   }
-  renderDash();[cite: 1, 2, 3]
+  renderDash();[cite: 5]
 }
 
-document.querySelectorAll('.nav button[data-page]').forEach(b => {[cite: 1, 2, 3]
-  if (b.dataset.page !== 'newbill') {[cite: 2, 3]
-    b.onclick = () => showPage(b.dataset.page);[cite: 2, 3]
+document.querySelectorAll('.nav button[data-page]').forEach(b => {[cite: 5]
+  if (b.dataset.page !== 'newbill') {[cite: 5]
+    b.onclick = () => showPage(b.dataset.page);[cite: 5]
   }
 });
 
-// Booting system locked by default[cite: 2, 3]
-resetForm();[cite: 1, 2, 3]
-loadSettings();[cite: 1, 2, 3]
-toggleVendorSelect();[cite: 1, 2, 3]
-checkAuth();[cite: 1, 2, 3]
+// App startup
+resetForm();
+loadSettings();
+toggleVendorSelect();
+checkAuth();
 
-// Background sync every 30s only if logged in[cite: 2, 3]
-setInterval(() => {[cite: 2, 3]
-  if (isSystemUnlocked) {[cite: 2, 3]
-    syncAllFromCloud(false);[cite: 2, 3]
+setInterval(() => {
+  if (sessionStorage.getItem('nst_authenticated') === 'true') {
+    syncAllFromCloud(false);
   }
-}, 30000);[cite: 1, 2, 3]
+}, 30000);
 </script>
 </body>
 </html>
