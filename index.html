@@ -184,7 +184,7 @@ th{font-size:11px;text-transform:uppercase;color:#475467;background:#fafbfc}
   <div class="brand"><b>NEW SARTHI</b><span>TRAVELS • ADMIN</span></div>
   <div class="nav">
     <button class="active" data-page="dashboard"><span class="ico">⌂</span><span>Dashboard</span></button>
-    <button data-page="newbill"><span class="ico">＋</span><span>New Bill</span></button>
+    <button data-page="newbill" onclick="startNewBill()"><span class="ico">＋</span><span>New Bill</span></button>
     <button data-page="bills"><span class="ico">▤</span><span>Invoice History</span></button>
     <button data-page="customers"><span class="ico">👥</span><span>Customers</span></button>
     <button data-page="fleet"><span class="ico">🚗</span><span>Fleet Vehicles</span></button>
@@ -202,7 +202,7 @@ th{font-size:11px;text-transform:uppercase;color:#475467;background:#fafbfc}
   </div>
   <div style="display:flex; gap:10px;">
     <button class="btn light" onclick="syncAllFromCloud(true)">🔄 Sync Cloud</button>
-    <button class="btn primary" onclick="showPage('newbill')">＋ New Bill</button>
+    <button class="btn primary" onclick="startNewBill()">＋ New Bill</button>
   </div>
 </div>
 
@@ -256,8 +256,8 @@ th{font-size:11px;text-transform:uppercase;color:#475467;background:#fafbfc}
  <div class="field">
    <label>GST Mode</label>
    <select id="gstType" onchange="calculateAmounts()">
-     <option value="none">No GST (0%)</option>
-     <option value="cgst_sgst_5" selected>CGST (2.5%) + SGST (2.5%) = 5%</option>
+     <option value="none" selected>No GST (0%)</option>
+     <option value="cgst_sgst_5">CGST (2.5%) + SGST (2.5%) = 5%</option>
      <option value="cgst_sgst_12">CGST (6%) + SGST (6%) = 12%</option>
      <option value="igst_5">IGST (5%)</option>
      <option value="igst_12">IGST (12%)</option>
@@ -613,7 +613,6 @@ function handleLogout() {
   checkAuth();
 }
 
-// Ensure tab unloads clear auth instantly
 window.addEventListener('beforeunload', () => {
   isSystemUnlocked = false;
 });
@@ -665,6 +664,12 @@ function showPage(id) {
   if (id === 'vendors') renderVendorsTable();
   if (id === 'newbill') { syncCustomerDropdown(); }
   if (id === 'settings') loadSettings();
+}
+
+function startNewBill() {
+  resetForm();
+  showPage('newbill');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
 /* ==================== MULTI-DUTY BUILDER ==================== */
@@ -965,7 +970,7 @@ async function syncAllFromCloud(manual = false) {
           custEmail: b.customer_email || '',
           custGstin: b.customer_gst || '',
           duties: duties,
-          gstType: b.gst_type || 'cgst_sgst_5',
+          gstType: b.gst_type || 'none',
           cgst: Number(b.cgst_amount) || 0,
           sgst: Number(b.sgst_amount) || 0,
           igst: Number(b.igst_amount) || 0,
@@ -1441,7 +1446,8 @@ function resetForm() {
     const el = document.getElementById(id);
     if (el) el.value = '';
   });
-  if (document.getElementById('gstType')) document.getElementById('gstType').value = 'cgst_sgst_5';
+  if (document.getElementById('custSelect')) document.getElementById('custSelect').value = '';
+  if (document.getElementById('gstType')) document.getElementById('gstType').value = 'none';
   if (document.getElementById('paid')) document.getElementById('paid').value = '0';
   if (document.getElementById('billNo')) document.getElementById('billNo').value = nextNo();
   const today = new Date().toISOString().slice(0, 10);
@@ -1995,7 +2001,9 @@ async function saveSettings() {
 }
 
 document.querySelectorAll('.nav button[data-page]').forEach(b => {
-  b.onclick = () => showPage(b.dataset.page);
+  if (b.dataset.page !== 'newbill') {
+    b.onclick = () => showPage(b.dataset.page);
+  }
 });
 
 // Booting system locked by default
