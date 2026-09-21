@@ -4,6 +4,8 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>NEW SARTHI TRAVELS — Fleet & Professional Billing</title>
+<!-- Client-side PDF Generation Engine -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 <style>
 :root{--ink:#172238;--accent:#b52c2c;--soft:#f5f7fb;--line:#d7dce5;--white:#fff;--muted:#556175;--green:#0b7a42}
 *{box-sizing:border-box}body{margin:0;font-family:system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;background:#eef1f6;color:#182230}
@@ -402,7 +404,7 @@ th{font-size:11px;text-transform:uppercase;color:#475467;background:#fafbfc}
 <div class="preview-actions no-print" style="text-align:center; margin-bottom:15px; display:flex; justify-content:center; gap:10px; flex-wrap:wrap;">
   <button class="btn dark" onclick="showPage('newbill')">← Back to Edit</button>
   <button class="btn primary" onclick="window.print()">Print / Save PDF</button>
-  <button class="btn whatsapp" onclick="shareBillWhatsApp()">WhatsApp Bill</button>
+  <button class="btn whatsapp" onclick="shareBillWhatsApp()">WhatsApp Bill (PDF)</button>
   <button class="btn email-btn" onclick="sendInvoiceMail()">✉️ Email Customer</button>
 </div>
 <div class="invoice-wrap"><div id="invoice" class="invoice"></div></div>
@@ -1646,47 +1648,46 @@ function previewBill() {
   showPage('preview');
 }
 
-function shareBillWhatsApp() {
+async function shareBillWhatsApp() {
   const b = activePreviewBill || getBillData();
   if (!b || !b.cust) return alert("Please create or preview a bill first.");
 
-  let text = `*TAX INVOICE - NEW SARTHI TRAVELS*\n`;
-  text += `*Invoice No:* ${b.no} | *Date:* ${fmtDate(b.date)}\n`;
-  text += `*Client:* ${b.cust}\n`;
-  if (b.custGstin) text += `*GSTIN:* ${b.custGstin}\n`;
-  text += `--------------------------------\n`;
+  buildInvoice(b);
 
-  b.duties.forEach((d, i) => {
-    text += `*Duty #${i+1}:* ${d.trip}\n`;
-    text += `• Package: ${d.dutyType}\n`;
-    text += `• Vehicle: ${d.veh || 'N/A'} | Driver: ${d.driver || 'N/A'}\n`;
-    text += `• Total KMs: ${d.totalKms} KMs\n`;
-    if (d.extraKms > 0) text += `• Extra KMs: ${d.extraKms} @ ₹${d.extraKmRate}/km\n`;
-    if (d.slipImgs && d.slipImgs.length > 0) {
-      d.slipImgs.forEach((url, idx) => {
-        text += `• Duty Slip #${idx+1}: ${url}\n`;
-      });
-    }
-    if (d.tollImgs && d.tollImgs.length > 0) {
-      d.tollImgs.forEach((url, idx) => {
-        text += `• Toll Slip #${idx+1}: ${url}\n`;
-      });
-    }
-    text += `\n`;
-  });
+  const invElement = document.getElementById('invoice');
+  const filename = `Tax_Invoice_${b.no}_${b.cust.replace(/[^a-zA-Z0-9]/g, '_')}.pdf`;
 
-  text += `--------------------------------\n`;
-  text += `*Subtotal:* ${money(b.sub)}\n`;
-  if (b.tax > 0) text += `*Tax (${b.gstType}):* ${money(b.tax)}\n`;
-  text += `*Total Amount:* ${money(b.total)}\n`;
-  text += `*Advance Paid:* ${money(b.paid)}\n`;
-  text += `*Balance Due:* ${money(b.bal)}\n`;
-  text += `--------------------------------\n`;
-  text += `Bank: ${data.settings.bank}\n`;
-  text += `Contact: ${data.settings.phone}`;
+  const opt = {
+    margin: [8, 10, 8, 10],
+    filename: filename,
+    image: { type: 'jpeg', quality: 0.98 },
+    html2canvas: { scale: 2, useCORS: true },
+    jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+  };
 
-  const encoded = encodeURIComponent(text);
-  window.open(`https://wa.me/?text=${encoded}`, '_blank');
+  setSyncStatus('Generating PDF...', true);
+
+  try {
+    // Generate and trigger download of PDF
+    await html2pdf().set(opt).from(invElement).save();
+    setSyncStatus('PDF Downloaded', true);
+
+    let text = `*TAX INVOICE - ${data.settings.name.toUpperCase()}*\n`;
+    text += `*Invoice No:* ${b.no} | *Date:* ${fmtDate(b.date)}\n`;
+    text += `*Client:* ${b.cust}\n`;
+    text += `*Total Amount:* ${money(b.total)}\n`;
+    text += `*Balance Due:* ${money(b.bal)}\n`;
+    text += `--------------------------------\n`;
+    text += `📎 *The PDF invoice has been generated & downloaded.* Please find it attached.\n\n`;
+    text += `Bank Transfer Details:\n${data.settings.bank}\n`;
+    text += `Contact: ${data.settings.phone}`;
+
+    const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(text)}`;
+    window.open(whatsappUrl, '_blank');
+  } catch (err) {
+    alert("Could not generate PDF: " + err.message);
+    setSyncStatus('PDF Error', false);
+  }
 }
 
 function sendInvoiceMail() {
