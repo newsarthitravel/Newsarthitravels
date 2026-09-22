@@ -994,7 +994,7 @@ async function syncAllFromCloud(manual = false) {
     const [setRes, custRes, billsRes, vehRes, venRes] = await Promise.all([
       cloudReq('app_settings?id=eq.global&select=*'),
       cloudReq('customers?select=*'),
-      cloudReq('bills?select=*&order=invoice_no.asc'),
+      cloudReq('bills?select=*&order=invoice_no.desc'),
       cloudReq('vehicles?select=*'),
       cloudReq('vendors?select=*')
     ]);
@@ -1623,9 +1623,12 @@ async function saveBill() {
   if (!b.cust) return alert("Customer Name is required.");
   if (!b.duties.length || !b.duties[0].trip) return alert("At least one trip description is required.");
 
+  // Remove existing invoice if updating, then put directly at top of list
   let idx = data.bills.findIndex(x => String(x.no) === String(b.no));
-  if (idx > -1) data.bills[idx] = b;
-  else data.bills.push(b);
+  if (idx > -1) {
+    data.bills.splice(idx, 1);
+  }
+  data.bills.unshift(b);
   persist();
 
   isFormDirty = false;
@@ -1736,7 +1739,7 @@ async function shareBillWhatsApp() {
         setSyncStatus('Invoice Shared', true);
         return;
       } catch (shareErr) {
-        if (shareErr.name === 'AbortError') return; // User cancelled
+        if (shareErr.name === 'AbortError') return;
       }
     }
 
@@ -2004,7 +2007,7 @@ function renderDash() {
   if (document.getElementById('statVehicles')) document.getElementById('statVehicles').innerText = data.vehicles.length;
   if (document.getElementById('statVendors')) document.getElementById('statVendors').innerText = data.vendors.length;
 
-  const list = data.bills.slice(-5).reverse();
+  const list = data.bills.slice(0, 5);
   const recentEl = document.getElementById('recent');
   if (recentEl) {
     recentEl.innerHTML = list.length ? `
@@ -2036,7 +2039,7 @@ function renderBills() {
     <table>
       <thead><tr><th>No</th><th>Customer</th><th>Duties</th><th>Date</th><th class="right">Total</th><th class="right">Balance</th><th class="right">Actions</th></tr></thead>
       <tbody>
-        ${filtered.slice().reverse().map(b => `
+        ${filtered.map(b => `
           <tr>
             <td>${esc(b.no)}</td>
             <td>${esc(b.cust)}</td>
