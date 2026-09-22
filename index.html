@@ -405,7 +405,7 @@ th{font-size:11px;text-transform:uppercase;color:#475467;background:#fafbfc}
 <div class="preview-actions no-print" style="text-align:center; margin-bottom:15px; display:flex; justify-content:center; gap:10px; flex-wrap:wrap;">
   <button class="btn dark" onclick="showPage('newbill')">← Back to Edit</button>
   <button class="btn primary" onclick="window.print()">Print / Save PDF</button>
-  <button class="btn whatsapp" id="btnWhatsApp" onclick="shareBillWhatsApp()">WhatsApp Bill (PDF)</button>
+  <button class="btn whatsapp" id="btnWhatsApp" onclick="shareBillWhatsApp()">Send WhatsApp (PDF)</button>
   <button class="btn email-btn" onclick="sendInvoiceMail()">✉️ Yahoo Mail Invoice</button>
 </div>
 <div class="invoice-wrap"><div id="invoice" class="invoice"></div></div>
@@ -1691,7 +1691,7 @@ function previewBill() {
   showPage('preview');
 }
 
-/* ==================== AUTOMATIC PDF SENDER TO WHATSAPP ==================== */
+/* ==================== DIRECT PDF SENDING (NO LINK) ==================== */
 async function shareBillWhatsApp() {
   const b = activePreviewBill || getBillData();
   if (!b || !b.cust) return alert("Please create or preview a bill first.");
@@ -1700,79 +1700,62 @@ async function shareBillWhatsApp() {
 
   const invElement = document.getElementById('invoice');
   const btn = document.getElementById('btnWhatsApp');
-  const originalText = btn ? btn.innerText : 'WhatsApp Bill (PDF)';
+  const originalText = btn ? btn.innerText : 'Send WhatsApp (PDF)';
   
   if (btn) {
-    btn.innerText = '⏳ Generating PDF...';
+    btn.innerText = '⏳ Preparing PDF...';
     btn.disabled = true;
   }
 
-  const filename = `Invoice_${b.no}_${Date.now()}.pdf`;
+  const pdfFilename = `Invoice_${b.no}.pdf`;
 
   const opt = {
     margin: [8, 10, 8, 10],
-    filename: filename,
+    filename: pdfFilename,
     image: { type: 'jpeg', quality: 0.98 },
     html2canvas: { scale: 2, useCORS: true },
     jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
   };
 
-  setSyncStatus('Rendering & uploading PDF...', true);
+  setSyncStatus('Generating PDF...', true);
 
   try {
     const pdfBlob = await html2pdf().set(opt).from(invElement).output('blob');
-
-    const uploadRes = await fetch(`${SUPABASE_UPLOAD}/${filename}`, {
-      method: 'POST',
-      headers: {
-        'apikey': S_KEY,
-        'Authorization': 'Bearer ' + S_KEY,
-        'Content-Type': 'application/pdf'
-      },
-      body: pdfBlob
-    });
-
-    const pdfLink = `${SUPABASE_STORAGE}/${filename}`;
+    const file = new File([pdfBlob], pdfFilename, { type: 'application/pdf' });
 
     let cleanPhone = String(b.custPhone || '').replace(/[^0-9]/g, '');
-    if (cleanPhone.length === 10) {
-      cleanPhone = '91' + cleanPhone;
-    }
+    if (cleanPhone.length === 10) cleanPhone = '91' + cleanPhone;
 
-    const file = new File([pdfBlob], `Invoice_${b.no}.pdf`, { type: 'application/pdf' });
+    // Mobile / Tablet: Direct Document Attachment via Native Share Sheet
     if (navigator.canShare && navigator.canShare({ files: [file] })) {
       try {
         await navigator.share({
           files: [file],
-          title: `Tax Invoice #${b.no}`,
-          text: `Dear ${b.cust}, please find your official Tax Invoice #${b.no} from ${data.settings.name}. Total: ${money(b.total)}`
+          title: `Invoice #${b.no}`
         });
-        setSyncStatus('Sent via WhatsApp', true);
-        if (btn) { btn.innerText = originalText; btn.disabled = false; }
+        setSyncStatus('Invoice Shared', true);
         return;
-      } catch (err) {
+      } catch (shareErr) {
+        if (shareErr.name === 'AbortError') return; // User cancelled
       }
     }
 
-    let text = `*TAX INVOICE - ${data.settings.name.toUpperCase()}*\n`;
-    text += `*Invoice No:* ${b.no} | *Date:* ${fmtDate(b.date)}\n`;
-    text += `*Customer:* ${b.cust}\n`;
-    text += `*Total Amount:* ${money(b.total)}\n`;
-    text += `*Advance Paid:* ${money(b.paid)}\n`;
-    text += `*Balance Due:* ${money(b.bal)}\n`;
-    text += `--------------------------------\n`;
-    text += `📄 *Download / View Official PDF Invoice:*\n${pdfLink}\n`;
-    text += `--------------------------------\n`;
-    text += `Bank Transfer Details:\n${data.settings.bank}\n`;
-    text += `Contact: ${data.settings.phone}`;
+    // Desktop: Download PDF directly to device and launch WhatsApp chat
+    const downloadUrl = URL.createObjectURL(pdfBlob);
+    const dlLink = document.createElement('a');
+    dlLink.href = downloadUrl;
+    dlLink.download = pdfFilename;
+    document.body.appendChild(dlLink);
+    dlLink.click();
+    document.body.removeChild(dlLink);
+    URL.revokeObjectURL(downloadUrl);
 
-    let waTarget = cleanPhone ? `https://wa.me/${cleanPhone}?text=` : `https://wa.me/?text=`;
-    const whatsappUrl = `${waTarget}${encodeURIComponent(text)}`;
-    
-    setSyncStatus('PDF Cloud Linked', true);
-    window.open(whatsappUrl, '_blank');
+    // Open WhatsApp directly without any link in the message
+    const waUrl = cleanPhone ? `https://wa.me/${cleanPhone}` : `https://wa.me/`;
+    window.open(waUrl, '_blank');
+    setSyncStatus('PDF Downloaded & WhatsApp Opened', true);
   } catch (err) {
-    alert("Could not process PDF for WhatsApp: " + err.message);
+    alert("Could not process PDF: " + err.message);
     setSyncStatus('PDF Error', false);
   } finally {
     if (btn) {
