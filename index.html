@@ -413,215 +413,219 @@ th{font-size:11px;text-transform:uppercase;color:#475467;background:#fafbfc}
 </main></div>
 
 <script>
-const SUPABASE_BASE = 'https://tjkgjkeuplqzzzdfqmuc.supabase.co/rest/v1';
-const SUPABASE_STORAGE = 'https://tjkgjkeuplqzzzdfqmuc.supabase.co/storage/v1/object/public/receipts';
-const SUPABASE_UPLOAD = 'https://tjkgjkeuplqzzzdfqmuc.supabase.co/storage/v1/object/receipts';
-const S_KEY = 'sb_publishable_AiO0RJRFusjUSlVZU5QePQ_-7Svkmx8';
+// Always purge both local and session auth markers when the page opens/refreshes
+localStorage.removeItem('nst_authenticated');
+sessionStorage.removeItem('nst_authenticated');
 
-const KEY = 'nst_v19';
+let isCurrentlyAuthenticated = false;
+
+const SUPABASE_BASE = 'https://tjkgjkeuplqzzzdfqmuc.supabase.co/rest/v1';[cite: 2]
+const SUPABASE_STORAGE = 'https://tjkgjkeuplqzzzdfqmuc.supabase.co/storage/v1/object/public/receipts';[cite: 2]
+const SUPABASE_UPLOAD = 'https://tjkgjkeuplqzzzdfqmuc.supabase.co/storage/v1/object/receipts';[cite: 2]
+const S_KEY = 'sb_publishable_AiO0RJRFusjUSlVZU5QePQ_-7Svkmx8';[cite: 2]
+
+const KEY = 'nst_v19';[cite: 2]
 const defaults = {
-  adminUser: 'admin',
-  adminPass: 'sarthi@123',
-  name: 'New Sarthi Travels',
-  phone: '0755-7960537',
-  gstin: '23ABYPT3958K1ZO',
-  sac: '996601',
-  address: 'E-2/21, Kamdhenu Tower, Arera Colony, Bhopal-462 016',
-  email: 'newsarthitravels@yahoo.in',
-  bank: 'ICICI Bank, Zone-II, M.P. Nagar | A/C: 005505001355 | IFSC: ICIC0000055',
-  start: 1001,
-  signature: ''
+  adminUser: 'admin',[cite: 2]
+  adminPass: 'sarthi@123',[cite: 2]
+  name: 'New Sarthi Travels',[cite: 2]
+  phone: '0755-7960537',[cite: 2]
+  gstin: '23ABYPT3958K1ZO',[cite: 2]
+  sac: '996601',[cite: 2]
+  address: 'E-2/21, Kamdhenu Tower, Arera Colony, Bhopal-462 016',[cite: 2]
+  email: 'newsarthitravels@yahoo.in',[cite: 2]
+  bank: 'ICICI Bank, Zone-II, M.P. Nagar | A/C: 005505001355 | IFSC: ICIC0000055',[cite: 2]
+  start: 1001,[cite: 2]
+  signature: ''[cite: 2]
 };
 
 let data = JSON.parse(localStorage.getItem(KEY)) || {
-  settings: defaults,
-  bills: [],
-  vehicles: [],
-  vendors: [],
-  customers: []
+  settings: defaults,[cite: 2]
+  bills: [],[cite: 2]
+  vehicles: [],[cite: 2]
+  vendors: [],[cite: 2]
+  customers: [][cite: 2]
 };
 
-data.settings = { ...defaults, ...data.settings };
-data.bills = data.bills || [];
-data.vehicles = data.vehicles || [];
-data.vendors = data.vendors || [];
-data.customers = data.customers || [];
+data.settings = { ...defaults, ...data.settings };[cite: 2]
+data.bills = data.bills || [];[cite: 2]
+data.vehicles = data.vehicles || [];[cite: 2]
+data.vendors = data.vendors || [];[cite: 2]
+data.customers = data.customers || [];[cite: 2]
 
-let editingVehReg = null;
-let editingCustId = null;
-let editingVendorId = null;
-let dutyIndex = 0;
-let activePreviewBill = null;
-let isFormDirty = false;
+let editingVehReg = null;[cite: 2]
+let editingCustId = null;[cite: 2]
+let editingVendorId = null;[cite: 2]
+let dutyIndex = 0;[cite: 2]
+let activePreviewBill = null;[cite: 2]
+let isFormDirty = false;[cite: 2]
 
 function round2(num) {
-  return Math.round((Number(num) || 0) * 100) / 100;
+  return Math.round((Number(num) || 0) * 100) / 100;[cite: 2]
 }
 
 function genUUID() {
-  if (typeof crypto !== 'undefined' && crypto.randomUUID) return crypto.randomUUID();
-  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => {
-    let r = Math.random() * 16 | 0, v = c === 'x' ? r : (r & 0x3 | 0x8);
-    return v.toString(16);
+  if (typeof crypto !== 'undefined' && crypto.randomUUID) return crypto.randomUUID();[cite: 2]
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => {[cite: 2]
+    let r = Math.random() * 16 | 0, v = c === 'x' ? r : (r & 0x3 | 0x8);[cite: 2]
+    return v.toString(16);[cite: 2]
   });
 }
 
 function isValidUUID(s) {
-  return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(String(s || ''));
+  return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(String(s || ''));[cite: 2]
 }
 
 function setSyncStatus(txt, ok = true) {
-  const el = document.getElementById('syncStatus');
+  const el = document.getElementById('syncStatus');[cite: 2]
   if (el) {
-    el.innerText = txt;
-    el.style.background = ok ? '#e1f9eb' : '#fee4e2';
-    el.style.color = ok ? '#0b7a42' : '#b42318';
+    el.innerText = txt;[cite: 2]
+    el.style.background = ok ? '#e1f9eb' : '#fee4e2';[cite: 2]
+    el.style.color = ok ? '#0b7a42' : '#b42318';[cite: 2]
   }
 }
 
 async function cloudReq(endpoint, method = 'GET', body = null) {
   const headers = {
-    'apikey': S_KEY,
-    'Authorization': 'Bearer ' + S_KEY,
-    'Content-Type': 'application/json'
+    'apikey': S_KEY,[cite: 2]
+    'Authorization': 'Bearer ' + S_KEY,[cite: 2]
+    'Content-Type': 'application/json'[cite: 2]
   };
   if (method === 'POST') {
-    headers['Prefer'] = 'resolution=merge-duplicates,return=representation';
+    headers['Prefer'] = 'resolution=merge-duplicates,return=representation';[cite: 2]
   }
 
-  const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), 3500);
+  const controller = new AbortController();[cite: 2]
+  const timeoutId = setTimeout(() => controller.abort(), 3500);[cite: 2]
 
   try {
     const res = await fetch(`${SUPABASE_BASE}/${endpoint}`, {
       method,
       headers,
-      body: body ? JSON.stringify(body) : null,
-      signal: controller.signal
+      body: body ? JSON.stringify(body) : null,[cite: 2]
+      signal: controller.signal[cite: 2]
     });
-    clearTimeout(timeoutId);
+    clearTimeout(timeoutId);[cite: 2]
 
     if (!res.ok) {
-      const err = await res.text();
-      return { ok: false, error: err };
+      const err = await res.text();[cite: 2]
+      return { ok: false, error: err };[cite: 2]
     }
-    const contentType = res.headers.get('content-type');
-    if (contentType && contentType.includes('application/json')) {
-      const parsed = await res.json().catch(() => true);
-      return { ok: true, data: parsed };
+    const contentType = res.headers.get('content-type');[cite: 2]
+    if (contentType && contentType.includes('application/json')) {[cite: 2]
+      const parsed = await res.json().catch(() => true);[cite: 2]
+      return { ok: true, data: parsed };[cite: 2]
     }
-    return { ok: true };
+    return { ok: true };[cite: 2]
   } catch (err) {
-    clearTimeout(timeoutId);
-    return { ok: false, error: err.message };
+    clearTimeout(timeoutId);[cite: 2]
+    return { ok: false, error: err.message };[cite: 2]
   }
 }
 
 /* ==================== MULTI-PHOTO ATTACHMENT ==================== */
 async function uploadSingleFile(file) {
-  const filename = `${Date.now()}_${Math.floor(Math.random()*1000)}_${file.name.replace(/[^a-zA-Z0-9._-]/g, '')}`;
+  const filename = `${Date.now()}_${Math.floor(Math.random()*1000)}_${file.name.replace(/[^a-zA-Z0-9._-]/g, '')}`;[cite: 2]
   try {
     const res = await fetch(`${SUPABASE_UPLOAD}/${filename}`, {
-      method: 'POST',
+      method: 'POST',[cite: 2]
       headers: {
-        'apikey': S_KEY,
-        'Authorization': 'Bearer ' + S_KEY,
-        'Content-Type': file.type || 'application/octet-stream'
+        'apikey': S_KEY,[cite: 2]
+        'Authorization': 'Bearer ' + S_KEY,[cite: 2]
+        'Content-Type': file.type || 'application/octet-stream'[cite: 2]
       },
-      body: file
+      body: file[cite: 2]
     });
-    if (!res.ok) return null;
-    return `${SUPABASE_STORAGE}/${filename}`;
+    if (!res.ok) return null;[cite: 2]
+    return `${SUPABASE_STORAGE}/${filename}`;[cite: 2]
   } catch(e) {
-    return null;
+    return null;[cite: 2]
   }
 }
 
 async function handleMultiPhotoAttach(boxId, type) {
-  const fileInput = document.getElementById(`${type}_file_${boxId}`);
-  const statusEl = document.getElementById(`${type}_status_${boxId}`);
-  const galleryEl = document.getElementById(`${type}_gallery_${boxId}`);
-  const urlEl = document.getElementById(`${type}_url_${boxId}`);
+  const fileInput = document.getElementById(`${type}_file_${boxId}`);[cite: 2]
+  const statusEl = document.getElementById(`${type}_status_${boxId}`);[cite: 2]
+  const galleryEl = document.getElementById(`${type}_gallery_${boxId}`);[cite: 2]
+  const urlEl = document.getElementById(`${type}_url_${boxId}`);[cite: 2]
 
-  if (!fileInput.files || fileInput.files.length === 0) return;
-  const files = Array.from(fileInput.files);
+  if (!fileInput.files || fileInput.files.length === 0) return;[cite: 2]
+  const files = Array.from(fileInput.files);[cite: 2]
 
-  statusEl.innerText = `⏳ Uploading ${files.length} photo(s)...`;
-  statusEl.style.display = "block";
+  statusEl.innerText = `⏳ Uploading ${files.length} photo(s)...`;[cite: 2]
+  statusEl.style.display = "block";[cite: 2]
 
-  let currentUrls = urlEl.value ? urlEl.value.split(',').map(s => s.trim()).filter(Boolean) : [];
+  let currentUrls = urlEl.value ? urlEl.value.split(',').map(s => s.trim()).filter(Boolean) : [];[cite: 2]
 
   for (let file of files) {
-    const reader = new FileReader();
+    const reader = new FileReader();[cite: 2]
     reader.onload = e => {
-      const img = document.createElement('img');
-      img.src = e.target.result;
-      galleryEl.appendChild(img);
+      const img = document.createElement('img');[cite: 2]
+      img.src = e.target.result;[cite: 2]
+      galleryEl.appendChild(img);[cite: 2]
     };
-    reader.readAsDataURL(file);
+    reader.readAsDataURL(file);[cite: 2]
 
-    const uploadedUrl = await uploadSingleFile(file);
+    const uploadedUrl = await uploadSingleFile(file);[cite: 2]
     if (uploadedUrl) {
-      currentUrls.push(uploadedUrl);
+      currentUrls.push(uploadedUrl);[cite: 2]
     }
   }
 
-  urlEl.value = currentUrls.join(',');
-  statusEl.innerText = `✅ ${currentUrls.length} file(s) attached & saved to cloud!`;
-  isFormDirty = true;
+  urlEl.value = currentUrls.join(',');[cite: 2]
+  statusEl.innerText = `✅ ${currentUrls.length} file(s) attached & saved to cloud!`;[cite: 2]
+  isFormDirty = true;[cite: 2]
 }
 
 /* ==================== DIGITAL SIGNATURE ==================== */
 async function handleSignUpload(e) {
-  const file = e.target.files?.[0];
-  if (!file) return;
+  const file = e.target.files?.[0];[cite: 2]
+  if (!file) return;[cite: 2]
 
-  const reader = new FileReader();
+  const reader = new FileReader();[cite: 2]
   reader.onload = async evt => {
-    const dataUrl = evt.target.result;
-    document.getElementById('setSignature').value = dataUrl;
-    renderSignPreview(dataUrl);
+    const dataUrl = evt.target.result;[cite: 2]
+    document.getElementById('setSignature').value = dataUrl;[cite: 2]
+    renderSignPreview(dataUrl);[cite: 2]
 
-    const uploadedUrl = await uploadSingleFile(file);
+    const uploadedUrl = await uploadSingleFile(file);[cite: 2]
     if (uploadedUrl) {
-      document.getElementById('setSignature').value = uploadedUrl;
-      data.settings.signature = uploadedUrl;
+      document.getElementById('setSignature').value = uploadedUrl;[cite: 2]
+      data.settings.signature = uploadedUrl;[cite: 2]
     } else {
-      data.settings.signature = dataUrl;
+      data.settings.signature = dataUrl;[cite: 2]
     }
-    persist();
+    persist();[cite: 2]
   };
-  reader.readAsDataURL(file);
+  reader.readAsDataURL(file);[cite: 2]
 }
 
 function removeSignature() {
-  document.getElementById('setSignature').value = '';
-  document.getElementById('signFileInput').value = '';
-  data.settings.signature = '';
-  persist();
-  renderSignPreview('');
+  document.getElementById('setSignature').value = '';[cite: 2]
+  document.getElementById('signFileInput').value = '';[cite: 2]
+  data.settings.signature = '';[cite: 2]
+  persist();[cite: 2]
+  renderSignPreview('');[cite: 2]
 }
 
 function renderSignPreview(url) {
-  const img = document.getElementById('signPreviewImg');
-  const btn = document.getElementById('removeSignBtn');
+  const img = document.getElementById('signPreviewImg');[cite: 2]
+  const btn = document.getElementById('removeSignBtn');[cite: 2]
   if (url) {
-    if (img) { img.src = url; img.style.display = 'block'; }
-    if (btn) btn.style.display = 'inline-block';
+    if (img) { img.src = url; img.style.display = 'block'; }[cite: 2]
+    if (btn) btn.style.display = 'inline-block';[cite: 2]
   } else {
-    if (img) { img.src = ''; img.style.display = 'none'; }
-    if (btn) btn.style.display = 'none';
+    if (img) { img.src = ''; img.style.display = 'none'; }[cite: 2]
+    if (btn) btn.style.display = 'none';[cite: 2]
   }
 }
 
-/* ==================== UNFAILING AUTH ENGINE ==================== */
+/* ==================== SESSION-ONLY AUTH ENGINE ==================== */
 function checkAuth() {
-  const isAuth = localStorage.getItem('nst_authenticated') === 'true' || 
-                 sessionStorage.getItem('nst_authenticated') === 'true';
   const overlay = document.getElementById('loginOverlay');
   const appRoot = document.getElementById('appRoot');
 
-  if (isAuth) {
+  if (isCurrentlyAuthenticated) {
     if (overlay) overlay.style.setProperty('display', 'none', 'important');
     if (appRoot) appRoot.style.setProperty('display', 'block', 'important');
     showPage('dashboard');
@@ -634,153 +638,148 @@ function checkAuth() {
 
 function handleLogin(e) {
   if (e) {
-    if (typeof e.preventDefault === 'function') e.preventDefault();
-    if (typeof e.stopPropagation === 'function') e.stopPropagation();
+    if (typeof e.preventDefault === 'function') e.preventDefault();[cite: 2]
+    if (typeof e.stopPropagation === 'function') e.stopPropagation();[cite: 2]
   }
 
-  const userEl = document.getElementById('loginUser');
-  const passEl = document.getElementById('loginPass');
-  const errEl = document.getElementById('loginError');
+  const userEl = document.getElementById('loginUser');[cite: 2]
+  const passEl = document.getElementById('loginPass');[cite: 2]
+  const errEl = document.getElementById('loginError');[cite: 2]
 
-  const enteredUser = (userEl ? userEl.value : '').trim();
-  const enteredPass = (passEl ? passEl.value : '').trim();
+  const enteredUser = (userEl ? userEl.value : '').trim();[cite: 2]
+  const enteredPass = (passEl ? passEl.value : '').trim();[cite: 2]
 
-  // Master bypass credentials
-  const defaultUser = 'admin';
-  const defaultPass = 'sarthi@123';
+  const defaultUser = 'admin';[cite: 2]
+  const defaultPass = 'sarthi@123';[cite: 2]
 
-  // Configured credentials
-  let customUser = (data.settings && data.settings.adminUser) ? data.settings.adminUser : defaultUser;
-  let customPass = (data.settings && data.settings.adminPass) ? data.settings.adminPass : defaultPass;
+  let customUser = (data.settings && data.settings.adminUser) ? data.settings.adminUser : defaultUser;[cite: 2]
+  let customPass = (data.settings && data.settings.adminPass) ? data.settings.adminPass : defaultPass;[cite: 2]
 
-  // Verify against either current settings or hardcoded master fallback
   const isMatch = (enteredUser === customUser && enteredPass === customPass) ||
-                  (enteredUser === defaultUser && enteredPass === defaultPass);
+                  (enteredUser === defaultUser && enteredPass === defaultPass);[cite: 2]
 
   if (isMatch) {
-    localStorage.setItem('nst_authenticated', 'true');
-    sessionStorage.setItem('nst_authenticated', 'true');
-    if (errEl) errEl.style.display = 'none';
-    if (userEl) userEl.value = '';
-    if (passEl) passEl.value = '';
+    isCurrentlyAuthenticated = true;
+    if (errEl) errEl.style.display = 'none';[cite: 2]
+    if (userEl) userEl.value = '';[cite: 2]
+    if (passEl) passEl.value = '';[cite: 2]
     
-    // Immediate DOM reveal
-    const overlay = document.getElementById('loginOverlay');
-    const appRoot = document.getElementById('appRoot');
-    if (overlay) overlay.style.setProperty('display', 'none', 'important');
-    if (appRoot) appRoot.style.setProperty('display', 'block', 'important');
+    const overlay = document.getElementById('loginOverlay');[cite: 2]
+    const appRoot = document.getElementById('appRoot');[cite: 2]
+    if (overlay) overlay.style.setProperty('display', 'none', 'important');[cite: 2]
+    if (appRoot) appRoot.style.setProperty('display', 'block', 'important');[cite: 2]
 
-    showPage('dashboard');
+    showPage('dashboard');[cite: 2]
     
-    // Background cloud sync
-    cloudReq('app_settings?id=eq.global&select=*').then(res => {
-      if (res && res.ok && Array.isArray(res.data) && res.data.length > 0) {
-        const s = res.data[0];
-        data.settings.adminUser = s.admin_user || data.settings.adminUser;
-        data.settings.adminPass = s.admin_pass || data.settings.adminPass;
-        persist();
+    cloudReq('app_settings?id=eq.global&select=*').then(res => {[cite: 2]
+      if (res && res.ok && Array.isArray(res.data) && res.data.length > 0) {[cite: 2]
+        const s = res.data[0];[cite: 2]
+        data.settings.adminUser = s.admin_user || data.settings.adminUser;[cite: 2]
+        data.settings.adminPass = s.admin_pass || data.settings.adminPass;[cite: 2]
+        persist();[cite: 2]
       }
     });
 
-    setTimeout(() => { syncAllFromCloud(false); }, 150);
+    setTimeout(() => { syncAllFromCloud(false); }, 150);[cite: 2]
   } else {
     if (errEl) {
-      errEl.innerText = 'Invalid User ID or Password.';
-      errEl.style.display = 'block';
+      errEl.innerText = 'Invalid User ID or Password.';[cite: 2]
+      errEl.style.display = 'block';[cite: 2]
     }
   }
-  return false;
+  return false;[cite: 2]
 }
 
 function handleLogout() {
-  sessionStorage.removeItem('nst_authenticated');
+  isCurrentlyAuthenticated = false;
   localStorage.removeItem('nst_authenticated');
+  sessionStorage.removeItem('nst_authenticated');
   checkAuth();
 }
 
-const money = n => new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 2 }).format(round2(n));
+const money = n => new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 2 }).format(round2(n));[cite: 2]
 
 const fmtDate = s => {
-  if (!s) return '';
-  let d = new Date(s.includes('T') ? s : s + 'T00:00:00');
-  return isNaN(d) ? '' : d.toLocaleDateString('en-IN', { day: '2-digit', month: '2-digit', year: 'numeric' });
+  if (!s) return '';[cite: 2]
+  let d = new Date(s.includes('T') ? s : s + 'T00:00:00');[cite: 2]
+  return isNaN(d) ? '' : d.toLocaleDateString('en-IN', { day: '2-digit', month: '2-digit', year: 'numeric' });[cite: 2]
 };
 
 function esc(x) {
-  return String(x ?? '').replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' }[m]));
+  return String(x ?? '').replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' }[m]));[cite: 2]
 }
 
 function persist() {
-  localStorage.setItem(KEY, JSON.stringify(data));
+  localStorage.setItem(KEY, JSON.stringify(data));[cite: 2]
 }
 
 function nextNo() {
-  let max = Math.max(Number(data.settings.start) || 1001, ...data.bills.map(b => Number(b.no) || 0));
-  return max + (data.bills.length ? 1 : 0);
+  let max = Math.max(Number(data.settings.start) || 1001, ...data.bills.map(b => Number(b.no) || 0));[cite: 2]
+  return max + (data.bills.length ? 1 : 0);[cite: 2]
 }
 
 function showPage(id) {
-  document.querySelectorAll('.page').forEach(p => {
-    p.classList.remove('active');
-    p.style.setProperty('display', 'none', 'important');
+  document.querySelectorAll('.page').forEach(p => {[cite: 2]
+    p.classList.remove('active');[cite: 2]
+    p.style.setProperty('display', 'none', 'important');[cite: 2]
   });
   
-  const target = document.getElementById(id);
+  const target = document.getElementById(id);[cite: 2]
   if (target) {
-    target.classList.add('active');
-    target.style.setProperty('display', 'block', 'important');
+    target.classList.add('active');[cite: 2]
+    target.style.setProperty('display', 'block', 'important');[cite: 2]
   }
   
-  document.querySelectorAll('.nav button[data-page]').forEach(b => b.classList.toggle('active', b.dataset.page === id));
+  document.querySelectorAll('.nav button[data-page]').forEach(b => b.classList.toggle('active', b.dataset.page === id));[cite: 2]
 
   const titles = {
-    dashboard: 'Dashboard',
-    newbill: 'New Bill',
-    bills: 'Invoice History',
-    customers: 'Customers',
-    fleet: 'Fleet Vehicles',
-    vendors: 'Vendor Partners',
-    settings: 'Settings',
-    preview: 'Invoice Preview'
+    dashboard: 'Dashboard',[cite: 2]
+    newbill: 'New Bill',[cite: 2]
+    bills: 'Invoice History',[cite: 2]
+    customers: 'Customers',[cite: 2]
+    fleet: 'Fleet Vehicles',[cite: 2]
+    vendors: 'Vendor Partners',[cite: 2]
+    settings: 'Settings',[cite: 2]
+    preview: 'Invoice Preview'[cite: 2]
   };
-  const titleEl = document.getElementById('pageTitle');
-  if (titleEl) titleEl.textContent = titles[id] || 'Invoice';
+  const titleEl = document.getElementById('pageTitle');[cite: 2]
+  if (titleEl) titleEl.textContent = titles[id] || 'Invoice';[cite: 2]
 
   try {
-    if (id === 'dashboard') renderDash();
-    if (id === 'bills') renderBills();
-    if (id === 'customers') renderCustomersTable();
-    if (id === 'fleet') { syncVendorDropdowns(); renderFleetTable(); }
-    if (id === 'vendors') renderVendorsTable();
-    if (id === 'newbill') { syncCustomerDropdown(); }
-    if (id === 'settings') loadSettings();
+    if (id === 'dashboard') renderDash();[cite: 2]
+    if (id === 'bills') renderBills();[cite: 2]
+    if (id === 'customers') renderCustomersTable();[cite: 2]
+    if (id === 'fleet') { syncVendorDropdowns(); renderFleetTable(); }[cite: 2]
+    if (id === 'vendors') renderVendorsTable();[cite: 2]
+    if (id === 'newbill') { syncCustomerDropdown(); }[cite: 2]
+    if (id === 'settings') loadSettings();[cite: 2]
   } catch(err) {
-    console.error("Render error:", err);
+    console.error("Render error:", err);[cite: 2]
   }
 }
 
 function startNewBill() {
-  resetForm();
-  showPage('newbill');
-  window.scrollTo({ top: 0, behavior: 'smooth' });
+  resetForm();[cite: 2]
+  showPage('newbill');[cite: 2]
+  window.scrollTo({ top: 0, behavior: 'smooth' });[cite: 2]
 }
 
 /* ==================== MULTI-DUTY BUILDER ==================== */
 function addDutyItem(initial = {}) {
-  dutyIndex++;
-  const id = 'duty_' + dutyIndex;
-  const container = document.getElementById('dutiesContainer');
-  if (!container) return;
+  dutyIndex++;[cite: 2]
+  const id = 'duty_' + dutyIndex;[cite: 2]
+  const container = document.getElementById('dutiesContainer');[cite: 2]
+  if (!container) return;[cite: 2]
 
-  const today = new Date().toISOString().slice(0, 10);
-  const dutyCard = document.createElement('div');
-  dutyCard.className = 'duty-item-box';
-  dutyCard.id = id;
+  const today = new Date().toISOString().slice(0, 10);[cite: 2]
+  const dutyCard = document.createElement('div');[cite: 2]
+  dutyCard.className = 'duty-item-box';[cite: 2]
+  dutyCard.id = id;[cite: 2]
 
-  const slipImgs = Array.isArray(initial.slipImgs) ? initial.slipImgs : (initial.slipImg ? initial.slipImg.split(',').filter(Boolean) : []);
-  const tollImgs = Array.isArray(initial.tollImgs) ? initial.tollImgs : (initial.tollImg ? initial.tollImg.split(',').filter(Boolean) : []);
+  const slipImgs = Array.isArray(initial.slipImgs) ? initial.slipImgs : (initial.slipImg ? initial.slipImg.split(',').filter(Boolean) : []);[cite: 2]
+  const tollImgs = Array.isArray(initial.tollImgs) ? initial.tollImgs : (initial.tollImg ? initial.tollImg.split(',').filter(Boolean) : []);[cite: 2]
 
-  const defaultTripText = (initial.trip !== undefined) ? initial.trip : 'TAXI HIRE CHARGES';
+  const defaultTripText = (initial.trip !== undefined) ? initial.trip : 'TAXI HIRE CHARGES';[cite: 2]
 
   dutyCard.innerHTML = `
     <div class="duty-header">
@@ -854,327 +853,327 @@ function addDutyItem(initial = {}) {
         </div>
       </div>
     </div>
-  `;
-  container.appendChild(dutyCard);
+  `;[cite: 2]
+  container.appendChild(dutyCard);[cite: 2]
 
-  if (initial.dutyType) {
-    const sel = dutyCard.querySelector('.duty-type');
-    if (sel) {
-      if (initial.dutyType === 'Outstation Duty') sel.value = 'Outstation Duty (Min. 250 KMs/Day)';
-      else sel.value = initial.dutyType;
+  if (initial.dutyType) {[cite: 2]
+    const sel = dutyCard.querySelector('.duty-type');[cite: 2]
+    if (sel) {[cite: 2]
+      if (initial.dutyType === 'Outstation Duty') sel.value = 'Outstation Duty (Min. 250 KMs/Day)';[cite: 2]
+      else sel.value = initial.dutyType;[cite: 2]
     }
   }
 
-  if (initial.veh) {
-    const sel = dutyCard.querySelector('.duty-fleet-select');
-    if (sel) {
-      const match = data.vehicles.find(v => initial.veh.toUpperCase().startsWith(v.reg.toUpperCase()));
-      if (match) sel.value = match.reg;
+  if (initial.veh) {[cite: 2]
+    const sel = dutyCard.querySelector('.duty-fleet-select');[cite: 2]
+    if (sel) {[cite: 2]
+      const match = data.vehicles.find(v => initial.veh.toUpperCase().startsWith(v.reg.toUpperCase()));[cite: 2]
+      if (match) sel.value = match.reg;[cite: 2]
     }
   }
 
-  handleDutyTypeChange(id);
-  checkVehicleExpiry(id);
-  calculateAmounts();
+  handleDutyTypeChange(id);[cite: 2]
+  checkVehicleExpiry(id);[cite: 2]
+  calculateAmounts();[cite: 2]
 }
 
 function removeDutyItem(id) {
-  const el = document.getElementById(id);
-  if (el) el.remove();
-  const container = document.getElementById('dutiesContainer');
-  Array.from(container.children).forEach((card, i) => {
-    const title = card.querySelector('.duty-title');
-    if (title) title.innerText = `Duty / Booking #${i + 1}`;
+  const el = document.getElementById(id);[cite: 2]
+  if (el) el.remove();[cite: 2]
+  const container = document.getElementById('dutiesContainer');[cite: 2]
+  Array.from(container.children).forEach((card, i) => {[cite: 2]
+    const title = card.querySelector('.duty-title');[cite: 2]
+    if (title) title.innerText = `Duty / Booking #${i + 1}`;[cite: 2]
   });
-  isFormDirty = true;
-  calculateAmounts();
+  isFormDirty = true;[cite: 2]
+  calculateAmounts();[cite: 2]
 }
 
 function handleDutyTypeChange(boxId) {
-  const box = document.getElementById(boxId);
-  if (!box) return;
-  const type = box.querySelector('.duty-type')?.value;
-  const lblRate = document.getElementById('lbl_rate_' + boxId);
-  const lblQty = document.getElementById('lbl_qty_' + boxId);
+  const box = document.getElementById(boxId);[cite: 2]
+  if (!box) return;[cite: 2]
+  const type = box.querySelector('.duty-type')?.value;[cite: 2]
+  const lblRate = document.getElementById('lbl_rate_' + boxId);[cite: 2]
+  const lblQty = document.getElementById('lbl_qty_' + boxId);[cite: 2]
 
-  if (type === 'Outstation Duty (Min. 250 KMs/Day)') {
-    if (lblRate) lblRate.innerText = 'Rate Per KM (₹/KM) or Package (₹)';
-    if (lblQty) lblQty.innerText = 'Duration (Number of Days)';
+  if (type === 'Outstation Duty (Min. 250 KMs/Day)') {[cite: 2]
+    if (lblRate) lblRate.innerText = 'Rate Per KM (₹/KM) or Package (₹)';[cite: 2]
+    if (lblQty) lblQty.innerText = 'Duration (Number of Days)';[cite: 2]
   } else {
-    if (lblRate) lblRate.innerText = 'Base Package Rate (₹)';
-    if (lblQty) lblQty.innerText = 'Quantity (Days / Trips)';
+    if (lblRate) lblRate.innerText = 'Base Package Rate (₹)';[cite: 2]
+    if (lblQty) lblQty.innerText = 'Quantity (Days / Trips)';[cite: 2]
   }
-  handleKmChange(boxId);
+  handleKmChange(boxId);[cite: 2]
 }
 
 function handleKmChange(boxId) {
-  const box = document.getElementById(boxId);
-  if (!box) return;
-  const type = box.querySelector('.duty-type')?.value;
-  const days = Number(box.querySelector('.duty-qty')?.value) || 1;
-  const totalKms = Number(box.querySelector('.duty-totalkms')?.value) || 0;
-  const extraKmInput = box.querySelector('.duty-extrakms');
+  const box = document.getElementById(boxId);[cite: 2]
+  if (!box) return;[cite: 2]
+  const type = box.querySelector('.duty-type')?.value;[cite: 2]
+  const days = Number(box.querySelector('.duty-qty')?.value) || 1;[cite: 2]
+  const totalKms = Number(box.querySelector('.duty-totalkms')?.value) || 0;[cite: 2]
+  const extraKmInput = box.querySelector('.duty-extrakms');[cite: 2]
 
-  if (type === 'Outstation Duty (Min. 250 KMs/Day)') {
-    const minKmsAllowed = days * 250;
-    if (totalKms > minKmsAllowed) {
-      if (extraKmInput) extraKmInput.value = round2(totalKms - minKmsAllowed);
+  if (type === 'Outstation Duty (Min. 250 KMs/Day)') {[cite: 2]
+    const minKmsAllowed = days * 250;[cite: 2]
+    if (totalKms > minKmsAllowed) {[cite: 2]
+      if (extraKmInput) extraKmInput.value = round2(totalKms - minKmsAllowed);[cite: 2]
     } else {
-      if (extraKmInput) extraKmInput.value = 0;
+      if (extraKmInput) extraKmInput.value = 0;[cite: 2]
     }
   }
-  isFormDirty = true;
-  calculateAmounts();
+  isFormDirty = true;[cite: 2]
+  calculateAmounts();[cite: 2]
 }
 
 function checkVehicleExpiry(boxId) {
-  const box = document.getElementById(boxId);
-  if (!box) return;
-  const reg = box.querySelector('.duty-fleet-select')?.value;
-  const tripDate = box.querySelector('.duty-tdate')?.value || new Date().toISOString().slice(0, 10);
-  const warnEl = document.getElementById('warn_' + boxId);
-  if (!warnEl) return;
+  const box = document.getElementById(boxId);[cite: 2]
+  if (!box) return;[cite: 2]
+  const reg = box.querySelector('.duty-fleet-select')?.value;[cite: 2]
+  const tripDate = box.querySelector('.duty-tdate')?.value || new Date().toISOString().slice(0, 10);[cite: 2]
+  const warnEl = document.getElementById('warn_' + boxId);[cite: 2]
+  if (!warnEl) return;[cite: 2]
 
-  if (!reg) {
-    warnEl.style.display = 'none';
-    return;
+  if (!reg) {[cite: 2]
+    warnEl.style.display = 'none';[cite: 2]
+    return;[cite: 2]
   }
 
-  const car = data.vehicles.find(v => v.reg.toUpperCase() === reg.toUpperCase());
-  if (!car) {
-    warnEl.style.display = 'none';
-    return;
+  const car = data.vehicles.find(v => v.reg.toUpperCase() === reg.toUpperCase());[cite: 2]
+  if (!car) {[cite: 2]
+    warnEl.style.display = 'none';[cite: 2]
+    return;[cite: 2]
   }
 
-  let warnings = [];
-  if (car.insurance && car.insurance < tripDate) warnings.push('Insurance Expired (' + fmtDate(car.insurance) + ')');
-  if (car.permit && car.permit < tripDate) warnings.push('Permit/Fitness Expired (' + fmtDate(car.permit) + ')');
+  let warnings = [];[cite: 2]
+  if (car.insurance && car.insurance < tripDate) warnings.push('Insurance Expired (' + fmtDate(car.insurance) + ')');[cite: 2]
+  if (car.permit && car.permit < tripDate) warnings.push('Permit/Fitness Expired (' + fmtDate(car.permit) + ')');[cite: 2]
 
-  if (warnings.length > 0) {
-    warnEl.innerText = '⚠️ ' + warnings.join(' | ');
-    warnEl.style.display = 'block';
+  if (warnings.length > 0) {[cite: 2]
+    warnEl.innerText = '⚠️ ' + warnings.join(' | ');[cite: 2]
+    warnEl.style.display = 'block';[cite: 2]
   } else {
-    warnEl.style.display = 'none';
+    warnEl.style.display = 'none';[cite: 2]
   }
 }
 
 function applyVehicleToDuty(boxId) {
-  const box = document.getElementById(boxId);
-  if (!box) return;
-  const reg = box.querySelector('.duty-fleet-select')?.value;
-  if (!reg) {
-    checkVehicleExpiry(boxId);
-    return;
+  const box = document.getElementById(boxId);[cite: 2]
+  if (!box) return;[cite: 2]
+  const reg = box.querySelector('.duty-fleet-select')?.value;[cite: 2]
+  if (!reg) {[cite: 2]
+    checkVehicleExpiry(boxId);[cite: 2]
+    return;[cite: 2]
   }
-  const car = data.vehicles.find(v => v.reg.toUpperCase() === reg.toUpperCase());
-  if (car) {
-    box.querySelector('.duty-veh').value = car.reg + (car.model ? ` (${car.model})` : '');
-    if (car.driver && !box.querySelector('.duty-driver').value) {
-      box.querySelector('.duty-driver').value = car.driver;
+  const car = data.vehicles.find(v => v.reg.toUpperCase() === reg.toUpperCase());[cite: 2]
+  if (car) {[cite: 2]
+    box.querySelector('.duty-veh').value = car.reg + (car.model ? ` (${car.model})` : '');[cite: 2]
+    if (car.driver && !box.querySelector('.duty-driver').value) {[cite: 2]
+      box.querySelector('.duty-driver').value = car.driver;[cite: 2]
     }
   }
-  checkVehicleExpiry(boxId);
-  isFormDirty = true;
+  checkVehicleExpiry(boxId);[cite: 2]
+  isFormDirty = true;[cite: 2]
 }
 
 /* ==================== TWO-WAY SYNC CORE ==================== */
 async function syncAllFromCloud(manual = false) {
-  const isEditingBill = isFormDirty || (document.activeElement && document.activeElement.closest('#newbill'));
-  if (!manual && isEditingBill) return;
+  const isEditingBill = isFormDirty || (document.activeElement && document.activeElement.closest('#newbill'));[cite: 2]
+  if (!manual && isEditingBill) return;[cite: 2]
 
-  setSyncStatus('Syncing...', true);
+  setSyncStatus('Syncing...', true);[cite: 2]
 
   try {
-    const [setRes, custRes, billsRes, vehRes, venRes] = await Promise.all([
-      cloudReq('app_settings?id=eq.global&select=*'),
-      cloudReq('customers?select=*'),
-      cloudReq('bills?select=*&order=invoice_no.asc'),
-      cloudReq('vehicles?select=*'),
-      cloudReq('vendors?select=*')
+    const [setRes, custRes, billsRes, vehRes, venRes] = await Promise.all([[cite: 2]
+      cloudReq('app_settings?id=eq.global&select=*'),[cite: 2]
+      cloudReq('customers?select=*'),[cite: 2]
+      cloudReq('bills?select=*&order=invoice_no.asc'),[cite: 2]
+      cloudReq('vehicles?select=*'),[cite: 2]
+      cloudReq('vendors?select=*')[cite: 2]
     ]);
 
-    if (setRes && setRes.ok && Array.isArray(setRes.data) && setRes.data.length > 0) {
-      const s = setRes.data[0];
-      data.settings.adminUser = s.admin_user || data.settings.adminUser;
-      data.settings.adminPass = s.admin_pass || data.settings.adminPass;
-      data.settings.name = s.name || data.settings.name;
-      data.settings.phone = s.phone || data.settings.phone;
-      data.settings.gstin = s.gstin || data.settings.gstin;
-      data.settings.sac = s.sac || data.settings.sac;
-      data.settings.address = s.address || data.settings.address;
-      data.settings.email = s.email || data.settings.email;
-      data.settings.bank = s.bank || data.settings.bank;
-      data.settings.start = s.start_no || data.settings.start;
-      data.settings.signature = s.signature || data.settings.signature || '';
-      loadSettings();
+    if (setRes && setRes.ok && Array.isArray(setRes.data) && setRes.data.length > 0) {[cite: 2]
+      const s = setRes.data[0];[cite: 2]
+      data.settings.adminUser = s.admin_user || data.settings.adminUser;[cite: 2]
+      data.settings.adminPass = s.admin_pass || data.settings.adminPass;[cite: 2]
+      data.settings.name = s.name || data.settings.name;[cite: 2]
+      data.settings.phone = s.phone || data.settings.phone;[cite: 2]
+      data.settings.gstin = s.gstin || data.settings.gstin;[cite: 2]
+      data.settings.sac = s.sac || data.settings.sac;[cite: 2]
+      data.settings.address = s.address || data.settings.address;[cite: 2]
+      data.settings.email = s.email || data.settings.email;[cite: 2]
+      data.settings.bank = s.bank || data.settings.bank;[cite: 2]
+      data.settings.start = s.start_no || data.settings.start;[cite: 2]
+      data.settings.signature = s.signature || data.settings.signature || '';[cite: 2]
+      loadSettings();[cite: 2]
     }
 
-    if (custRes && custRes.ok && Array.isArray(custRes.data)) {
+    if (custRes && custRes.ok && Array.isArray(custRes.data)) {[cite: 2]
       data.customers = custRes.data.map(c => ({
-        id: String(c.id),
-        name: c.name || '',
-        email: c.email || '',
-        phone: c.phone || '',
-        address: c.address || '',
-        gstin: c.gstin || '',
-        notes: c.notes || ''
+        id: String(c.id),[cite: 2]
+        name: c.name || '',[cite: 2]
+        email: c.email || '',[cite: 2]
+        phone: c.phone || '',[cite: 2]
+        address: c.address || '',[cite: 2]
+        gstin: c.gstin || '',[cite: 2]
+        notes: c.notes || ''[cite: 2]
       }));
     }
 
-    if (billsRes && billsRes.ok && Array.isArray(billsRes.data)) {
+    if (billsRes && billsRes.ok && Array.isArray(billsRes.data)) {[cite: 2]
       data.bills = billsRes.data.map(b => {
-        let duties = [];
+        let duties = [];[cite: 2]
         try {
-          if (b.notes && b.notes.startsWith('DUTIES_JSON:')) {
-            duties = JSON.parse(b.notes.replace('DUTIES_JSON:', ''));
+          if (b.notes && b.notes.startsWith('DUTIES_JSON:')) {[cite: 2]
+            duties = JSON.parse(b.notes.replace('DUTIES_JSON:', ''));[cite: 2]
           }
-        } catch(e) {}
+        } catch(e) {}[cite: 2]
 
-        if (!Array.isArray(duties) || duties.length === 0) {
-          let dutyTypeLabel = b.duty_type || 'Local (8 Hrs / 80 Kms)';
-          if (dutyTypeLabel === 'Outstation Duty') dutyTypeLabel = 'Outstation Duty (Min. 250 KMs/Day)';
+        if (!Array.isArray(duties) || duties.length === 0) {[cite: 2]
+          let dutyTypeLabel = b.duty_type || 'Local (8 Hrs / 80 Kms)';[cite: 2]
+          if (dutyTypeLabel === 'Outstation Duty') dutyTypeLabel = 'Outstation Duty (Min. 250 KMs/Day)';[cite: 2]
 
           duties = [{
-            dutyType: dutyTypeLabel,
-            dutySlip: b.duty_slip_no || '',
-            tdate: b.travel_date || b.invoice_date || '',
-            tEndDate: b.travel_end_date || b.travel_date || '',
-            veh: b.vehicle || '',
-            driver: b.driver || '',
-            trip: b.particulars || 'TAXI HIRE CHARGES',
-            totalKms: Number(b.total_kms) || 0,
-            rate: Number(b.rate) || 0,
-            qty: Number(b.quantity) || 1,
-            extraKms: Number(b.extra_kms) || 0,
-            extraKmRate: Number(b.extra_km_rate) || 0,
-            extraHrs: Number(b.extra_hrs) || 0,
-            extraHrRate: Number(b.extra_hr_rate) || 0,
-            driverAllowanceQty: Number(b.driver_allowance_qty) || (Number(b.driver_allowance) > 0 ? 1 : 0),
-            driverAllowanceRate: Number(b.driver_allowance_rate) || Number(b.driver_allowance) || 0,
-            nightChargesQty: Number(b.night_charges_qty) || (Number(b.night_charges) > 0 ? 1 : 0),
-            nightChargesRate: Number(b.night_charges_rate) || Number(b.night_charges) || 0,
-            tollParking: Number(b.toll_parking || b.extra_charges) || 0,
-            slipImgs: [],
-            tollImgs: []
+            dutyType: dutyTypeLabel,[cite: 2]
+            dutySlip: b.duty_slip_no || '',[cite: 2]
+            tdate: b.travel_date || b.invoice_date || '',[cite: 2]
+            tEndDate: b.travel_end_date || b.travel_date || '',[cite: 2]
+            veh: b.vehicle || '',[cite: 2]
+            driver: b.driver || '',[cite: 2]
+            trip: b.particulars || 'TAXI HIRE CHARGES',[cite: 2]
+            totalKms: Number(b.total_kms) || 0,[cite: 2]
+            rate: Number(b.rate) || 0,[cite: 2]
+            qty: Number(b.quantity) || 1,[cite: 2]
+            extraKms: Number(b.extra_kms) || 0,[cite: 2]
+            extraKmRate: Number(b.extra_km_rate) || 0,[cite: 2]
+            extraHrs: Number(b.extra_hrs) || 0,[cite: 2]
+            extraHrRate: Number(b.extra_hr_rate) || 0,[cite: 2]
+            driverAllowanceQty: Number(b.driver_allowance_qty) || (Number(b.driver_allowance) > 0 ? 1 : 0),[cite: 2]
+            driverAllowanceRate: Number(b.driver_allowance_rate) || Number(b.driver_allowance) || 0,[cite: 2]
+            nightChargesQty: Number(b.night_charges_qty) || (Number(b.night_charges) > 0 ? 1 : 0),[cite: 2]
+            nightChargesRate: Number(b.night_charges_rate) || Number(b.night_charges) || 0,[cite: 2]
+            tollParking: Number(b.toll_parking || b.extra_charges) || 0,[cite: 2]
+            slipImgs: [],[cite: 2]
+            tollImgs: [][cite: 2]
           }];
         }
 
         return {
-          no: String(b.invoice_no),
-          date: b.invoice_date || '',
-          cust: b.customer_name || '',
-          custEmail: b.customer_email || '',
-          custPhone: b.customer_phone || '',
-          custGstin: b.customer_gst || '',
-          duties: duties,
-          gstType: b.gst_type || 'none',
-          cgst: Number(b.cgst_amount) || 0,
-          sgst: Number(b.sgst_amount) || 0,
-          igst: Number(b.igst_amount) || 0,
-          tax: Number(b.gst_amount) || 0,
-          sub: Number(b.subtotal) || 0,
-          total: Number(b.total) || 0,
-          paid: Number(b.amount_paid) || 0,
-          bal: Number(b.balance) || 0
+          no: String(b.invoice_no),[cite: 2]
+          date: b.invoice_date || '',[cite: 2]
+          cust: b.customer_name || '',[cite: 2]
+          custEmail: b.customer_email || '',[cite: 2]
+          custPhone: b.customer_phone || '',[cite: 2]
+          custGstin: b.customer_gst || '',[cite: 2]
+          duties: duties,[cite: 2]
+          gstType: b.gst_type || 'none',[cite: 2]
+          cgst: Number(b.cgst_amount) || 0,[cite: 2]
+          sgst: Number(b.sgst_amount) || 0,[cite: 2]
+          igst: Number(b.igst_amount) || 0,[cite: 2]
+          tax: Number(b.gst_amount) || 0,[cite: 2]
+          sub: Number(b.subtotal) || 0,[cite: 2]
+          total: Number(b.total) || 0,[cite: 2]
+          paid: Number(b.amount_paid) || 0,[cite: 2]
+          bal: Number(b.balance) || 0[cite: 2]
         };
       });
     }
 
-    if (vehRes && vehRes.ok && Array.isArray(vehRes.data)) {
+    if (vehRes && vehRes.ok && Array.isArray(vehRes.data)) {[cite: 2]
       data.vehicles = vehRes.data.map(v => ({
-        reg: String(v.reg),
-        model: v.model || '',
-        type: v.type || 'Own',
-        vendor: v.vendor || '',
-        driver: v.driver || '',
-        insurance: v.insurance || '',
-        permit: v.permit || ''
+        reg: String(v.reg),[cite: 2]
+        model: v.model || '',[cite: 2]
+        type: v.type || 'Own',[cite: 2]
+        vendor: v.vendor || '',[cite: 2]
+        driver: v.driver || '',[cite: 2]
+        insurance: v.insurance || '',[cite: 2]
+        permit: v.permit || ''[cite: 2]
       }));
     }
 
-    if (venRes && venRes.ok && Array.isArray(venRes.data)) {
+    if (venRes && venRes.ok && Array.isArray(venRes.data)) {[cite: 2]
       data.vendors = venRes.data.map(v => ({
-        id: String(v.id),
-        name: v.name || '',
-        contact: v.contact || '',
-        phone: v.phone || '',
-        city: v.city || '',
-        notes: v.notes || ''
+        id: String(v.id),[cite: 2]
+        name: v.name || '',[cite: 2]
+        contact: v.contact || '',[cite: 2]
+        phone: v.phone || '',[cite: 2]
+        city: v.city || '',[cite: 2]
+        notes: v.notes || ''[cite: 2]
       }));
     }
 
-    persist();
-    renderDash();
-    renderBills();
-    renderCustomersTable();
-    renderFleetTable();
-    renderVendorsTable();
-    syncVendorDropdowns();
-    syncCustomerDropdown();
+    persist();[cite: 2]
+    renderDash();[cite: 2]
+    renderBills();[cite: 2]
+    renderCustomersTable();[cite: 2]
+    renderFleetTable();[cite: 2]
+    renderVendorsTable();[cite: 2]
+    syncVendorDropdowns();[cite: 2]
+    syncCustomerDropdown();[cite: 2]
 
-    setSyncStatus('Cloud Synced', true);
-    if (manual) alert('All data synced successfully!');
+    setSyncStatus('Cloud Synced', true);[cite: 2]
+    if (manual) alert('All data synced successfully!');[cite: 2]
   } catch (err) {
-    setSyncStatus('Sync Error', false);
+    setSyncStatus('Sync Error', false);[cite: 2]
   }
 }
 
 /* ==================== CUSTOMERS LOGIC ==================== */
 function clearCustomerForm() {
-  editingCustId = null;
-  ['clientName', 'clientEmail', 'clientPhone', 'clientGst', 'clientAddress', 'clientNotes'].forEach(id => {
-    const el = document.getElementById(id);
-    if (el) el.value = '';
+  editingCustId = null;[cite: 2]
+  ['clientName', 'clientEmail', 'clientPhone', 'clientGst', 'clientAddress', 'clientNotes'].forEach(id => {[cite: 2]
+    const el = document.getElementById(id);[cite: 2]
+    if (el) el.value = '';[cite: 2]
   });
 }
 
 async function saveCustomer() {
-  const name = (document.getElementById('clientName')?.value || '').trim();
-  if (!name) return alert("Please enter Customer / Company Name.");
+  const name = (document.getElementById('clientName')?.value || '').trim();[cite: 2]
+  if (!name) return alert("Please enter Customer / Company Name.");[cite: 2]
 
-  const id = (editingCustId && isValidUUID(editingCustId)) ? editingCustId : genUUID();
+  const id = (editingCustId && isValidUUID(editingCustId)) ? editingCustId : genUUID();[cite: 2]
   const record = {
-    id: id,
-    name,
-    email: document.getElementById('clientEmail')?.value.trim() || null,
-    phone: document.getElementById('clientPhone')?.value.trim() || null,
-    gstin: document.getElementById('clientGst')?.value.trim() || null,
-    address: document.getElementById('clientAddress')?.value.trim() || null,
-    notes: document.getElementById('clientNotes')?.value.trim() || null
+    id: id,[cite: 2]
+    name,[cite: 2]
+    email: document.getElementById('clientEmail')?.value.trim() || null,[cite: 2]
+    phone: document.getElementById('clientPhone')?.value.trim() || null,[cite: 2]
+    gstin: document.getElementById('clientGst')?.value.trim() || null,[cite: 2]
+    address: document.getElementById('clientAddress')?.value.trim() || null,[cite: 2]
+    notes: document.getElementById('clientNotes')?.value.trim() || null[cite: 2]
   };
 
-  setSyncStatus('Saving Customer...', true);
-  const res = await cloudReq('customers?on_conflict=id', 'POST', record);
+  setSyncStatus('Saving Customer...', true);[cite: 2]
+  const res = await cloudReq('customers?on_conflict=id', 'POST', record);[cite: 2]
 
-  let finalRecord = record;
-  if (res.ok && Array.isArray(res.data) && res.data.length > 0) {
-    finalRecord = { ...record, id: String(res.data[0].id) };
+  let finalRecord = record;[cite: 2]
+  if (res.ok && Array.isArray(res.data) && res.data.length > 0) {[cite: 2]
+    finalRecord = { ...record, id: String(res.data[0].id) };[cite: 2]
   }
 
-  const existingIdx = data.customers.findIndex(c => String(c.id) === String(finalRecord.id));
-  if (existingIdx > -1) data.customers[existingIdx] = finalRecord;
-  else data.customers.push(finalRecord);
-  persist();
+  const existingIdx = data.customers.findIndex(c => String(c.id) === String(finalRecord.id));[cite: 2]
+  if (existingIdx > -1) data.customers[existingIdx] = finalRecord;[cite: 2]
+  else data.customers.push(finalRecord);[cite: 2]
+  persist();[cite: 2]
 
-  clearCustomerForm();
-  renderCustomersTable();
-  syncCustomerDropdown();
-  renderDash();
+  clearCustomerForm();[cite: 2]
+  renderCustomersTable();[cite: 2]
+  syncCustomerDropdown();[cite: 2]
+  renderDash();[cite: 2]
 
-  if (res.ok) {
-    setSyncStatus('Cloud Synced', true);
-    alert("Customer saved and updated on cloud database!");
+  if (res.ok) {[cite: 2]
+    setSyncStatus('Cloud Synced', true);[cite: 2]
+    alert("Customer saved and updated on cloud database!");[cite: 2]
   } else {
-    setSyncStatus('Saved locally only', false);
-    alert("Saved locally, but failed to push to database: " + res.error);
+    setSyncStatus('Saved locally only', false);[cite: 2]
+    alert("Saved locally, but failed to push to database: " + res.error);[cite: 2]
   }
 }
 
 function renderCustomersTable() {
-  const q = (document.getElementById('customerSearch')?.value || '').toLowerCase();
-  const filtered = data.customers.filter(c => !q || (c.name && c.name.toLowerCase().includes(q)) || (c.phone && c.phone.includes(q)) || (c.email && c.email.toLowerCase().includes(q)));
-  const container = document.getElementById('customerTable');
-  if (!container) return;
+  const q = (document.getElementById('customerSearch')?.value || '').toLowerCase();[cite: 2]
+  const filtered = data.customers.filter(c => !q || (c.name && c.name.toLowerCase().includes(q)) || (c.phone && c.phone.includes(q)) || (c.email && c.email.toLowerCase().includes(q)));[cite: 2]
+  const container = document.getElementById('customerTable');[cite: 2]
+  if (!container) return;[cite: 2]
 
   container.innerHTML = filtered.length ? `
     <table>
@@ -1193,108 +1192,108 @@ function renderCustomersTable() {
             </td>
           </tr>`).join('')}
       </tbody>
-    </table>` : '<div class="empty">No registered customers found.</div>';
+    </table>` : '<div class="empty">No registered customers found.</div>';[cite: 2]
 }
 
 function editCustomer(id) {
-  const c = data.customers.find(x => String(x.id) === String(id));
-  if (!c) return;
-  editingCustId = String(c.id);
-  if (document.getElementById('clientName')) document.getElementById('clientName').value = c.name || '';
-  if (document.getElementById('clientEmail')) document.getElementById('clientEmail').value = c.email || '';
-  if (document.getElementById('clientPhone')) document.getElementById('clientPhone').value = c.phone || '';
-  if (document.getElementById('clientGst')) document.getElementById('clientGst').value = c.gstin || '';
-  if (document.getElementById('clientAddress')) document.getElementById('clientAddress').value = c.address || '';
-  if (document.getElementById('clientNotes')) document.getElementById('clientNotes').value = c.notes || '';
-  document.getElementById('customers')?.scrollIntoView({ behavior: 'smooth' });
+  const c = data.customers.find(x => String(x.id) === String(id));[cite: 2]
+  if (!c) return;[cite: 2]
+  editingCustId = String(c.id);[cite: 2]
+  if (document.getElementById('clientName')) document.getElementById('clientName').value = c.name || '';[cite: 2]
+  if (document.getElementById('clientEmail')) document.getElementById('clientEmail').value = c.email || '';[cite: 2]
+  if (document.getElementById('clientPhone')) document.getElementById('clientPhone').value = c.phone || '';[cite: 2]
+  if (document.getElementById('clientGst')) document.getElementById('clientGst').value = c.gstin || '';[cite: 2]
+  if (document.getElementById('clientAddress')) document.getElementById('clientAddress').value = c.address || '';[cite: 2]
+  if (document.getElementById('clientNotes')) document.getElementById('clientNotes').value = c.notes || '';[cite: 2]
+  document.getElementById('customers')?.scrollIntoView({ behavior: 'smooth' });[cite: 2]
 }
 
 async function deleteCustomer(id) {
-  if (!confirm("Delete this customer from all devices?")) return;
-  setSyncStatus('Deleting customer...', true);
-  const res = await cloudReq(`customers?id=eq.${encodeURIComponent(id)}`, 'DELETE');
-  data.customers = data.customers.filter(c => String(c.id) !== String(id));
-  persist();
-  renderCustomersTable();
-  syncCustomerDropdown();
-  renderDash();
-  setSyncStatus(res.ok ? 'Cloud Synced' : 'Sync Error', res.ok);
+  if (!confirm("Delete this customer from all devices?")) return;[cite: 2]
+  setSyncStatus('Deleting customer...', true);[cite: 2]
+  const res = await cloudReq(`customers?id=eq.${encodeURIComponent(id)}`, 'DELETE');[cite: 2]
+  data.customers = data.customers.filter(c => String(c.id) !== String(id));[cite: 2]
+  persist();[cite: 2]
+  renderCustomersTable();[cite: 2]
+  syncCustomerDropdown();[cite: 2]
+  renderDash();[cite: 2]
+  setSyncStatus(res.ok ? 'Cloud Synced' : 'Sync Error', res.ok);[cite: 2]
 }
 
 function syncCustomerDropdown() {
-  const sel = document.getElementById('custSelect');
-  if (!sel) return;
-  sel.innerHTML = '<option value="">-- Choose registered customer --</option>' +
-    data.customers.map(c => `<option value="${esc(c.id)}">${esc(c.name)} ${c.phone ? '(' + esc(c.phone) + ')' : ''}</option>`).join('');
+  const sel = document.getElementById('custSelect');[cite: 2]
+  if (!sel) return;[cite: 2]
+  sel.innerHTML = '<option value="">-- Choose registered customer --</option>' +[cite: 2]
+    data.customers.map(c => `<option value="${esc(c.id)}">${esc(c.name)} ${c.phone ? '(' + esc(c.phone) + ')' : ''}</option>`).join('');[cite: 2]
 }
 
 function applyCustomerSelection() {
-  const id = document.getElementById('custSelect')?.value;
-  if (!id) return;
-  const c = data.customers.find(x => String(x.id) === String(id));
+  const id = document.getElementById('custSelect')?.value;[cite: 2]
+  if (!id) return;[cite: 2]
+  const c = data.customers.find(x => String(x.id) === String(id));[cite: 2]
   if (c) {
-    if (document.getElementById('customer')) document.getElementById('customer').value = c.name;
-    if (document.getElementById('custEmail')) document.getElementById('custEmail').value = c.email || '';
-    if (document.getElementById('custPhone')) document.getElementById('custPhone').value = c.phone || '';
-    if (document.getElementById('custGstin')) document.getElementById('custGstin').value = c.gstin || 'Unregistered';
+    if (document.getElementById('customer')) document.getElementById('customer').value = c.name;[cite: 2]
+    if (document.getElementById('custEmail')) document.getElementById('custEmail').value = c.email || '';[cite: 2]
+    if (document.getElementById('custPhone')) document.getElementById('custPhone').value = c.phone || '';[cite: 2]
+    if (document.getElementById('custGstin')) document.getElementById('custGstin').value = c.gstin || 'Unregistered';[cite: 2]
   }
 }
 
 /* ==================== VENDOR LOGIC ==================== */
 function clearVendorForm() {
-  editingVendorId = null;
-  ['venName', 'venContact', 'venPhone', 'venCity', 'venNotes'].forEach(id => {
-    const el = document.getElementById(id);
-    if (el) el.value = '';
+  editingVendorId = null;[cite: 2]
+  ['venName', 'venContact', 'venPhone', 'venCity', 'venNotes'].forEach(id => {[cite: 2]
+    const el = document.getElementById(id);[cite: 2]
+    if (el) el.value = '';[cite: 2]
   });
 }
 
 async function saveVendor() {
-  const name = (document.getElementById('venName')?.value || '').trim();
-  if (!name) return alert("Please enter Vendor / Agency Name.");
+  const name = (document.getElementById('venName')?.value || '').trim();[cite: 2]
+  if (!name) return alert("Please enter Vendor / Agency Name.");[cite: 2]
 
-  const id = (editingVendorId && isValidUUID(editingVendorId)) ? editingVendorId : genUUID();
+  const id = (editingVendorId && isValidUUID(editingVendorId)) ? editingVendorId : genUUID();[cite: 2]
   const record = {
-    id: id,
-    name,
-    contact: document.getElementById('venContact')?.value.trim() || null,
-    phone: document.getElementById('venPhone')?.value.trim() || null,
-    city: document.getElementById('venCity')?.value.trim() || null,
-    notes: document.getElementById('venNotes')?.value.trim() || null
+    id: id,[cite: 2]
+    name,[cite: 2]
+    contact: document.getElementById('venContact')?.value.trim() || null,[cite: 2]
+    phone: document.getElementById('venPhone')?.value.trim() || null,[cite: 2]
+    city: document.getElementById('venCity')?.value.trim() || null,[cite: 2]
+    notes: document.getElementById('venNotes')?.value.trim() || null[cite: 2]
   };
 
-  setSyncStatus('Saving Vendor...', true);
-  const res = await cloudReq('vendors?on_conflict=id', 'POST', record);
+  setSyncStatus('Saving Vendor...', true);[cite: 2]
+  const res = await cloudReq('vendors?on_conflict=id', 'POST', record);[cite: 2]
 
-  let finalRecord = record;
-  if (res.ok && Array.isArray(res.data) && res.data.length > 0) {
-    finalRecord = { ...record, id: String(res.data[0].id) };
+  let finalRecord = record;[cite: 2]
+  if (res.ok && Array.isArray(res.data) && res.data.length > 0) {[cite: 2]
+    finalRecord = { ...record, id: String(res.data[0].id) };[cite: 2]
   }
 
-  const existingIdx = data.vendors.findIndex(v => String(v.id) === String(finalRecord.id));
-  if (existingIdx > -1) data.vendors[existingIdx] = finalRecord;
-  else data.vendors.push(finalRecord);
-  persist();
+  const existingIdx = data.vendors.findIndex(v => String(v.id) === String(finalRecord.id));[cite: 2]
+  if (existingIdx > -1) data.vendors[existingIdx] = finalRecord;[cite: 2]
+  else data.vendors.push(finalRecord);[cite: 2]
+  persist();[cite: 2]
 
-  clearVendorForm();
-  renderVendorsTable();
-  syncVendorDropdowns();
-  renderDash();
+  clearVendorForm();[cite: 2]
+  renderVendorsTable();[cite: 2]
+  syncVendorDropdowns();[cite: 2]
+  renderDash();[cite: 2]
 
-  if (res.ok) {
-    setSyncStatus('Cloud Synced', true);
-    alert("Vendor saved and synced successfully!");
+  if (res.ok) {[cite: 2]
+    setSyncStatus('Cloud Synced', true);[cite: 2]
+    alert("Vendor saved and synced successfully!");[cite: 2]
   } else {
-    setSyncStatus('Saved locally only', false);
-    alert("Saved locally, but failed to sync to database: " + res.error);
+    setSyncStatus('Saved locally only', false);[cite: 2]
+    alert("Saved locally, but failed to sync to database: " + res.error);[cite: 2]
   }
 }
 
 function renderVendorsTable() {
-  const q = (document.getElementById('vendorSearch')?.value || '').toLowerCase();
-  const filtered = data.vendors.filter(v => !q || (v.name && v.name.toLowerCase().includes(q)) || (v.phone && v.phone.includes(q)));
-  const container = document.getElementById('vendorTable');
-  if (!container) return;
+  const q = (document.getElementById('vendorSearch')?.value || '').toLowerCase();[cite: 2]
+  const filtered = data.vendors.filter(v => !q || (v.name && v.name.toLowerCase().includes(q)) || (v.phone && v.phone.includes(q)));[cite: 2]
+  const container = document.getElementById('vendorTable');[cite: 2]
+  if (!container) return;[cite: 2]
 
   container.innerHTML = filtered.length ? `
     <table>
@@ -1313,127 +1312,127 @@ function renderVendorsTable() {
             </td>
           </tr>`).join('')}
       </tbody>
-    </table>` : '<div class="empty">No vendor records found.</div>';
+    </table>` : '<div class="empty">No vendor records found.</div>';[cite: 2]
 }
 
 function editVendor(id) {
-  const v = data.vendors.find(x => String(x.id) === String(id));
-  if (!v) return;
-  editingVendorId = String(v.id);
-  if (document.getElementById('venName')) document.getElementById('venName').value = v.name || '';
-  if (document.getElementById('venContact')) document.getElementById('venContact').value = v.contact || '';
-  if (document.getElementById('venPhone')) document.getElementById('venPhone').value = v.phone || '';
-  if (document.getElementById('venCity')) document.getElementById('venCity').value = v.city || '';
-  if (document.getElementById('venNotes')) document.getElementById('venNotes').value = v.notes || '';
-  document.getElementById('vendors')?.scrollIntoView({ behavior: 'smooth' });
+  const v = data.vendors.find(x => String(x.id) === String(id));[cite: 2]
+  if (!v) return;[cite: 2]
+  editingVendorId = String(v.id);[cite: 2]
+  if (document.getElementById('venName')) document.getElementById('venName').value = v.name || '';[cite: 2]
+  if (document.getElementById('venContact')) document.getElementById('venContact').value = v.contact || '';[cite: 2]
+  if (document.getElementById('venPhone')) document.getElementById('venPhone').value = v.phone || '';[cite: 2]
+  if (document.getElementById('venCity')) document.getElementById('venCity').value = v.city || '';[cite: 2]
+  if (document.getElementById('venNotes')) document.getElementById('venNotes').value = v.notes || '';[cite: 2]
+  document.getElementById('vendors')?.scrollIntoView({ behavior: 'smooth' });[cite: 2]
 }
 
 async function deleteVendor(id) {
-  if (!confirm("Delete this vendor from all devices?")) return;
-  setSyncStatus('Deleting vendor...', true);
-  const res = await cloudReq(`vendors?id=eq.${encodeURIComponent(id)}`, 'DELETE');
-  data.vendors = data.vendors.filter(v => String(v.id) !== String(id));
-  persist();
-  renderVendorsTable();
-  syncVendorDropdowns();
-  renderDash();
-  setSyncStatus(res.ok ? 'Cloud Synced' : 'Sync Error', res.ok);
+  if (!confirm("Delete this vendor from all devices?")) return;[cite: 2]
+  setSyncStatus('Deleting vendor...', true);[cite: 2]
+  const res = await cloudReq(`vendors?id=eq.${encodeURIComponent(id)}`, 'DELETE');[cite: 2]
+  data.vendors = data.vendors.filter(v => String(v.id) !== String(id));[cite: 2]
+  persist();[cite: 2]
+  renderVendorsTable();[cite: 2]
+  syncVendorDropdowns();[cite: 2]
+  renderDash();[cite: 2]
+  setSyncStatus(res.ok ? 'Cloud Synced' : 'Sync Error', res.ok);[cite: 2]
 }
 
 function syncVendorDropdowns() {
-  const sel = document.getElementById('vehVendor');
-  if (!sel) return;
-  const curr = sel.value;
-  sel.innerHTML = '<option value="">-- Select Vendor --</option>' +
-    data.vendors.map(v => `<option value="${esc(v.name)}">${esc(v.name)}</option>`).join('');
-  if (curr) sel.value = curr;
+  const sel = document.getElementById('vehVendor');[cite: 2]
+  if (!sel) return;[cite: 2]
+  const curr = sel.value;[cite: 2]
+  sel.innerHTML = '<option value="">-- Select Vendor --</option>' +[cite: 2]
+    data.vendors.map(v => `<option value="${esc(v.name)}">${esc(v.name)}</option>`).join('');[cite: 2]
+  if (curr) sel.value = curr;[cite: 2]
 }
 
 /* ==================== FLEET LOGIC ==================== */
 function toggleVendorSelect() {
-  const typeEl = document.getElementById('vehType');
-  const wrap = document.getElementById('vendorSelectWrap');
+  const typeEl = document.getElementById('vehType');[cite: 2]
+  const wrap = document.getElementById('vendorSelectWrap');[cite: 2]
   if (typeEl && wrap) {
-    wrap.style.display = (typeEl.value === 'Vendor') ? 'block' : 'none';
+    wrap.style.display = (typeEl.value === 'Vendor') ? 'block' : 'none';[cite: 2]
   }
 }
 
 function clearVehicleForm() {
-  editingVehReg = null;
-  ['vehReg', 'vehModel', 'vehDriver', 'vehInsurance', 'vehPermit'].forEach(id => {
-    const el = document.getElementById(id);
-    if (el) el.value = '';
+  editingVehReg = null;[cite: 2]
+  ['vehReg', 'vehModel', 'vehDriver', 'vehInsurance', 'vehPermit'].forEach(id => {[cite: 2]
+    const el = document.getElementById(id);[cite: 2]
+    if (el) el.value = '';[cite: 2]
   });
-  const typeEl = document.getElementById('vehType');
-  if (typeEl) typeEl.value = 'Own';
-  const venEl = document.getElementById('vehVendor');
-  if (venEl) venEl.value = '';
-  toggleVendorSelect();
+  const typeEl = document.getElementById('vehType');[cite: 2]
+  if (typeEl) typeEl.value = 'Own';[cite: 2]
+  const venEl = document.getElementById('vehVendor');[cite: 2]
+  if (venEl) venEl.value = '';[cite: 2]
+  toggleVendorSelect();[cite: 2]
 }
 
 async function saveVehicle() {
-  const regEl = document.getElementById('vehReg');
-  const reg = (regEl ? regEl.value : '').trim().toUpperCase();
-  const model = (document.getElementById('vehModel')?.value || '').trim();
-  const type = document.getElementById('vehType')?.value || 'Own';
-  const vendor = (type === 'Vendor') ? (document.getElementById('vehVendor')?.value || '') : '';
+  const regEl = document.getElementById('vehReg');[cite: 2]
+  const reg = (regEl ? regEl.value : '').trim().toUpperCase();[cite: 2]
+  const model = (document.getElementById('vehModel')?.value || '').trim();[cite: 2]
+  const type = document.getElementById('vehType')?.value || 'Own';[cite: 2]
+  const vendor = (type === 'Vendor') ? (document.getElementById('vehVendor')?.value || '') : '';[cite: 2]
 
-  if (!reg) return alert("Vehicle registration number is required (e.g. MP 04 EA 1234).");
-  if (type === 'Vendor' && !vendor) return alert("Please select the vendor providing this vehicle.");
+  if (!reg) return alert("Vehicle registration number is required (e.g. MP 04 EA 1234).");[cite: 2]
+  if (type === 'Vendor' && !vendor) return alert("Please select the vendor providing this vehicle.");[cite: 2]
 
   const record = {
-    reg: String(reg),
-    model: model || null,
-    type,
-    vendor: vendor || null,
-    driver: document.getElementById('vehDriver')?.value.trim() || null,
-    insurance: document.getElementById('vehInsurance')?.value || null,
-    permit: document.getElementById('vehPermit')?.value || null
+    reg: String(reg),[cite: 2]
+    model: model || null,[cite: 2]
+    type,[cite: 2]
+    vendor: vendor || null,[cite: 2]
+    driver: document.getElementById('vehDriver')?.value.trim() || null,[cite: 2]
+    insurance: document.getElementById('vehInsurance')?.value || null,[cite: 2]
+    permit: document.getElementById('vehPermit')?.value || null[cite: 2]
   };
 
-  setSyncStatus('Saving vehicle...', true);
+  setSyncStatus('Saving vehicle...', true);[cite: 2]
 
-  if (editingVehReg && editingVehReg.toUpperCase() !== reg) {
-    await cloudReq(`vehicles?reg=eq.${encodeURIComponent(editingVehReg)}`, 'DELETE');
-    data.vehicles = data.vehicles.filter(v => v.reg.toUpperCase() !== editingVehReg.toUpperCase());
+  if (editingVehReg && editingVehReg.toUpperCase() !== reg) {[cite: 2]
+    await cloudReq(`vehicles?reg=eq.${encodeURIComponent(editingVehReg)}`, 'DELETE');[cite: 2]
+    data.vehicles = data.vehicles.filter(v => v.reg.toUpperCase() !== editingVehReg.toUpperCase());[cite: 2]
   }
 
-  const res = await cloudReq('vehicles?on_conflict=reg', 'POST', record);
+  const res = await cloudReq('vehicles?on_conflict=reg', 'POST', record);[cite: 2]
 
-  const existingIdx = data.vehicles.findIndex(v => v.reg.toUpperCase() === reg);
-  if (existingIdx > -1) data.vehicles[existingIdx] = record;
-  else data.vehicles.push(record);
-  persist();
+  const existingIdx = data.vehicles.findIndex(v => v.reg.toUpperCase() === reg);[cite: 2]
+  if (existingIdx > -1) data.vehicles[existingIdx] = record;[cite: 2]
+  else data.vehicles.push(record);[cite: 2]
+  persist();[cite: 2]
 
-  clearVehicleForm();
-  renderFleetTable();
-  renderDash();
+  clearVehicleForm();[cite: 2]
+  renderFleetTable();[cite: 2]
+  renderDash();[cite: 2]
 
-  if (res.ok) {
-    setSyncStatus('Cloud Synced', true);
-    alert("Vehicle saved and synced to database!");
+  if (res.ok) {[cite: 2]
+    setSyncStatus('Cloud Synced', true);[cite: 2]
+    alert("Vehicle saved and synced to database!");[cite: 2]
   } else {
-    setSyncStatus('Saved locally only', false);
-    alert("Saved locally, but failed to sync to database: " + res.error);
+    setSyncStatus('Saved locally only', false);[cite: 2]
+    alert("Saved locally, but failed to sync to database: " + res.error);[cite: 2]
   }
 }
 
 function renderFleetTable() {
-  const q = (document.getElementById('fleetSearch')?.value || '').toLowerCase();
-  const filtered = data.vehicles.filter(v => !q || (v.reg && v.reg.toLowerCase().includes(q)) || (v.model && v.model.toLowerCase().includes(q)));
+  const q = (document.getElementById('fleetSearch')?.value || '').toLowerCase();[cite: 2]
+  const filtered = data.vehicles.filter(v => !q || (v.reg && v.reg.toLowerCase().includes(q)) || (v.model && v.model.toLowerCase().includes(q)));[cite: 2]
   
-  const container = document.getElementById('fleetTable');
-  if (!container) return;
+  const container = document.getElementById('fleetTable');[cite: 2]
+  if (!container) return;[cite: 2]
 
-  const today = new Date().toISOString().slice(0, 10);
+  const today = new Date().toISOString().slice(0, 10);[cite: 2]
 
   container.innerHTML = filtered.length ? `
     <table>
       <thead><tr><th>Vehicle No.</th><th>Model</th><th>Ownership</th><th>Vendor / Source</th><th>Default Driver</th><th>Insurance Expiry</th><th>Permit Expiry</th><th class="right">Action</th></tr></thead>
       <tbody>
         ${filtered.map(v => {
-          const insExpired = v.insurance && v.insurance < today;
-          const perExpired = v.permit && v.permit < today;
+          const insExpired = v.insurance && v.insurance < today;[cite: 2]
+          const perExpired = v.permit && v.permit < today;[cite: 2]
           return `
           <tr>
             <td><b>${esc(v.reg)}</b></td>
@@ -1450,447 +1449,447 @@ function renderFleetTable() {
           </tr>`;
         }).join('')}
       </tbody>
-    </table>` : '<div class="empty">No vehicles added to the fleet yet.</div>';
+    </table>` : '<div class="empty">No vehicles added to the fleet yet.</div>';[cite: 2]
 }
 
 function editVehicle(reg) {
-  const v = data.vehicles.find(x => x.reg.toUpperCase() === reg.toUpperCase());
-  if (!v) return;
-  editingVehReg = v.reg;
-  if (document.getElementById('vehReg')) document.getElementById('vehReg').value = v.reg || '';
-  if (document.getElementById('vehModel')) document.getElementById('vehModel').value = v.model || '';
-  if (document.getElementById('vehType')) document.getElementById('vehType').value = v.type || 'Own';
+  const v = data.vehicles.find(x => x.reg.toUpperCase() === reg.toUpperCase());[cite: 2]
+  if (!v) return;[cite: 2]
+  editingVehReg = v.reg;[cite: 2]
+  if (document.getElementById('vehReg')) document.getElementById('vehReg').value = v.reg || '';[cite: 2]
+  if (document.getElementById('vehModel')) document.getElementById('vehModel').value = v.model || '';[cite: 2]
+  if (document.getElementById('vehType')) document.getElementById('vehType').value = v.type || 'Own';[cite: 2]
   
-  syncVendorDropdowns();
-  toggleVendorSelect();
-  if (document.getElementById('vehVendor')) document.getElementById('vehVendor').value = v.vendor || '';
-  if (document.getElementById('vehDriver')) document.getElementById('vehDriver').value = v.driver || '';
-  if (document.getElementById('vehInsurance')) document.getElementById('vehInsurance').value = v.insurance || '';
-  if (document.getElementById('vehPermit')) document.getElementById('vehPermit').value = v.permit || '';
+  syncVendorDropdowns();[cite: 2]
+  toggleVendorSelect();[cite: 2]
+  if (document.getElementById('vehVendor')) document.getElementById('vehVendor').value = v.vendor || '';[cite: 2]
+  if (document.getElementById('vehDriver')) document.getElementById('vehDriver').value = v.driver || '';[cite: 2]
+  if (document.getElementById('vehInsurance')) document.getElementById('vehInsurance').value = v.insurance || '';[cite: 2]
+  if (document.getElementById('vehPermit')) document.getElementById('vehPermit').value = v.permit || '';[cite: 2]
   
-  document.getElementById('fleet')?.scrollIntoView({ behavior: 'smooth' });
+  document.getElementById('fleet')?.scrollIntoView({ behavior: 'smooth' });[cite: 2]
 }
 
 async function deleteVehicle(reg) {
-  if (!confirm("Remove vehicle " + reg + " from all devices?")) return;
-  setSyncStatus('Deleting vehicle...', true);
-  const res = await cloudReq(`vehicles?reg=eq.${encodeURIComponent(reg)}`, 'DELETE');
-  data.vehicles = data.vehicles.filter(v => v.reg.toUpperCase() !== reg.toUpperCase());
-  persist();
-  renderFleetTable();
-  renderDash();
-  setSyncStatus(res.ok ? 'Cloud Synced' : 'Sync Error', res.ok);
+  if (!confirm("Remove vehicle " + reg + " from all devices?")) return;[cite: 2]
+  setSyncStatus('Deleting vehicle...', true);[cite: 2]
+  const res = await cloudReq(`vehicles?reg=eq.${encodeURIComponent(reg)}`, 'DELETE');[cite: 2]
+  data.vehicles = data.vehicles.filter(v => v.reg.toUpperCase() !== reg.toUpperCase());[cite: 2]
+  persist();[cite: 2]
+  renderFleetTable();[cite: 2]
+  renderDash();[cite: 2]
+  setSyncStatus(res.ok ? 'Cloud Synced' : 'Sync Error', res.ok);[cite: 2]
 }
 
 /* ==================== BILLING / CALCULATION LOGIC ==================== */
 function calculateAmounts() {
-  let subtotal = 0;
-  const cards = document.querySelectorAll('.duty-item-box');
+  let subtotal = 0;[cite: 2]
+  const cards = document.querySelectorAll('.duty-item-box');[cite: 2]
   
   cards.forEach(card => {
-    let rate = Number(card.querySelector('.duty-rate')?.value) || 0;
-    let qty = Number(card.querySelector('.duty-qty')?.value) || 1;
-    let extraKms = Number(card.querySelector('.duty-extrakms')?.value) || 0;
-    let extraKmRate = Number(card.querySelector('.duty-extrakmrate')?.value) || 0;
-    let extraHrs = Number(card.querySelector('.duty-extrahrs')?.value) || 0;
-    let extraHrRate = Number(card.querySelector('.duty-extrahrrate')?.value) || 0;
-    let daQty = Number(card.querySelector('.duty-da-qty')?.value) || 0;
-    let daRate = Number(card.querySelector('.duty-da-rate')?.value) || 0;
-    let ncQty = Number(card.querySelector('.duty-nc-qty')?.value) || 0;
-    let ncRate = Number(card.querySelector('.duty-nc-rate')?.value) || 0;
-    let toll = Number(card.querySelector('.duty-toll')?.value) || 0;
+    let rate = Number(card.querySelector('.duty-rate')?.value) || 0;[cite: 2]
+    let qty = Number(card.querySelector('.duty-qty')?.value) || 1;[cite: 2]
+    let extraKms = Number(card.querySelector('.duty-extrakms')?.value) || 0;[cite: 2]
+    let extraKmRate = Number(card.querySelector('.duty-extrakmrate')?.value) || 0;[cite: 2]
+    let extraHrs = Number(card.querySelector('.duty-extrahrs')?.value) || 0;[cite: 2]
+    let extraHrRate = Number(card.querySelector('.duty-extrahrrate')?.value) || 0;[cite: 2]
+    let daQty = Number(card.querySelector('.duty-da-qty')?.value) || 0;[cite: 2]
+    let daRate = Number(card.querySelector('.duty-da-rate')?.value) || 0;[cite: 2]
+    let ncQty = Number(card.querySelector('.duty-nc-qty')?.value) || 0;[cite: 2]
+    let ncRate = Number(card.querySelector('.duty-nc-rate')?.value) || 0;[cite: 2]
+    let toll = Number(card.querySelector('.duty-toll')?.value) || 0;[cite: 2]
 
-    let dutyItemTotal = (rate * qty) + (extraKms * extraKmRate) + (extraHrs * extraHrRate) + (daQty * daRate) + (ncQty * ncRate) + toll;
-    subtotal = round2(subtotal + dutyItemTotal);
+    let dutyItemTotal = (rate * qty) + (extraKms * extraKmRate) + (extraHrs * extraHrRate) + (daQty * daRate) + (ncQty * ncRate) + toll;[cite: 2]
+    subtotal = round2(subtotal + dutyItemTotal);[cite: 2]
   });
 
-  let gstType = document.getElementById('gstType')?.value || 'none';
-  let paid = round2(document.getElementById('paid')?.value || 0);
+  let gstType = document.getElementById('gstType')?.value || 'none';[cite: 2]
+  let paid = round2(document.getElementById('paid')?.value || 0);[cite: 2]
 
-  let cgst = 0, sgst = 0, igst = 0, totalTax = 0;
-  if (gstType === 'cgst_sgst_5') {
-    cgst = round2(subtotal * 0.025);
-    sgst = round2(subtotal * 0.025);
-    totalTax = round2(cgst + sgst);
-  } else if (gstType === 'cgst_sgst_12') {
-    cgst = round2(subtotal * 0.06);
-    sgst = round2(subtotal * 0.06);
-    totalTax = round2(cgst + sgst);
-  } else if (gstType === 'igst_5') {
-    igst = round2(subtotal * 0.05);
-    totalTax = igst;
-  } else if (gstType === 'igst_12') {
-    igst = round2(subtotal * 0.12);
-    totalTax = igst;
+  let cgst = 0, sgst = 0, igst = 0, totalTax = 0;[cite: 2]
+  if (gstType === 'cgst_sgst_5') {[cite: 2]
+    cgst = round2(subtotal * 0.025);[cite: 2]
+    sgst = round2(subtotal * 0.025);[cite: 2]
+    totalTax = round2(cgst + sgst);[cite: 2]
+  } else if (gstType === 'cgst_sgst_12') {[cite: 2]
+    cgst = round2(subtotal * 0.06);[cite: 2]
+    sgst = round2(subtotal * 0.06);[cite: 2]
+    totalTax = round2(cgst + sgst);[cite: 2]
+  } else if (gstType === 'igst_5') {[cite: 2]
+    igst = round2(subtotal * 0.05);[cite: 2]
+    totalTax = igst;[cite: 2]
+  } else if (gstType === 'igst_12') {[cite: 2]
+    igst = round2(subtotal * 0.12);[cite: 2]
+    totalTax = igst;[cite: 2]
   }
 
-  let tot = round2(subtotal + totalTax);
-  let bal = round2(tot - paid);
+  let tot = round2(subtotal + totalTax);[cite: 2]
+  let bal = round2(tot - paid);[cite: 2]
 
-  const displayBal = document.getElementById('displayBal');
-  if (displayBal) displayBal.value = money(bal);
+  const displayBal = document.getElementById('displayBal');[cite: 2]
+  if (displayBal) displayBal.value = money(bal);[cite: 2]
 
-  return { subtotal, gstType, cgst, sgst, igst, totalTax, tot, bal };
+  return { subtotal, gstType, cgst, sgst, igst, totalTax, tot, bal };[cite: 2]
 }
 
 function resetForm() {
-  isFormDirty = false;
-  const formHeader = document.getElementById('formHeader');
-  if (formHeader) formHeader.innerText = "Create New Bill";
-  ['customer', 'custEmail', 'custPhone', 'custGstin'].forEach(id => {
-    const el = document.getElementById(id);
-    if (el) el.value = '';
+  isFormDirty = false;[cite: 2]
+  const formHeader = document.getElementById('formHeader');[cite: 2]
+  if (formHeader) formHeader.innerText = "Create New Bill";[cite: 2]
+  ['customer', 'custEmail', 'custPhone', 'custGstin'].forEach(id => {[cite: 2]
+    const el = document.getElementById(id);[cite: 2]
+    if (el) el.value = '';[cite: 2]
   });
-  if (document.getElementById('custSelect')) document.getElementById('custSelect').value = '';
-  if (document.getElementById('gstType')) document.getElementById('gstType').value = 'none';
-  if (document.getElementById('paid')) document.getElementById('paid').value = '0';
-  if (document.getElementById('billNo')) document.getElementById('billNo').value = nextNo();
-  const today = new Date().toISOString().slice(0, 10);
-  if (document.getElementById('billDate')) document.getElementById('billDate').value = today;
+  if (document.getElementById('custSelect')) document.getElementById('custSelect').value = '';[cite: 2]
+  if (document.getElementById('gstType')) document.getElementById('gstType').value = 'none';[cite: 2]
+  if (document.getElementById('paid')) document.getElementById('paid').value = '0';[cite: 2]
+  if (document.getElementById('billNo')) document.getElementById('billNo').value = nextNo();[cite: 2]
+  const today = new Date().toISOString().slice(0, 10);[cite: 2]
+  if (document.getElementById('billDate')) document.getElementById('billDate').value = today;[cite: 2]
 
-  const container = document.getElementById('dutiesContainer');
-  if (container) container.innerHTML = '';
-  addDutyItem();
-  syncCustomerDropdown();
-  calculateAmounts();
+  const container = document.getElementById('dutiesContainer');[cite: 2]
+  if (container) container.innerHTML = '';[cite: 2]
+  addDutyItem();[cite: 2]
+  syncCustomerDropdown();[cite: 2]
+  calculateAmounts();[cite: 2]
 }
 
 function getBillData() {
-  const c = calculateAmounts();
-  const dutyCards = document.querySelectorAll('.duty-item-box');
-  const duties = [];
+  const c = calculateAmounts();[cite: 2]
+  const dutyCards = document.querySelectorAll('.duty-item-box');[cite: 2]
+  const duties = [];[cite: 2]
 
   dutyCards.forEach(card => {
-    const slipRaw = card.querySelector('.duty-slip-img')?.value || '';
-    const tollRaw = card.querySelector('.duty-toll-img')?.value || '';
+    const slipRaw = card.querySelector('.duty-slip-img')?.value || '';[cite: 2]
+    const tollRaw = card.querySelector('.duty-toll-img')?.value || '';[cite: 2]
 
     duties.push({
-      dutyType: card.querySelector('.duty-type')?.value || 'Local (8 Hrs / 80 Kms)',
-      dutySlip: card.querySelector('.duty-slip')?.value || '',
-      tdate: card.querySelector('.duty-tdate')?.value || '',
-      tEndDate: card.querySelector('.duty-tend')?.value || '',
-      veh: card.querySelector('.duty-veh')?.value || '',
-      driver: card.querySelector('.duty-driver')?.value || '',
-      totalKms: Number(card.querySelector('.duty-totalkms')?.value) || 0,
-      trip: card.querySelector('.duty-trip')?.value || 'TAXI HIRE CHARGES',
-      rate: round2(card.querySelector('.duty-rate')?.value || 0),
-      qty: Number(card.querySelector('.duty-qty')?.value) || 1,
-      extraKms: Number(card.querySelector('.duty-extrakms')?.value) || 0,
-      extraKmRate: round2(card.querySelector('.duty-extrakmrate')?.value || 0),
-      extraHrs: Number(card.querySelector('.duty-extrahrs')?.value) || 0,
-      extraHrRate: round2(card.querySelector('.duty-extrahrrate')?.value || 0),
-      driverAllowanceQty: Number(card.querySelector('.duty-da-qty')?.value) || 0,
-      driverAllowanceRate: round2(card.querySelector('.duty-da-rate')?.value || 0),
-      nightChargesQty: Number(card.querySelector('.duty-nc-qty')?.value) || 0,
-      nightChargesRate: round2(card.querySelector('.duty-nc-rate')?.value || 0),
-      tollParking: round2(card.querySelector('.duty-toll')?.value || 0),
-      slipImgs: slipRaw ? slipRaw.split(',').filter(Boolean) : [],
-      tollImgs: tollRaw ? tollRaw.split(',').filter(Boolean) : []
+      dutyType: card.querySelector('.duty-type')?.value || 'Local (8 Hrs / 80 Kms)',[cite: 2]
+      dutySlip: card.querySelector('.duty-slip')?.value || '',[cite: 2]
+      tdate: card.querySelector('.duty-tdate')?.value || '',[cite: 2]
+      tEndDate: card.querySelector('.duty-tend')?.value || '',[cite: 2]
+      veh: card.querySelector('.duty-veh')?.value || '',[cite: 2]
+      driver: card.querySelector('.duty-driver')?.value || '',[cite: 2]
+      totalKms: Number(card.querySelector('.duty-totalkms')?.value) || 0,[cite: 2]
+      trip: card.querySelector('.duty-trip')?.value || 'TAXI HIRE CHARGES',[cite: 2]
+      rate: round2(card.querySelector('.duty-rate')?.value || 0),[cite: 2]
+      qty: Number(card.querySelector('.duty-qty')?.value) || 1,[cite: 2]
+      extraKms: Number(card.querySelector('.duty-extrakms')?.value) || 0,[cite: 2]
+      extraKmRate: round2(card.querySelector('.duty-extrakmrate')?.value || 0),[cite: 2]
+      extraHrs: Number(card.querySelector('.duty-extrahrs')?.value) || 0,[cite: 2]
+      extraHrRate: round2(card.querySelector('.duty-extrahrrate')?.value || 0),[cite: 2]
+      driverAllowanceQty: Number(card.querySelector('.duty-da-qty')?.value) || 0,[cite: 2]
+      driverAllowanceRate: round2(card.querySelector('.duty-da-rate')?.value || 0),[cite: 2]
+      nightChargesQty: Number(card.querySelector('.duty-nc-qty')?.value) || 0,[cite: 2]
+      nightChargesRate: round2(card.querySelector('.duty-nc-rate')?.value || 0),[cite: 2]
+      tollParking: round2(card.querySelector('.duty-toll')?.value || 0),[cite: 2]
+      slipImgs: slipRaw ? slipRaw.split(',').filter(Boolean) : [],[cite: 2]
+      tollImgs: tollRaw ? tollRaw.split(',').filter(Boolean) : [][cite: 2]
     });
   });
 
-  const firstDuty = duties[0] || {};
+  const firstDuty = duties[0] || {};[cite: 2]
 
   return {
-    no: String(document.getElementById('billNo')?.value || nextNo()),
-    date: document.getElementById('billDate')?.value || '',
-    cust: document.getElementById('customer')?.value || '',
-    custEmail: document.getElementById('custEmail')?.value || '',
-    custPhone: document.getElementById('custPhone')?.value || '',
-    custGstin: document.getElementById('custGstin')?.value || '',
-    duties: duties,
-    firstDuty: firstDuty,
-    gstType: c.gstType,
-    cgst: c.cgst,
-    sgst: c.sgst,
-    igst: c.igst,
-    tax: c.totalTax,
-    sub: c.subtotal,
-    total: c.tot,
-    paid: round2(document.getElementById('paid')?.value || 0),
-    bal: c.bal
+    no: String(document.getElementById('billNo')?.value || nextNo()),[cite: 2]
+    date: document.getElementById('billDate')?.value || '',[cite: 2]
+    cust: document.getElementById('customer')?.value || '',[cite: 2]
+    custEmail: document.getElementById('custEmail')?.value || '',[cite: 2]
+    custPhone: document.getElementById('custPhone')?.value || '',[cite: 2]
+    custGstin: document.getElementById('custGstin')?.value || '',[cite: 2]
+    duties: duties,[cite: 2]
+    firstDuty: firstDuty,[cite: 2]
+    gstType: c.gstType,[cite: 2]
+    cgst: c.cgst,[cite: 2]
+    sgst: c.sgst,[cite: 2]
+    igst: c.igst,[cite: 2]
+    tax: c.totalTax,[cite: 2]
+    sub: c.subtotal,[cite: 2]
+    total: c.tot,[cite: 2]
+    paid: round2(document.getElementById('paid')?.value || 0),[cite: 2]
+    bal: c.bal[cite: 2]
   };
 }
 
 async function saveBill() {
-  let b = getBillData();
-  if (!b.cust) return alert("Customer Name is required.");
-  if (!b.duties.length || !b.duties[0].trip) return alert("At least one trip description is required.");
+  let b = getBillData();[cite: 2]
+  if (!b.cust) return alert("Customer Name is required.");[cite: 2]
+  if (!b.duties.length || !b.duties[0].trip) return alert("At least one trip description is required.");[cite: 2]
 
-  let idx = data.bills.findIndex(x => String(x.no) === String(b.no));
-  if (idx > -1) data.bills[idx] = b;
-  else data.bills.push(b);
-  persist();
+  let idx = data.bills.findIndex(x => String(x.no) === String(b.no));[cite: 2]
+  if (idx > -1) data.bills[idx] = b;[cite: 2]
+  else data.bills.push(b);[cite: 2]
+  persist();[cite: 2]
 
-  isFormDirty = false;
-  activePreviewBill = b;
-  buildInvoice(b);
-  showPage('preview');
+  isFormDirty = false;[cite: 2]
+  activePreviewBill = b;[cite: 2]
+  buildInvoice(b);[cite: 2]
+  showPage('preview');[cite: 2]
 
-  const cleanDate = d => (d && String(d).trim().length === 10) ? d : null;
+  const cleanDate = d => (d && String(d).trim().length === 10) ? d : null;[cite: 2]
 
-  setSyncStatus('Saving bill to cloud...', true);
+  setSyncStatus('Saving bill to cloud...', true);[cite: 2]
   const res = await cloudReq('bills?on_conflict=invoice_no', 'POST', {
-    invoice_no: String(b.no),
-    invoice_date: cleanDate(b.date),
-    duty_slip_no: b.firstDuty.dutySlip || null,
-    duty_type: b.firstDuty.dutyType || 'Local (8 Hrs / 80 Kms)',
-    customer_name: b.cust,
-    customer_email: b.custEmail || null,
-    customer_phone: b.custPhone || null,
-    customer_gst: b.custGstin || null,
-    particulars: b.duties.map((d, i) => `#${i+1}: ${d.trip}`).join(' | '),
-    vehicle: b.firstDuty.veh || null,
-    driver: b.firstDuty.driver || null,
-    travel_date: cleanDate(b.firstDuty.tdate),
-    travel_end_date: cleanDate(b.firstDuty.tEndDate),
-    total_kms: Number(b.firstDuty.totalKms) || 0,
-    rate: Number(b.firstDuty.rate) || 0,
-    quantity: Number(b.firstDuty.qty) || 1,
-    extra_kms: Number(b.firstDuty.extraKms) || 0,
-    extra_km_rate: Number(b.firstDuty.extraKmRate) || 0,
-    extra_hrs: Number(b.firstDuty.extraHrs) || 0,
-    extra_hr_rate: Number(b.firstDuty.extraHrRate) || 0,
-    driver_allowance_qty: Number(b.firstDuty.driverAllowanceQty) || 0,
-    driver_allowance_rate: Number(b.firstDuty.driverAllowanceRate) || 0,
-    driver_allowance: Number(b.firstDuty.driverAllowanceQty * b.firstDuty.driverAllowanceRate) || 0,
-    night_charges_qty: Number(b.night_charges_qty) || 0,
-    night_charges_rate: Number(b.night_charges_rate) || 0,
-    night_charges: Number(b.firstDuty.nightChargesQty * b.firstDuty.nightChargesRate) || 0,
-    toll_parking: Number(b.firstDuty.tollParking) || 0,
-    extra_charges: Number(b.firstDuty.tollParking) || 0,
-    gst_type: b.gstType || 'none',
-    cgst_amount: Number(b.cgst) || 0,
-    sgst_amount: Number(b.sgst) || 0,
-    igst_amount: Number(b.igst) || 0,
-    gst_amount: Number(b.tax) || 0,
-    subtotal: Number(b.sub) || 0,
-    total: Number(b.total) || 0,
-    amount_paid: Number(b.paid) || 0,
-    balance: Number(b.bal) || 0,
-    notes: 'DUTIES_JSON:' + JSON.stringify(b.duties)
+    invoice_no: String(b.no),[cite: 2]
+    invoice_date: cleanDate(b.date),[cite: 2]
+    duty_slip_no: b.firstDuty.dutySlip || null,[cite: 2]
+    duty_type: b.firstDuty.dutyType || 'Local (8 Hrs / 80 Kms)',[cite: 2]
+    customer_name: b.cust,[cite: 2]
+    customer_email: b.custEmail || null,[cite: 2]
+    customer_phone: b.custPhone || null,[cite: 2]
+    customer_gst: b.custGstin || null,[cite: 2]
+    particulars: b.duties.map((d, i) => `#${i+1}: ${d.trip}`).join(' | '),[cite: 2]
+    vehicle: b.firstDuty.veh || null,[cite: 2]
+    driver: b.firstDuty.driver || null,[cite: 2]
+    travel_date: cleanDate(b.firstDuty.tdate),[cite: 2]
+    travel_end_date: cleanDate(b.firstDuty.tEndDate),[cite: 2]
+    total_kms: Number(b.firstDuty.totalKms) || 0,[cite: 2]
+    rate: Number(b.firstDuty.rate) || 0,[cite: 2]
+    quantity: Number(b.firstDuty.qty) || 1,[cite: 2]
+    extra_kms: Number(b.firstDuty.extraKms) || 0,[cite: 2]
+    extra_km_rate: Number(b.firstDuty.extraKmRate) || 0,[cite: 2]
+    extra_hrs: Number(b.firstDuty.extraHrs) || 0,[cite: 2]
+    extra_hr_rate: Number(b.firstDuty.extraHrRate) || 0,[cite: 2]
+    driver_allowance_qty: Number(b.firstDuty.driverAllowanceQty) || 0,[cite: 2]
+    driver_allowance_rate: Number(b.firstDuty.driverAllowanceRate) || 0,[cite: 2]
+    driver_allowance: Number(b.firstDuty.driverAllowanceQty * b.firstDuty.driverAllowanceRate) || 0,[cite: 2]
+    night_charges_qty: Number(b.night_charges_qty) || 0,[cite: 2]
+    night_charges_rate: Number(b.night_charges_rate) || 0,[cite: 2]
+    night_charges: Number(b.firstDuty.nightChargesQty * b.firstDuty.nightChargesRate) || 0,[cite: 2]
+    toll_parking: Number(b.firstDuty.tollParking) || 0,[cite: 2]
+    extra_charges: Number(b.firstDuty.tollParking) || 0,[cite: 2]
+    gst_type: b.gstType || 'none',[cite: 2]
+    cgst_amount: Number(b.cgst) || 0,[cite: 2]
+    sgst_amount: Number(b.sgst) || 0,[cite: 2]
+    igst_amount: Number(b.igst) || 0,[cite: 2]
+    gst_amount: Number(b.tax) || 0,[cite: 2]
+    subtotal: Number(b.sub) || 0,[cite: 2]
+    total: Number(b.total) || 0,[cite: 2]
+    amount_paid: Number(b.paid) || 0,[cite: 2]
+    balance: Number(b.bal) || 0,[cite: 2]
+    notes: 'DUTIES_JSON:' + JSON.stringify(b.duties)[cite: 2]
   });
 
-  if (res.ok) {
-    setSyncStatus('Cloud Synced', true);
+  if (res.ok) {[cite: 2]
+    setSyncStatus('Cloud Synced', true);[cite: 2]
   } else {
-    setSyncStatus('Saved locally only', false);
-    alert('Bill saved locally, but database sync failed: ' + res.error);
+    setSyncStatus('Saved locally only', false);[cite: 2]
+    alert('Bill saved locally, but database sync failed: ' + res.error);[cite: 2]
   }
 }
 
 function previewBill() {
-  activePreviewBill = getBillData();
-  buildInvoice(activePreviewBill);
-  showPage('preview');
+  activePreviewBill = getBillData();[cite: 2]
+  buildInvoice(activePreviewBill);[cite: 2]
+  showPage('preview');[cite: 2]
 }
 
 /* ==================== AUTOMATIC PDF SENDER TO WHATSAPP ==================== */
 async function shareBillWhatsApp() {
-  const b = activePreviewBill || getBillData();
-  if (!b || !b.cust) return alert("Please create or preview a bill first.");
+  const b = activePreviewBill || getBillData();[cite: 2]
+  if (!b || !b.cust) return alert("Please create or preview a bill first.");[cite: 2]
 
-  buildInvoice(b);
+  buildInvoice(b);[cite: 2]
 
-  const invElement = document.getElementById('invoice');
-  const btn = document.getElementById('btnWhatsApp');
-  const originalText = btn ? btn.innerText : 'WhatsApp Bill (PDF)';
+  const invElement = document.getElementById('invoice');[cite: 2]
+  const btn = document.getElementById('btnWhatsApp');[cite: 2]
+  const originalText = btn ? btn.innerText : 'WhatsApp Bill (PDF)';[cite: 2]
   
   if (btn) {
-    btn.innerText = '⏳ Generating PDF...';
-    btn.disabled = true;
+    btn.innerText = '⏳ Generating PDF...';[cite: 2]
+    btn.disabled = true;[cite: 2]
   }
 
-  const filename = `Invoice_${b.no}_${Date.now()}.pdf`;
+  const filename = `Invoice_${b.no}_${Date.now()}.pdf`;[cite: 2]
 
   const opt = {
-    margin: [8, 10, 8, 10],
-    filename: filename,
-    image: { type: 'jpeg', quality: 0.98 },
-    html2canvas: { scale: 2, useCORS: true },
-    jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+    margin: [8, 10, 8, 10],[cite: 2]
+    filename: filename,[cite: 2]
+    image: { type: 'jpeg', quality: 0.98 },[cite: 2]
+    html2canvas: { scale: 2, useCORS: true },[cite: 2]
+    jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }[cite: 2]
   };
 
-  setSyncStatus('Rendering & uploading PDF...', true);
+  setSyncStatus('Rendering & uploading PDF...', true);[cite: 2]
 
   try {
-    const pdfBlob = await html2pdf().set(opt).from(invElement).output('blob');
+    const pdfBlob = await html2pdf().set(opt).from(invElement).output('blob');[cite: 2]
 
     const uploadRes = await fetch(`${SUPABASE_UPLOAD}/${filename}`, {
-      method: 'POST',
+      method: 'POST',[cite: 2]
       headers: {
-        'apikey': S_KEY,
-        'Authorization': 'Bearer ' + S_KEY,
-        'Content-Type': 'application/pdf'
+        'apikey': S_KEY,[cite: 2]
+        'Authorization': 'Bearer ' + S_KEY,[cite: 2]
+        'Content-Type': 'application/pdf'[cite: 2]
       },
-      body: pdfBlob
+      body: pdfBlob[cite: 2]
     });
 
-    const pdfLink = `${SUPABASE_STORAGE}/${filename}`;
+    const pdfLink = `${SUPABASE_STORAGE}/${filename}`;[cite: 2]
 
-    let cleanPhone = String(b.custPhone || '').replace(/[^0-9]/g, '');
-    if (cleanPhone.length === 10) {
-      cleanPhone = '91' + cleanPhone;
+    let cleanPhone = String(b.custPhone || '').replace(/[^0-9]/g, '');[cite: 2]
+    if (cleanPhone.length === 10) {[cite: 2]
+      cleanPhone = '91' + cleanPhone;[cite: 2]
     }
 
-    const file = new File([pdfBlob], `Invoice_${b.no}.pdf`, { type: 'application/pdf' });
-    if (navigator.canShare && navigator.canShare({ files: [file] })) {
+    const file = new File([pdfBlob], `Invoice_${b.no}.pdf`, { type: 'application/pdf' });[cite: 2]
+    if (navigator.canShare && navigator.canShare({ files: [file] })) {[cite: 2]
       try {
-        await navigator.share({
-          files: [file],
-          title: `Tax Invoice #${b.no}`,
-          text: `Dear ${b.cust}, please find your official Tax Invoice #${b.no} from ${data.settings.name}. Total: ${money(b.total)}`
+        await navigator.share({[cite: 2]
+          files: [file],[cite: 2]
+          title: `Tax Invoice #${b.no}`,[cite: 2]
+          text: `Dear ${b.cust}, please find your official Tax Invoice #${b.no} from ${data.settings.name}. Total: ${money(b.total)}`[cite: 2]
         });
-        setSyncStatus('Sent via WhatsApp', true);
-        if (btn) { btn.innerText = originalText; btn.disabled = false; }
+        setSyncStatus('Sent via WhatsApp', true);[cite: 2]
+        if (btn) { btn.innerText = originalText; btn.disabled = false; }[cite: 2]
         return;
       } catch (err) {
       }
     }
 
-    let text = `*TAX INVOICE - ${data.settings.name.toUpperCase()}*\n`;
-    text += `*Invoice No:* ${b.no} | *Date:* ${fmtDate(b.date)}\n`;
-    text += `*Customer:* ${b.cust}\n`;
-    text += `*Total Amount:* ${money(b.total)}\n`;
-    text += `*Advance Paid:* ${money(b.paid)}\n`;
-    text += `*Balance Due:* ${money(b.bal)}\n`;
-    text += `--------------------------------\n`;
-    text += `📄 *Download / View Official PDF Invoice:*\n${pdfLink}\n`;
-    text += `--------------------------------\n`;
-    text += `Bank Transfer Details:\n${data.settings.bank}\n`;
-    text += `Contact: ${data.settings.phone}`;
+    let text = `*TAX INVOICE - ${data.settings.name.toUpperCase()}*\n`;[cite: 2]
+    text += `*Invoice No:* ${b.no} | *Date:* ${fmtDate(b.date)}\n`;[cite: 2]
+    text += `*Customer:* ${b.cust}\n`;[cite: 2]
+    text += `*Total Amount:* ${money(b.total)}\n`;[cite: 2]
+    text += `*Advance Paid:* ${money(b.paid)}\n`;[cite: 2]
+    text += `*Balance Due:* ${money(b.bal)}\n`;[cite: 2]
+    text += `--------------------------------\n`;[cite: 2]
+    text += `📄 *Download / View Official PDF Invoice:*\n${pdfLink}\n`;[cite: 2]
+    text += `--------------------------------\n`;[cite: 2]
+    text += `Bank Transfer Details:\n${data.settings.bank}\n`;[cite: 2]
+    text += `Contact: ${data.settings.phone}`;[cite: 2]
 
-    let waTarget = cleanPhone ? `https://wa.me/${cleanPhone}?text=` : `https://wa.me/?text=`;
-    const whatsappUrl = `${waTarget}${encodeURIComponent(text)}`;
+    let waTarget = cleanPhone ? `https://wa.me/${cleanPhone}?text=` : `https://wa.me/?text=`;[cite: 2]
+    const whatsappUrl = `${waTarget}${encodeURIComponent(text)}`;[cite: 2]
     
-    setSyncStatus('PDF Cloud Linked', true);
-    window.open(whatsappUrl, '_blank');
+    setSyncStatus('PDF Cloud Linked', true);[cite: 2]
+    window.open(whatsappUrl, '_blank');[cite: 2]
   } catch (err) {
-    alert("Could not process PDF for WhatsApp: " + err.message);
-    setSyncStatus('PDF Error', false);
+    alert("Could not process PDF for WhatsApp: " + err.message);[cite: 2]
+    setSyncStatus('PDF Error', false);[cite: 2]
   } finally {
-    if (btn) {
-      btn.innerText = originalText;
-      btn.disabled = false;
+    if (btn) {[cite: 2]
+      btn.innerText = originalText;[cite: 2]
+      btn.disabled = false;[cite: 2]
     }
   }
 }
 
 /* ==================== YAHOO MAIL COMPOSE ==================== */
 function sendInvoiceMail() {
-  const b = activePreviewBill || getBillData();
-  if (!b || !b.cust) return alert("Please create or preview a bill first.");
+  const b = activePreviewBill || getBillData();[cite: 2]
+  if (!b || !b.cust) return alert("Please create or preview a bill first.");[cite: 2]
 
-  const recipient = b.custEmail || '';
-  const subject = `Tax Invoice #${b.no} - New Sarthi Travels (${b.cust})`;
+  const recipient = b.custEmail || '';[cite: 2]
+  const subject = `Tax Invoice #${b.no} - New Sarthi Travels (${b.cust})`;[cite: 2]
 
-  let body = `Dear ${b.cust},\n\n`;
-  body += `Please find the tax invoice details for your booking below:\n\n`;
-  body += `Invoice No: ${b.no}\n`;
-  body += `Invoice Date: ${fmtDate(b.date)}\n`;
-  body += `Customer GSTIN: ${b.custGstin || 'Unregistered'}\n\n`;
-  body += `--- BOOKED DUTIES & TRIPS ---\n`;
+  let body = `Dear ${b.cust},\n\n`;[cite: 2]
+  body += `Please find the tax invoice details for your booking below:\n\n`;[cite: 2]
+  body += `Invoice No: ${b.no}\n`;[cite: 2]
+  body += `Invoice Date: ${fmtDate(b.date)}\n`;[cite: 2]
+  body += `Customer GSTIN: ${b.custGstin || 'Unregistered'}\n\n`;[cite: 2]
+  body += `--- BOOKED DUTIES & TRIPS ---\n`;[cite: 2]
 
-  b.duties.forEach((d, idx) => {
-    body += `\nDuty #${idx + 1}: ${d.trip}\n`;
-    body += `Vehicle: ${d.veh || 'N/A'} | Driver: ${d.driver || 'N/A'}\n`;
-    body += `Date: ${fmtDate(d.tdate)} to ${fmtDate(d.tEndDate)}\n`;
-    body += `Total Distance: ${d.totalKms} KMs\n`;
-    if (d.tollParking > 0) body += `Toll & Parking: ${money(d.tollParking)}\n`;
+  b.duties.forEach((d, idx) => {[cite: 2]
+    body += `\nDuty #${idx + 1}: ${d.trip}\n`;[cite: 2]
+    body += `Vehicle: ${d.veh || 'N/A'} | Driver: ${d.driver || 'N/A'}\n`;[cite: 2]
+    body += `Date: ${fmtDate(d.tdate)} to ${fmtDate(d.tEndDate)}\n`;[cite: 2]
+    body += `Total Distance: ${d.totalKms} KMs\n`;[cite: 2]
+    if (d.tollParking > 0) body += `Toll & Parking: ${money(d.tollParking)}\n`;[cite: 2]
   });
 
-  body += `\n--- PAYMENT SUMMARY ---\n`;
-  body += `Subtotal: ${money(b.sub)}\n`;
-  if (b.tax > 0) body += `Tax Amount: ${money(b.tax)}\n`;
-  body += `Total Amount: ${money(b.total)}\n`;
-  body += `Advance Paid: ${money(b.paid)}\n`;
-  body += `Balance Due: ${money(b.bal)}\n\n`;
-  body += `Bank Transfer Details:\n${data.settings.bank}\n\n`;
-  body += `Regards,\n${data.settings.name}\n${data.settings.phone}\n${data.settings.address}`;
+  body += `\n--- PAYMENT SUMMARY ---\n`;[cite: 2]
+  body += `Subtotal: ${money(b.sub)}\n`;[cite: 2]
+  if (b.tax > 0) body += `Tax Amount: ${money(b.tax)}\n`;[cite: 2]
+  body += `Total Amount: ${money(b.total)}\n`;[cite: 2]
+  body += `Advance Paid: ${money(b.paid)}\n`;[cite: 2]
+  body += `Balance Due: ${money(b.bal)}\n\n`;[cite: 2]
+  body += `Bank Transfer Details:\n${data.settings.bank}\n\n`;[cite: 2]
+  body += `Regards,\n${data.settings.name}\n${data.settings.phone}\n${data.settings.address}`;[cite: 2]
 
-  const yahooUrl = `https://compose.mail.yahoo.com/?to=${encodeURIComponent(recipient)}&subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-  window.open(yahooUrl, '_blank');
+  const yahooUrl = `https://compose.mail.yahoo.com/?to=${encodeURIComponent(recipient)}&subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;[cite: 2]
+  window.open(yahooUrl, '_blank');[cite: 2]
 }
 
 function amountWords(amount) {
-  let val = round2(amount);
-  if (val <= 0) return 'Rupees Zero Only';
+  let val = round2(amount);[cite: 2]
+  if (val <= 0) return 'Rupees Zero Only';[cite: 2]
 
-  const ones = ['', 'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight', 'Nine', 'Ten', 'Eleven', 'Twelve', 'Thirteen', 'Fourteen', 'Fifteen', 'Sixteen', 'Seventeen', 'Eighteen', 'Nineteen'];
-  const tens = ['', '', 'Twenty', 'Thirty', 'Forty', 'Fifty', 'Sixty', 'Seventy', 'Eighty', 'Ninety'];
+  const ones = ['', 'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight', 'Nine', 'Ten', 'Eleven', 'Twelve', 'Thirteen', 'Fourteen', 'Fifteen', 'Sixteen', 'Seventeen', 'Eighteen', 'Nineteen'];[cite: 2]
+  const tens = ['', '', 'Twenty', 'Thirty', 'Forty', 'Fifty', 'Sixty', 'Seventy', 'Eighty', 'Ninety'];[cite: 2]
   
-  function convertUnderThousand(num) {
-    let s = '';
-    if (num >= 100) {
-      s += ones[Math.floor(num / 100)] + ' Hundred ';
-      num %= 100;
+  function convertUnderThousand(num) {[cite: 2]
+    let s = '';[cite: 2]
+    if (num >= 100) {[cite: 2]
+      s += ones[Math.floor(num / 100)] + ' Hundred ';[cite: 2]
+      num %= 100;[cite: 2]
     }
-    if (num >= 20) {
-      s += tens[Math.floor(num / 10)] + ' ';
-      num %= 10;
+    if (num >= 20) {[cite: 2]
+      s += tens[Math.floor(num / 10)] + ' ';[cite: 2]
+      num %= 10;[cite: 2]
     }
-    if (num > 0) {
-      s += ones[num] + ' ';
+    if (num > 0) {[cite: 2]
+      s += ones[num] + ' ';[cite: 2]
     }
-    return s;
+    return s;[cite: 2]
   }
 
-  let rupees = Math.floor(val);
-  let paise = Math.round((val - rupees) * 100);
+  let rupees = Math.floor(val);[cite: 2]
+  let paise = Math.round((val - rupees) * 100);[cite: 2]
 
-  let out = '';
-  const cr = Math.floor(rupees / 10000000); rupees %= 10000000;
-  const lk = Math.floor(rupees / 100000); rupees %= 100000;
-  const th = Math.floor(rupees / 1000); rupees %= 1000;
-  if (cr) out += convertUnderThousand(cr) + 'Crore ';
-  if (lk) out += convertUnderThousand(lk) + 'Lakh ';
-  if (th) out += convertUnderThousand(th) + 'Thousand ';
-  if (rupees) out += convertUnderThousand(rupees);
+  let out = '';[cite: 2]
+  const cr = Math.floor(rupees / 10000000); rupees %= 10000000;[cite: 2]
+  const lk = Math.floor(rupees / 100000); rupees %= 100000;[cite: 2]
+  const th = Math.floor(rupees / 1000); rupees %= 1000;[cite: 2]
+  if (cr) out += convertUnderThousand(cr) + 'Crore ';[cite: 2]
+  if (lk) out += convertUnderThousand(lk) + 'Lakh ';[cite: 2]
+  if (th) out += convertUnderThousand(th) + 'Thousand ';[cite: 2]
+  if (rupees) out += convertUnderThousand(rupees);[cite: 2]
 
-  out = 'Rupees ' + (out.trim() || 'Zero');
-  if (paise > 0) {
-    out += ' and ' + convertUnderThousand(paise).trim() + ' Paise';
+  out = 'Rupees ' + (out.trim() || 'Zero');[cite: 2]
+  if (paise > 0) {[cite: 2]
+    out += ' and ' + convertUnderThousand(paise).trim() + ' Paise';[cite: 2]
   }
-  return out + ' Only';
+  return out + ' Only';[cite: 2]
 }
 
 function buildInvoice(b) {
-  let s = data.settings;
-  const invEl = document.getElementById('invoice');
-  if (!invEl) return;
+  let s = data.settings;[cite: 2]
+  const invEl = document.getElementById('invoice');[cite: 2]
+  if (!invEl) return;[cite: 2]
 
-  let gstRows = '';
-  if (b.gstType === 'cgst_sgst_5') {
+  let gstRows = '';[cite: 2]
+  if (b.gstType === 'cgst_sgst_5') {[cite: 2]
     gstRows = `
       <div class="total-row"><span>CGST (2.5%)</span><span>${money(b.cgst)}</span></div>
       <div class="total-row"><span>SGST (2.5%)</span><span>${money(b.sgst)}</span></div>
-    `;
-  } else if (b.gstType === 'cgst_sgst_12') {
+    `;[cite: 2]
+  } else if (b.gstType === 'cgst_sgst_12') {[cite: 2]
     gstRows = `
       <div class="total-row"><span>CGST (6.0%)</span><span>${money(b.cgst)}</span></div>
       <div class="total-row"><span>SGST (6.0%)</span><span>${money(b.sgst)}</span></div>
-    `;
-  } else if (b.gstType === 'igst_5') {
-    gstRows = `<div class="total-row"><span>IGST (5.0%)</span><span>${money(b.igst)}</span></div>`;
-  } else if (b.gstType === 'igst_12') {
-    gstRows = `<div class="total-row"><span>IGST (12.0%)</span><span>${money(b.igst)}</span></div>`;
+    `;[cite: 2]
+  } else if (b.gstType === 'igst_5') {[cite: 2]
+    gstRows = `<div class="total-row"><span>IGST (5.0%)</span><span>${money(b.igst)}</span></div>`;[cite: 2]
+  } else if (b.gstType === 'igst_12') {[cite: 2]
+    gstRows = `<div class="total-row"><span>IGST (12.0%)</span><span>${money(b.igst)}</span></div>`;[cite: 2]
   }
 
-  let tableRows = '';
-  let attachedImagesHtml = '';
+  let tableRows = '';[cite: 2]
+  let attachedImagesHtml = '';[cite: 2]
 
-  b.duties.forEach((d, idx) => {
-    const span = (d.tdate && d.tEndDate && d.tdate !== d.tEndDate)  
-      ? `${fmtDate(d.tdate)} to ${fmtDate(d.tEndDate)}`
-      : fmtDate(d.tdate || b.date);
+  b.duties.forEach((d, idx) => {[cite: 2]
+    const span = (d.tdate && d.tEndDate && d.tdate !== d.tEndDate)  [cite: 2]
+      ? `${fmtDate(d.tdate)} to ${fmtDate(d.tEndDate)}`[cite: 2]
+      : fmtDate(d.tdate || b.date);[cite: 2]
 
-    let displayDutyType = d.dutyType;
-    if (displayDutyType === 'Outstation Duty') {
-      displayDutyType = 'Outstation Duty (Min. 250 KMs/Day)';
+    let displayDutyType = d.dutyType;[cite: 2]
+    if (displayDutyType === 'Outstation Duty') {[cite: 2]
+      displayDutyType = 'Outstation Duty (Min. 250 KMs/Day)';[cite: 2]
     }
 
-    const daTotal = round2((Number(d.driverAllowanceQty) || 0) * (Number(d.driverAllowanceRate) || 0));
-    const ncTotal = round2((Number(d.nightChargesQty) || 0) * (Number(d.nightChargesRate) || 0));
+    const daTotal = round2((Number(d.driverAllowanceQty) || 0) * (Number(d.driverAllowanceRate) || 0));[cite: 2]
+    const ncTotal = round2((Number(d.nightChargesQty) || 0) * (Number(d.nightChargesRate) || 0));[cite: 2]
 
     tableRows += `
       <tr style="background:#f4f4f4; font-weight:bold;">
@@ -1908,31 +1907,31 @@ function buildInvoice(b) {
         <td class="right">${money(d.rate)}</td>
         <td class="right">${money(d.rate * (d.qty || 1))}</td>
       </tr>
-      ${d.extraKms > 0 ? `<tr><td style="padding-left:14px;">Extra KMs (${d.extraKms} KMs)</td><td align="center">${d.extraKms}</td><td class="right">${money(d.extraKmRate)}</td><td class="right">${money(d.extraKms * d.extraKmRate)}</td></tr>` : ''}
-      ${d.extraHrs > 0 ? `<tr><td style="padding-left:14px;">Extra Hours (${d.extraHrs} Hrs)</td><td align="center">${d.extraHrs}</td><td class="right">${money(d.extraHrRate)}</td><td class="right">${money(d.extraHrs * d.extraHrRate)}</td></tr>` : ''}
-      ${daTotal > 0 ? `<tr><td style="padding-left:14px;">Driver Allowance</td><td align="center">${d.driverAllowanceQty} Day(s)</td><td class="right">${money(d.driverAllowanceRate)}</td><td class="right">${money(daTotal)}</td></tr>` : ''}
-      ${ncTotal > 0 ? `<tr><td style="padding-left:14px;">Night Charges</td><td align="center">${d.nightChargesQty} Night(s)</td><td class="right">${money(d.nightChargesRate)}</td><td class="right">${money(ncTotal)}</td></tr>` : ''}
-      ${d.tollParking > 0 ? `<tr><td style="padding-left:14px;">Toll Tax & Parking Charges</td><td align="center">—</td><td class="right">—</td><td class="right">${money(d.tollParking)}</td></tr>` : ''}
-    `;
+      ${d.extraKms > 0 ? `<tr><td style="padding-left:14px;">Extra KMs (${d.extraKms} KMs)</td><td align="center">${d.extraKms}</td><td class="right">${money(d.extraKmRate)}</td><td class="right">${money(d.extraKms * d.extraKmRate)}</td></tr>` : ''}[cite: 2]
+      ${d.extraHrs > 0 ? `<tr><td style="padding-left:14px;">Extra Hours (${d.extraHrs} Hrs)</td><td align="center">${d.extraHrs}</td><td class="right">${money(d.extraHrRate)}</td><td class="right">${money(d.extraHrs * d.extraHrRate)}</td></tr>` : ''}[cite: 2]
+      ${daTotal > 0 ? `<tr><td style="padding-left:14px;">Driver Allowance</td><td align="center">${d.driverAllowanceQty} Day(s)</td><td class="right">${money(d.driverAllowanceRate)}</td><td class="right">${money(daTotal)}</td></tr>` : ''}[cite: 2]
+      ${ncTotal > 0 ? `<tr><td style="padding-left:14px;">Night Charges</td><td align="center">${d.nightChargesQty} Night(s)</td><td class="right">${money(d.nightChargesRate)}</td><td class="right">${money(ncTotal)}</td></tr>` : ''}[cite: 2]
+      ${d.tollParking > 0 ? `<tr><td style="padding-left:14px;">Toll Tax & Parking Charges</td><td align="center">—</td><td class="right">—</td><td class="right">${money(d.tollParking)}</td></tr>` : ''}[cite: 2]
+    `;[cite: 2]
 
-    const slipImgs = Array.isArray(d.slipImgs) ? d.slipImgs : (d.slipImg ? d.slipImg.split(',').filter(Boolean) : []);
-    const tollImgs = Array.isArray(d.tollImgs) ? d.tollImgs : (d.tollImg ? d.tollImg.split(',').filter(Boolean) : []);
+    const slipImgs = Array.isArray(d.slipImgs) ? d.slipImgs : (d.slipImg ? d.slipImg.split(',').filter(Boolean) : []);[cite: 2]
+    const tollImgs = Array.isArray(d.tollImgs) ? d.tollImgs : (d.tollImg ? d.tollImg.split(',').filter(Boolean) : []);[cite: 2]
 
-    if (slipImgs.length > 0 || tollImgs.length > 0) {
-      attachedImagesHtml += `<div style="margin-top:8px;"><b>Duty #${idx+1} Attached Receipts:</b><br>`;
-      slipImgs.forEach((u, i) => {
-        attachedImagesHtml += `<a href="${u}" target="_blank"><img src="${u}" title="Duty Slip #${i+1}"></a>`;
+    if (slipImgs.length > 0 || tollImgs.length > 0) {[cite: 2]
+      attachedImagesHtml += `<div style="margin-top:8px;"><b>Duty #${idx+1} Attached Receipts:</b><br>`;[cite: 2]
+      slipImgs.forEach((u, i) => {[cite: 2]
+        attachedImagesHtml += `<a href="${u}" target="_blank"><img src="${u}" title="Duty Slip #${i+1}"></a>`;[cite: 2]
       });
-      tollImgs.forEach((u, i) => {
-        attachedImagesHtml += `<a href="${u}" target="_blank"><img src="${u}" title="Toll Slip #${i+1}"></a>`;
+      tollImgs.forEach((u, i) => {[cite: 2]
+        attachedImagesHtml += `<a href="${u}" target="_blank"><img src="${u}" title="Toll Slip #${i+1}"></a>`;[cite: 2]
       });
-      attachedImagesHtml += `</div>`;
+      attachedImagesHtml += `</div>`;[cite: 2]
     }
   });
 
-  const signatureHtml = s.signature
-    ? `<div><img src="${esc(s.signature)}" class="sign-img" alt="Digital Signature"></div>`
-    : `<div style="height:45px"></div>`;
+  const signatureHtml = s.signature[cite: 2]
+    ? `<div><img src="${esc(s.signature)}" class="sign-img" alt="Digital Signature"></div>`[cite: 2]
+    : `<div style="height:45px"></div>`;[cite: 2]
 
   invEl.innerHTML = `
     <div class="inv-header">
@@ -2003,20 +2002,20 @@ function buildInvoice(b) {
       ${signatureHtml}
       <p style="margin:0; font-size:12px;"><b>Authorized Signatory</b></p>
     </div>
-  `;
+  `;[cite: 2]
 }
 
 function renderDash() {
-  if (document.getElementById('statBills')) document.getElementById('statBills').innerText = data.bills.length;
-  const now = new Date(), ym = now.toISOString().slice(0, 7);
-  const mTotal = data.bills.filter(b => b.date && b.date.startsWith(ym)).reduce((a, b) => a + (Number(b.total) || 0), 0);
-  if (document.getElementById('statMonth')) document.getElementById('statMonth').innerText = money(mTotal);
-  if (document.getElementById('statCustomers')) document.getElementById('statCustomers').innerText = data.customers.length;
-  if (document.getElementById('statVehicles')) document.getElementById('statVehicles').innerText = data.vehicles.length;
-  if (document.getElementById('statVendors')) document.getElementById('statVendors').innerText = data.vendors.length;
+  if (document.getElementById('statBills')) document.getElementById('statBills').innerText = data.bills.length;[cite: 2]
+  const now = new Date(), ym = now.toISOString().slice(0, 7);[cite: 2]
+  const mTotal = data.bills.filter(b => b.date && b.date.startsWith(ym)).reduce((a, b) => a + (Number(b.total) || 0), 0);[cite: 2]
+  if (document.getElementById('statMonth')) document.getElementById('statMonth').innerText = money(mTotal);[cite: 2]
+  if (document.getElementById('statCustomers')) document.getElementById('statCustomers').innerText = data.customers.length;[cite: 2]
+  if (document.getElementById('statVehicles')) document.getElementById('statVehicles').innerText = data.vehicles.length;[cite: 2]
+  if (document.getElementById('statVendors')) document.getElementById('statVendors').innerText = data.vendors.length;[cite: 2]
 
-  const list = data.bills.slice(-5).reverse();
-  const recentEl = document.getElementById('recent');
+  const list = data.bills.slice(-5).reverse();[cite: 2]
+  const recentEl = document.getElementById('recent');[cite: 2]
   if (recentEl) {
     recentEl.innerHTML = list.length ? `
       <table>
@@ -2024,24 +2023,24 @@ function renderDash() {
         <tbody>
           ${list.map(b => `<tr><td>${esc(b.no)}</td><td>${esc(b.cust)}</td><td>${b.duties.length}</td><td>${fmtDate(b.date)}</td><td class="right">${money(b.total)}</td><td class="right"><button class="btn light" onclick="editBill('${esc(b.no)}')">Edit</button> <button class="btn dark" onclick="viewBill('${esc(b.no)}')">View</button></td></tr>`).join('')}
         </tbody>
-      </table>` : '<div class="empty">No invoices recorded yet.</div>';
+      </table>` : '<div class="empty">No invoices recorded yet.</div>';[cite: 2]
   }
 }
 
 function viewBill(no) {
-  const b = data.bills.find(x => String(x.no) === String(no));
+  const b = data.bills.find(x => String(x.no) === String(no));[cite: 2]
   if (b) {
-    activePreviewBill = b;
-    buildInvoice(b);
-    showPage('preview');
+    activePreviewBill = b;[cite: 2]
+    buildInvoice(b);[cite: 2]
+    showPage('preview');[cite: 2]
   }
 }
 
 function renderBills() {
-  const q = (document.getElementById('billSearch')?.value || '').toLowerCase();
-  const filtered = data.bills.filter(b => !q || (b.cust && b.cust.toLowerCase().includes(q)) || String(b.no).includes(q));
-  const tableEl = document.getElementById('billTable');
-  if (!tableEl) return;
+  const q = (document.getElementById('billSearch')?.value || '').toLowerCase();[cite: 2]
+  const filtered = data.bills.filter(b => !q || (b.cust && b.cust.toLowerCase().includes(q)) || String(b.no).includes(q));[cite: 2]
+  const tableEl = document.getElementById('billTable');[cite: 2]
+  if (!tableEl) return;[cite: 2]
 
   tableEl.innerHTML = filtered.length ? `
     <table>
@@ -2062,103 +2061,103 @@ function renderBills() {
             </td>
           </tr>`).join('')}
       </tbody>
-    </table>` : '<div class="empty">No matching invoices found.</div>';
+    </table>` : '<div class="empty">No matching invoices found.</div>';[cite: 2]
 }
 
 function editBill(no) {
-  const b = data.bills.find(x => String(x.no) === String(no));
-  if (!b) return;
+  const b = data.bills.find(x => String(x.no) === String(no));[cite: 2]
+  if (!b) return;[cite: 2]
 
-  showPage('newbill');
-  isFormDirty = true;
-  if (document.getElementById('formHeader')) document.getElementById('formHeader').innerText = "Editing Bill: " + b.no;
-  if (document.getElementById('billNo')) document.getElementById('billNo').value = b.no;
-  if (document.getElementById('billDate')) document.getElementById('billDate').value = b.date || '';
-  if (document.getElementById('customer')) document.getElementById('customer').value = b.cust || '';
-  if (document.getElementById('custEmail')) document.getElementById('custEmail').value = b.custEmail || '';
-  if (document.getElementById('custPhone')) document.getElementById('custPhone').value = b.custPhone || '';
-  if (document.getElementById('custGstin')) document.getElementById('custGstin').value = b.custGstin || '';
-  if (document.getElementById('gstType')) document.getElementById('gstType').value = b.gstType || 'none';
-  if (document.getElementById('paid')) document.getElementById('paid').value = b.paid || 0;
+  showPage('newbill');[cite: 2]
+  isFormDirty = true;[cite: 2]
+  if (document.getElementById('formHeader')) document.getElementById('formHeader').innerText = "Editing Bill: " + b.no;[cite: 2]
+  if (document.getElementById('billNo')) document.getElementById('billNo').value = b.no;[cite: 2]
+  if (document.getElementById('billDate')) document.getElementById('billDate').value = b.date || '';[cite: 2]
+  if (document.getElementById('customer')) document.getElementById('customer').value = b.cust || '';[cite: 2]
+  if (document.getElementById('custEmail')) document.getElementById('custEmail').value = b.custEmail || '';[cite: 2]
+  if (document.getElementById('custPhone')) document.getElementById('custPhone').value = b.custPhone || '';[cite: 2]
+  if (document.getElementById('custGstin')) document.getElementById('custGstin').value = b.custGstin || '';[cite: 2]
+  if (document.getElementById('gstType')) document.getElementById('gstType').value = b.gstType || 'none';[cite: 2]
+  if (document.getElementById('paid')) document.getElementById('paid').value = b.paid || 0;[cite: 2]
 
-  const container = document.getElementById('dutiesContainer');
+  const container = document.getElementById('dutiesContainer');[cite: 2]
   if (container) {
-    container.innerHTML = '';
-    b.duties.forEach(d => addDutyItem(d));
+    container.innerHTML = '';[cite: 2]
+    b.duties.forEach(d => addDutyItem(d));[cite: 2]
   }
-  calculateAmounts();
+  calculateAmounts();[cite: 2]
 }
 
 async function deleteBill(no) {
-  if (!confirm("Are you sure you want to delete Bill " + no + "? It will be deleted from all devices.")) return;
-  setSyncStatus('Deleting bill...', true);
-  const res = await cloudReq(`bills?invoice_no=eq.${encodeURIComponent(no)}`, 'DELETE');
-  data.bills = data.bills.filter(x => String(x.no) !== String(no));
-  persist();
-  renderBills();
-  renderDash();
-  setSyncStatus(res.ok ? 'Cloud Synced' : 'Sync Error', res.ok);
+  if (!confirm("Are you sure you want to delete Bill " + no + "? It will be deleted from all devices.")) return;[cite: 2]
+  setSyncStatus('Deleting bill...', true);[cite: 2]
+  const res = await cloudReq(`bills?invoice_no=eq.${encodeURIComponent(no)}`, 'DELETE');[cite: 2]
+  data.bills = data.bills.filter(x => String(x.no) !== String(no));[cite: 2]
+  persist();[cite: 2]
+  renderBills();[cite: 2]
+  renderDash();[cite: 2]
+  setSyncStatus(res.ok ? 'Cloud Synced' : 'Sync Error', res.ok);[cite: 2]
 }
 
 function loadSettings() {
-  const s = data.settings;
-  [['setUser', 'adminUser'], ['setPass', 'adminPass'], ['setName', 'name'], ['setPhone', 'phone'], ['setGSTIN', 'gstin'], ['setSAC', 'sac'], ['setAddress', 'address'], ['setEmail', 'email'], ['setBank', 'bank'], ['setStart', 'start'], ['setSignature', 'signature']].forEach(([id, k]) => {
-    const el = document.getElementById(id);
-    if (el) el.value = s[k] || '';
+  const s = data.settings;[cite: 2]
+  [['setUser', 'adminUser'], ['setPass', 'adminPass'], ['setName', 'name'], ['setPhone', 'phone'], ['setGSTIN', 'gstin'], ['setSAC', 'sac'], ['setAddress', 'address'], ['setEmail', 'email'], ['setBank', 'bank'], ['setStart', 'start'], ['setSignature', 'signature']].forEach(([id, k]) => {[cite: 2]
+    const el = document.getElementById(id);[cite: 2]
+    if (el) el.value = s[k] || '';[cite: 2]
   });
-  renderSignPreview(s.signature || '');
+  renderSignPreview(s.signature || '');[cite: 2]
 }
 
 async function saveSettings() {
-  const s = data.settings;
-  [['setUser', 'adminUser'], ['setPass', 'adminPass'], ['setName', 'name'], ['setPhone', 'phone'], ['setGSTIN', 'gstin'], ['setSAC', 'sac'], ['setAddress', 'address'], ['setEmail', 'email'], ['setBank', 'bank'], ['setStart', 'start'], ['setSignature', 'signature']].forEach(([id, k]) => {
-    const el = document.getElementById(id);
-    if (el) s[k] = el.value;
+  const s = data.settings;[cite: 2]
+  [['setUser', 'adminUser'], ['setPass', 'adminPass'], ['setName', 'name'], ['setPhone', 'phone'], ['setGSTIN', 'gstin'], ['setSAC', 'sac'], ['setAddress', 'address'], ['setEmail', 'email'], ['setBank', 'bank'], ['setStart', 'start'], ['setSignature', 'signature']].forEach(([id, k]) => {[cite: 2]
+    const el = document.getElementById(id);[cite: 2]
+    if (el) s[k] = el.value;[cite: 2]
   });
-  s.start = +s.start || 1001;
-  persist();
+  s.start = +s.start || 1001;[cite: 2]
+  persist();[cite: 2]
 
-  setSyncStatus('Saving Settings...', true);
+  setSyncStatus('Saving Settings...', true);[cite: 2]
   const res = await cloudReq('app_settings?on_conflict=id', 'POST', {
-    id: 'global',
-    admin_user: s.adminUser,
-    admin_pass: s.adminPass,
-    name: s.name,
-    phone: s.phone,
-    gstin: s.gstin,
-    sac: s.sac,
-    address: s.address,
-    email: s.email,
-    bank: s.bank,
-    start_no: Number(s.start) || 1001,
-    signature: s.signature || null
+    id: 'global',[cite: 2]
+    admin_user: s.adminUser,[cite: 2]
+    admin_pass: s.adminPass,[cite: 2]
+    name: s.name,[cite: 2]
+    phone: s.phone,[cite: 2]
+    gstin: s.gstin,[cite: 2]
+    sac: s.sac,[cite: 2]
+    address: s.address,[cite: 2]
+    email: s.email,[cite: 2]
+    bank: s.bank,[cite: 2]
+    start_no: Number(s.start) || 1001,[cite: 2]
+    signature: s.signature || null[cite: 2]
   });
 
-  if (res.ok) {
-    setSyncStatus('Cloud Synced', true);
-    alert("Settings & credentials saved to cloud successfully!");
+  if (res.ok) {[cite: 2]
+    setSyncStatus('Cloud Synced', true);[cite: 2]
+    alert("Settings & credentials saved to cloud successfully!");[cite: 2]
   } else {
-    setSyncStatus('Saved locally only', false);
-    alert("Settings saved locally, but database sync failed: " + res.error);
+    setSyncStatus('Saved locally only', false);[cite: 2]
+    alert("Settings saved locally, but database sync failed: " + res.error);[cite: 2]
   }
-  renderDash();
+  renderDash();[cite: 2]
 }
 
-document.querySelectorAll('.nav button[data-page]').forEach(b => {
-  if (b.dataset.page !== 'newbill') {
-    b.onclick = () => showPage(b.dataset.page);
+document.querySelectorAll('.nav button[data-page]').forEach(b => {[cite: 2]
+  if (b.dataset.page !== 'newbill') {[cite: 2]
+    b.onclick = () => showPage(b.dataset.page);[cite: 2]
   }
 });
 
 // App startup
-resetForm();
-loadSettings();
-toggleVendorSelect();
+resetForm();[cite: 2]
+loadSettings();[cite: 2]
+toggleVendorSelect();[cite: 2]
 checkAuth();
 
 setInterval(() => {
-  if (localStorage.getItem('nst_authenticated') === 'true' || sessionStorage.getItem('nst_authenticated') === 'true') {
-    syncAllFromCloud(false);
+  if (isCurrentlyAuthenticated) {
+    syncAllFromCloud(false);[cite: 2]
   }
 }, 30000);
 </script>
