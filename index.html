@@ -176,7 +176,7 @@ th{font-size:11px;text-transform:uppercase;color:#475467;background:#fafbfc}
     <form id="loginForm" onsubmit="event.preventDefault(); handleLogin(event); return false;" autocomplete="off">
       <input type="text" id="loginUser" placeholder="Enter User ID" required autofocus autocomplete="off">
       <input type="password" id="loginPass" placeholder="Enter Password" required autocomplete="new-password">
-      <button type="button" id="btnLogin" onclick="handleLogin(event)">Access System</button>
+      <button type="submit" id="btnLogin">Access System</button>
       <div id="loginError" class="login-err">Invalid User ID or Password.</div>
     </form>
   </div>
@@ -413,6 +413,10 @@ th{font-size:11px;text-transform:uppercase;color:#475467;background:#fafbfc}
 </main></div>
 
 <script>
+// FORCE LOGIN OVERLAY ON EVERY PAGE LOAD / REFRESH / NEW TAB
+sessionStorage.removeItem('nst_authenticated');
+localStorage.removeItem('nst_authenticated');
+
 const SUPABASE_BASE = 'https://tjkgjkeuplqzzzdfqmuc.supabase.co/rest/v1';
 const SUPABASE_STORAGE = 'https://tjkgjkeuplqzzzdfqmuc.supabase.co/storage/v1/object/public/receipts';
 const SUPABASE_UPLOAD = 'https://tjkgjkeuplqzzzdfqmuc.supabase.co/storage/v1/object/receipts';
@@ -616,8 +620,7 @@ function renderSignPreview(url) {
 
 /* ==================== UNFAILING AUTH ENGINE ==================== */
 function checkAuth() {
-  const isAuth = localStorage.getItem('nst_authenticated') === 'true' || 
-                 sessionStorage.getItem('nst_authenticated') === 'true';
+  const isAuth = sessionStorage.getItem('nst_authenticated') === 'true';
   const overlay = document.getElementById('loginOverlay');
   const appRoot = document.getElementById('appRoot');
 
@@ -629,6 +632,10 @@ function checkAuth() {
   } else {
     if (overlay) overlay.style.setProperty('display', 'flex', 'important');
     if (appRoot) appRoot.style.setProperty('display', 'none', 'important');
+    const uEl = document.getElementById('loginUser');
+    const pEl = document.getElementById('loginPass');
+    if (uEl) { uEl.value = ''; uEl.focus(); }
+    if (pEl) { pEl.value = ''; }
   }
 }
 
@@ -653,12 +660,11 @@ function handleLogin(e) {
   let customUser = (data.settings && data.settings.adminUser) ? data.settings.adminUser : defaultUser;
   let customPass = (data.settings && data.settings.adminPass) ? data.settings.adminPass : defaultPass;
 
-  // Verify against either current settings or hardcoded master fallback
+  // Verify against settings or fallback
   const isMatch = (enteredUser === customUser && enteredPass === customPass) ||
                   (enteredUser === defaultUser && enteredPass === defaultPass);
 
   if (isMatch) {
-    localStorage.setItem('nst_authenticated', 'true');
     sessionStorage.setItem('nst_authenticated', 'true');
     if (errEl) errEl.style.display = 'none';
     if (userEl) userEl.value = '';
@@ -2157,7 +2163,7 @@ toggleVendorSelect();
 checkAuth();
 
 setInterval(() => {
-  if (localStorage.getItem('nst_authenticated') === 'true' || sessionStorage.getItem('nst_authenticated') === 'true') {
+  if (sessionStorage.getItem('nst_authenticated') === 'true') {
     syncAllFromCloud(false);
   }
 }, 30000);
