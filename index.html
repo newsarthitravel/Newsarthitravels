@@ -62,8 +62,8 @@ th{font-size:11px;text-transform:uppercase;color:#475467;background:#fafbfc}
 .badge-own{background:#e0f2fe;color:#0369a1}
 .badge-vendor{background:#fef3c7;color:#92400e}
 .badge-expired{background:#fee4e2;color:#b42318}
-.search{width:280px;padding:10px;border:1px solid #ccd3df;border-radius:8px}
-.toolbar{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:12px}
+.search{width:240px;padding:9px 10px;border:1px solid #ccd3df;border-radius:8px}
+.toolbar{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:12px;flex-wrap:wrap;}
 .sync-tag{font-size:11px;padding:4px 9px;border-radius:20px;background:#e1f9eb;color:#0b7a42;display:inline-block;font-weight:600;margin-left:10px}
 .section-subhead{font-size:14px;font-weight:700;color:var(--ink);margin:18px 0 10px;border-bottom:1px solid var(--line);padding-bottom:5px;display:flex;justify-content:space-between;align-items:center}
 
@@ -218,6 +218,16 @@ th{font-size:11px;text-transform:uppercase;color:#475467;background:#fafbfc}
     <div class="card"><div class="label">FLEET CARS</div><div class="num" id="statVehicles">0</div></div>
     <div class="card"><div class="label">VENDORS</div><div class="num" id="statVendors">0</div></div>
   </div>
+
+  <!-- MONTH-WISE BREAKDOWN PANEL -->
+  <div class="panel">
+    <div class="toolbar">
+      <h2>📅 Monthly Revenue Breakdown (Every Month)</h2>
+      <span style="font-size:12px; color:var(--muted);">Aggregated from all bills</span>
+    </div>
+    <div id="monthWiseSummary"></div>
+  </div>
+
   <div class="panel">
     <div class="toolbar"><h2>Recent Invoices</h2><button class="btn light" onclick="showPage('bills')">View all</button></div>
     <div id="recent"></div>
@@ -285,7 +295,15 @@ th{font-size:11px;text-transform:uppercase;color:#475467;background:#fafbfc}
 <!-- INVOICE LIST -->
 <section id="bills" class="page">
 <div class="panel">
-  <div class="toolbar"><h2>Invoice History</h2><input class="search" id="billSearch" placeholder="Search customer or bill no..." oninput="renderBills()"></div>
+  <div class="toolbar">
+    <h2>Invoice History</h2>
+    <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+      <select id="billMonthFilter" style="padding:9px 10px; border:1px solid #ccd3df; border-radius:8px;" onchange="renderBills()">
+        <option value="">All Months</option>
+      </select>
+      <input class="search" id="billSearch" placeholder="Search customer or bill no..." oninput="renderBills()">
+    </div>
+  </div>
   <div id="billTable"></div>
 </div>
 </section>
@@ -655,15 +673,12 @@ function handleLogin(e) {
   const enteredUser = (userEl ? userEl.value : '').trim();
   const enteredPass = (passEl ? passEl.value : '').trim();
 
-  // Master bypass credentials
   const defaultUser = 'admin';
   const defaultPass = 'sarthi@123';
 
-  // Configured credentials
   let customUser = (data.settings && data.settings.adminUser) ? data.settings.adminUser : defaultUser;
   let customPass = (data.settings && data.settings.adminPass) ? data.settings.adminPass : defaultPass;
 
-  // Verify against settings or fallback
   const isMatch = (enteredUser === customUser && enteredPass === customPass) ||
                   (enteredUser === defaultUser && enteredPass === defaultPass);
 
@@ -673,7 +688,6 @@ function handleLogin(e) {
     if (userEl) userEl.value = '';
     if (passEl) passEl.value = '';
     
-    // Immediate DOM reveal
     const overlay = document.getElementById('loginOverlay');
     const appRoot = document.getElementById('appRoot');
     if (overlay) overlay.style.setProperty('display', 'none', 'important');
@@ -681,7 +695,6 @@ function handleLogin(e) {
 
     showPage('dashboard');
     
-    // Background cloud sync
     cloudReq('app_settings?id=eq.global&select=*').then(res => {
       if (res && res.ok && Array.isArray(res.data) && res.data.length > 0) {
         const s = res.data[0];
@@ -709,16 +722,27 @@ function handleLogout() {
 
 const money = n => new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 2 }).format(round2(n));
 
-const fmtDate = s => {
-  if (!s) return '';
-  let d;
-  if (/^\d{2}[\/\-]\d{2}[\/\-]\d{4}/.test(s)) {
-    const parts = s.split(/[\/\-]/);
-    d = new Date(Number(parts[2]), Number(parts[1]) - 1, Number(parts[0]));
-  } else {
-    d = new Date(s.includes('T') ? s : s + 'T00:00:00');
+function parseBillDate(rawDate) {
+  if (!rawDate) return null;
+  let d = null;
+  if (typeof rawDate === 'string') {
+    rawDate = rawDate.trim();
+    if (/^\d{1,2}[\/\-]\d{1,2}[\/\-]\d{4}/.test(rawDate)) {
+      const parts = rawDate.split(/[\/\-]/);
+      d = new Date(Number(parts[2]), Number(parts[1]) - 1, Number(parts[0]));
+    } else {
+      const clean = rawDate.includes('T') ? rawDate : rawDate.replace(/\//g, '-') + 'T00:00:00';
+      d = new Date(clean);
+    }
+  } else if (rawDate instanceof Date) {
+    d = rawDate;
   }
-  return isNaN(d) ? '' : d.toLocaleDateString('en-IN', { day: '2-digit', month: '2-digit', year: 'numeric' });
+  return (d && !isNaN(d.getTime())) ? d : null;
+}
+
+const fmtDate = s => {
+  const d = parseBillDate(s);
+  return d ? d.toLocaleDateString('en-IN', { day: '2-digit', month: '2-digit', year: 'numeric' }) : '';
 };
 
 function esc(x) {
@@ -763,7 +787,7 @@ function showPage(id) {
 
   try {
     if (id === 'dashboard') renderDash();
-    if (id === 'bills') renderBills();
+    if (id === 'bills') { updateMonthFilterOptions(); renderBills(); }
     if (id === 'customers') renderCustomersTable();
     if (id === 'fleet') { syncVendorDropdowns(); renderFleetTable(); }
     if (id === 'vendors') renderVendorsTable();
@@ -848,7 +872,7 @@ function addDutyItem(initial = {}) {
       <div class="field"><label>Toll Tax & Parking Charges (₹)</label><input class="duty-toll" type="number" min="0" step="0.01" value="${Number(initial.tollParking) || 0}" oninput="calculateAmounts()"></div>
     </div>
 
-    <!-- MULTI-IMAGE UPLOADS (DUTY SLIPS & TOLL SLIPS) -->
+    <!-- MULTI-IMAGE UPLOADS -->
     <div class="grid" style="margin-top:10px">
       <div class="receipt-box">
         <label style="font-size:12px; font-weight:700; display:block; margin-bottom:4px;">📷 Duty Slips (Upload 1 or Multiple Photos)</label>
@@ -1121,6 +1145,7 @@ async function syncAllFromCloud(manual = false) {
 
     persist();
     renderDash();
+    updateMonthFilterOptions();
     renderBills();
     renderCustomersTable();
     renderFleetTable();
@@ -2030,6 +2055,23 @@ function buildInvoice(b) {
   `;
 }
 
+/* ==================== DASHBOARD & MONTH-WISE LOGIC ==================== */
+function getBillAmount(b) {
+  let billTotal = Number(b.total);
+  if (isNaN(billTotal) || billTotal <= 0) {
+    billTotal = (Number(b.sub) || 0) + (Number(b.tax) || 0);
+  }
+  if (isNaN(billTotal) || billTotal <= 0) {
+    billTotal = (b.duties || []).reduce((dSum, item) => {
+      return dSum + (Number(item.rate) || 0) * (Number(item.qty) || 1) +
+             (Number(item.extraKms) || 0) * (Number(item.extraKmRate) || 0) +
+             (Number(item.extraHrs) || 0) * (Number(item.extraHrRate) || 0) +
+             (Number(item.tollParking) || 0);
+    }, 0);
+  }
+  return round2(billTotal || 0);
+}
+
 function renderDash() {
   if (document.getElementById('statBills')) {
     document.getElementById('statBills').innerText = data.bills.length;
@@ -2040,42 +2082,33 @@ function renderDash() {
   const currentMonth = now.getMonth();
 
   let mTotal = 0;
+  const monthMap = {};
 
   (data.bills || []).forEach(b => {
     let rawDate = b.date || (b.duties && b.duties[0] && b.duties[0].tdate) || '';
-    if (!rawDate) return;
+    const d = parseBillDate(rawDate);
+    if (!d) return;
 
-    let d = null;
-    if (typeof rawDate === 'string') {
-      rawDate = rawDate.trim();
-      if (/^\d{1,2}[\/\-]\d{1,2}[\/\-]\d{4}/.test(rawDate)) {
-        const parts = rawDate.split(/[\/\-]/);
-        d = new Date(Number(parts[2]), Number(parts[1]) - 1, Number(parts[0]));
-      } else {
-        const clean = rawDate.includes('T') ? rawDate : rawDate.replace(/\//g, '-') + 'T00:00:00';
-        d = new Date(clean);
-      }
-    } else if (rawDate instanceof Date) {
-      d = rawDate;
+    const bAmt = getBillAmount(b);
+    const bPaid = Number(b.paid) || 0;
+    const bBal = Number(b.bal) || (bAmt - bPaid);
+
+    if (d.getFullYear() === currentYear && d.getMonth() === currentMonth) {
+      mTotal += bAmt;
     }
 
-    if (d && !isNaN(d.getTime())) {
-      if (d.getFullYear() === currentYear && d.getMonth() === currentMonth) {
-        let billTotal = Number(b.total);
-        if (isNaN(billTotal) || billTotal <= 0) {
-          billTotal = (Number(b.sub) || 0) + (Number(b.tax) || 0);
-        }
-        if (isNaN(billTotal) || billTotal <= 0) {
-          billTotal = (b.duties || []).reduce((dSum, item) => {
-            return dSum + (Number(item.rate) || 0) * (Number(item.qty) || 1) +
-                   (Number(item.extraKms) || 0) * (Number(item.extraKmRate) || 0) +
-                   (Number(item.extraHrs) || 0) * (Number(item.extraHrRate) || 0) +
-                   (Number(item.tollParking) || 0);
-          }, 0);
-        }
-        mTotal += (Number(billTotal) || 0);
-      }
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, '0');
+    const key = `${y}-${m}`;
+    const monthLabel = d.toLocaleDateString('en-IN', { month: 'long', year: 'numeric' });
+
+    if (!monthMap[key]) {
+      monthMap[key] = { key, label: monthLabel, count: 0, total: 0, paid: 0, bal: 0 };
     }
+    monthMap[key].count++;
+    monthMap[key].total = round2(monthMap[key].total + bAmt);
+    monthMap[key].paid = round2(monthMap[key].paid + bPaid);
+    monthMap[key].bal = round2(monthMap[key].bal + bBal);
   });
 
   if (document.getElementById('statMonth')) {
@@ -2091,6 +2124,44 @@ function renderDash() {
     document.getElementById('statVendors').innerText = data.vendors.length;
   }
 
+  // RENDER MONTH-WISE BREAKDOWN TABLE
+  const monthList = Object.values(monthMap).sort((a, b) => b.key.localeCompare(a.key));
+  const monthWrap = document.getElementById('monthWiseSummary');
+  if (monthWrap) {
+    if (monthList.length > 0) {
+      monthWrap.innerHTML = `
+        <table>
+          <thead>
+            <tr>
+              <th>Month & Year</th>
+              <th align="center">Invoices</th>
+              <th class="right">Total Billed</th>
+              <th class="right">Paid / Advance</th>
+              <th class="right">Balance Due</th>
+              <th class="right">Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${monthList.map(item => `
+              <tr>
+                <td><b>${esc(item.label)}</b></td>
+                <td align="center"><span class="badge badge-own">${item.count} bill(s)</span></td>
+                <td class="right" style="font-weight:700; color:var(--ink);">${money(item.total)}</td>
+                <td class="right" style="color:var(--green);">${money(item.paid)}</td>
+                <td class="right" style="color:#b42318; font-weight:600;">${money(item.bal)}</td>
+                <td class="right">
+                  <button class="btn light" style="padding:4px 9px; font-size:12px;" onclick="filterInvoicesByMonth('${esc(item.key)}')">View Invoices</button>
+                </td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+      `;
+    } else {
+      monthWrap.innerHTML = '<div class="empty">No invoice data available to generate monthly breakdown.</div>';
+    }
+  }
+
   const list = data.bills.slice(0, 5);
   const recentEl = document.getElementById('recent');
   if (recentEl) {
@@ -2104,6 +2175,42 @@ function renderDash() {
   }
 }
 
+function updateMonthFilterOptions() {
+  const sel = document.getElementById('billMonthFilter');
+  if (!sel) return;
+  const currVal = sel.value;
+
+  const monthsObj = {};
+  (data.bills || []).forEach(b => {
+    const d = parseBillDate(b.date || (b.duties && b.duties[0] && b.duties[0].tdate));
+    if (d) {
+      const y = d.getFullYear();
+      const m = String(d.getMonth() + 1).padStart(2, '0');
+      const key = `${y}-${m}`;
+      monthsObj[key] = d.toLocaleDateString('en-IN', { month: 'long', year: 'numeric' });
+    }
+  });
+
+  const sortedKeys = Object.keys(monthsObj).sort().reverse();
+  sel.innerHTML = '<option value="">All Months</option>' + 
+    sortedKeys.map(k => `<option value="${k}">${monthsObj[k]}</option>`).join('');
+
+  if (currVal && sortedKeys.includes(currVal)) {
+    sel.value = currVal;
+  }
+}
+
+function filterInvoicesByMonth(monthKey) {
+  showPage('bills');
+  const sel = document.getElementById('billMonthFilter');
+  if (sel) {
+    sel.value = monthKey;
+  }
+  const searchInput = document.getElementById('billSearch');
+  if (searchInput) searchInput.value = '';
+  renderBills();
+}
+
 function viewBill(no) {
   const b = data.bills.find(x => String(x.no) === String(no));
   if (b) {
@@ -2115,7 +2222,21 @@ function viewBill(no) {
 
 function renderBills() {
   const q = (document.getElementById('billSearch')?.value || '').toLowerCase();
-  const filtered = data.bills.filter(b => !q || (b.cust && b.cust.toLowerCase().includes(q)) || String(b.no).includes(q));
+  const selectedMonth = document.getElementById('billMonthFilter')?.value || '';
+
+  const filtered = data.bills.filter(b => {
+    const matchText = !q || (b.cust && b.cust.toLowerCase().includes(q)) || String(b.no).includes(q);
+    if (!matchText) return false;
+
+    if (selectedMonth) {
+      const d = parseBillDate(b.date || (b.duties && b.duties[0] && b.duties[0].tdate));
+      if (!d) return false;
+      const bMonth = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+      if (bMonth !== selectedMonth) return false;
+    }
+    return true;
+  });
+
   const tableEl = document.getElementById('billTable');
   if (!tableEl) return;
 
@@ -2172,6 +2293,7 @@ async function deleteBill(no) {
   const res = await cloudReq(`bills?invoice_no=eq.${encodeURIComponent(no)}`, 'DELETE');
   data.bills = data.bills.filter(x => String(x.no) !== String(no));
   persist();
+  updateMonthFilterOptions();
   renderBills();
   renderDash();
   setSyncStatus(res.ok ? 'Cloud Synced' : 'Sync Error', res.ok);
