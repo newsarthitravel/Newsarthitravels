@@ -707,7 +707,7 @@ function checkAuth() {
   }
 }
 
-function handleLogin(e) {
+async function handleLogin(e) {
   if (e) {
     if (typeof e.preventDefault === 'function') e.preventDefault();
     if (typeof e.stopPropagation === 'function') e.stopPropagation();
@@ -716,6 +716,7 @@ function handleLogin(e) {
   const userEl = document.getElementById('loginUser');
   const passEl = document.getElementById('loginPass');
   const errEl = document.getElementById('loginError');
+  const btnLogin = document.getElementById('btnLogin');
 
   const enteredUser = (userEl ? userEl.value : '').trim();
   const enteredPass = (passEl ? passEl.value : '').trim();
@@ -732,26 +733,33 @@ function handleLogin(e) {
   if (isMatch) {
     sessionStorage.setItem('nst_authenticated', 'true');
     if (errEl) errEl.style.display = 'none';
-    if (userEl) userEl.value = '';
-    if (passEl) passEl.value = '';
-    
+    if (btnLogin) {
+      btnLogin.disabled = true;
+      btnLogin.innerText = 'Syncing Cloud...';
+    }
+
     const overlay = document.getElementById('loginOverlay');
     const appRoot = document.getElementById('appRoot');
     if (overlay) overlay.style.setProperty('display', 'none', 'important');
     if (appRoot) appRoot.style.setProperty('display', 'block', 'important');
 
-    showPage('dashboard');
-    
-    cloudReq('app_settings?id=eq.global&select=*').then(res => {
-      if (res && res.ok && Array.isArray(res.data) && res.data.length > 0) {
-        const s = res.data[0];
-        data.settings.adminUser = s.admin_user || data.settings.adminUser;
-        data.settings.adminPass = s.admin_pass || data.settings.adminPass;
-        persist();
-      }
-    });
+    if (userEl) userEl.value = '';
+    if (passEl) passEl.value = '';
+    if (document.activeElement) document.activeElement.blur();
+    isFormDirty = false;
 
-    setTimeout(() => { syncAllFromCloud(false); }, 150);
+    showPage('dashboard');
+
+    try {
+      await syncAllFromCloud(false);
+    } catch (err) {
+      console.error("Auto-sync error on login:", err);
+    } finally {
+      if (btnLogin) {
+        btnLogin.disabled = false;
+        btnLogin.innerText = 'Access System';
+      }
+    }
   } else {
     if (errEl) {
       errEl.innerText = 'Invalid User ID or Password.';
