@@ -45,6 +45,7 @@ button,input,select,textarea{font:inherit}button{cursor:pointer}
 .grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
 .grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
 .grid5{display:grid;grid-template-columns:repeat(5,1fr);gap:14px}
+.grid6{display:grid;grid-template-columns:repeat(6,1fr);gap:14px}
 .field label{font-size:12px;color:#344054;display:block;margin-bottom:6px;font-weight:600}
 .field input,.field select,.field textarea{width:100%;border:1px solid #cfd5df;border-radius:8px;padding:10px 11px;outline:none;background:#fff}
 .field input:focus,.field select:focus,.field textarea:focus{border-color:var(--accent);box-shadow:0 0 0 3px #b52c2c1a}
@@ -130,7 +131,7 @@ th{font-size:11px;text-transform:uppercase;color:#475467;background:#fafbfc}
   .nav button{padding:10px 0;justify-content:center}
   .nav button span:not(.ico){display:none}
   .main{margin-left:64px;width:calc(100% - 64px);padding:14px}
-  .grid,.grid3,.grid4,.grid5{grid-template-columns:1fr}
+  .grid,.grid3,.grid4,.grid5,.grid6{grid-template-columns:1fr}
 }
 
 /* STRICT SINGLE-PAGE A4 PRINT CONFIGURATION */
@@ -377,7 +378,7 @@ th{font-size:11px;text-transform:uppercase;color:#475467;background:#fafbfc}
   <div class="toolbar">
     <div>
       <h2 style="margin:0 0 4px">🔔 Document Expiry Notifications</h2>
-      <p style="margin:0; font-size:12px; color:var(--muted);">Showing all Insurance, Permit, Fitness, Authorisation & PUCC documents expired or expiring within 30 days.</p>
+      <p style="margin:0; font-size:12px; color:var(--muted);">Showing all Insurance, Permit, Fitness, Authorisation, PUCC & VLTD documents expired or expiring within 30 days.</p>
     </div>
     <button class="btn light" onclick="showPage('fleet')">Manage Fleet</button>
   </div>
@@ -508,12 +509,13 @@ th{font-size:11px;text-transform:uppercase;color:#475467;background:#fafbfc}
   </div>
 
   <div class="section-subhead"><span>Mandatory Vehicle Documents & Expiry Dates</span></div>
-  <div class="grid5">
+  <div class="grid6">
     <div class="field"><label>Insurance Expiry</label><input id="vehInsurance" type="date"></div>
     <div class="field"><label>Permit Validity</label><input id="vehPermit" type="date"></div>
     <div class="field"><label>Fitness Expiry</label><input id="vehFitness" type="date"></div>
     <div class="field"><label>Authorisation Expiry</label><input id="vehAuth" type="date"></div>
     <div class="field"><label>PUCC Expiry</label><input id="vehPucc" type="date"></div>
+    <div class="field"><label>VLTD Expiry</label><input id="vehVltd" type="date"></div>
   </div>
 
   <div class="actions">
@@ -1166,6 +1168,7 @@ function checkVehicleExpiry(boxId) {
   if (car.fitness && car.fitness < tripDate) warnings.push('Fitness Expired (' + fmtDate(car.fitness) + ')');
   if (car.auth_validity && car.auth_validity < tripDate) warnings.push('Authorisation Expired (' + fmtDate(car.auth_validity) + ')');
   if (car.pucc && car.pucc < tripDate) warnings.push('PUCC Expired (' + fmtDate(car.pucc) + ')');
+  if (car.vltd && car.vltd < tripDate) warnings.push('VLTD Expired (' + fmtDate(car.vltd) + ')');
 
   if (warnings.length > 0) {
     warnEl.innerText = '⚠️ ' + warnings.join(' | ');
@@ -1309,7 +1312,8 @@ async function syncAllFromCloud(manual = false) {
         permit: v.permit || '',
         fitness: v.fitness || '',
         auth_validity: v.auth_validity || '',
-        pucc: v.pucc || ''
+        pucc: v.pucc || '',
+        vltd: v.vltd || ''
       }));
     }
 
@@ -1720,7 +1724,8 @@ function getVehicleExpiryAlerts() {
     { key: 'permit', label: 'Permit' },
     { key: 'fitness', label: 'Fitness' },
     { key: 'auth_validity', label: 'Authorisation' },
-    { key: 'pucc', label: 'PUCC' }
+    { key: 'pucc', label: 'PUCC' },
+    { key: 'vltd', label: 'VLTD' }
   ];
 
   (data.vehicles || []).forEach(v => {
@@ -1780,7 +1785,7 @@ function renderDocAlertsPage() {
   const alerts = getVehicleExpiryAlerts();
 
   if (!alerts.length) {
-    container.innerHTML = '<div style="padding:20px; text-align:center; color:var(--green); font-weight:700;">✅ All fleet documents (Insurance, Permit, Fitness, Authorisation & PUCC) are active & valid for the next 30 days!</div>';
+    container.innerHTML = '<div style="padding:20px; text-align:center; color:var(--green); font-weight:700;">✅ All fleet documents (Insurance, Permit, Fitness, Authorisation, PUCC & VLTD) are active & valid for the next 30 days!</div>';
     return;
   }
 
@@ -2062,7 +2067,7 @@ function toggleVendorSelect() {
 
 function clearVehicleForm() {
   editingVehReg = null;
-  ['vehReg', 'vehModel', 'vehDriver', 'vehInsurance', 'vehPermit', 'vehFitness', 'vehAuth', 'vehPucc'].forEach(id => {
+  ['vehReg', 'vehModel', 'vehDriver', 'vehInsurance', 'vehPermit', 'vehFitness', 'vehAuth', 'vehPucc', 'vehVltd'].forEach(id => {
     const el = document.getElementById(id);
     if (el) el.value = '';
   });
@@ -2093,7 +2098,8 @@ async function saveVehicle() {
     permit: document.getElementById('vehPermit')?.value || null,
     fitness: document.getElementById('vehFitness')?.value || null,
     auth_validity: document.getElementById('vehAuth')?.value || null,
-    pucc: document.getElementById('vehPucc')?.value || null
+    pucc: document.getElementById('vehPucc')?.value || null,
+    vltd: document.getElementById('vehVltd')?.value || null
   };
 
   setSyncStatus('Saving vehicle...', true);
@@ -2154,6 +2160,7 @@ function renderFleetTable() {
           <th>Fitness</th>
           <th>Auth.</th>
           <th>PUCC</th>
+          <th>VLTD</th>
           <th class="right">Action</th>
         </tr>
       </thead>
@@ -2168,6 +2175,7 @@ function renderFleetTable() {
             <td>${getDocBadge(v.fitness)}</td>
             <td>${getDocBadge(v.auth_validity)}</td>
             <td>${getDocBadge(v.pucc)}</td>
+            <td>${getDocBadge(v.vltd)}</td>
             <td class="right">
               <button class="btn light" onclick="editVehicle('${esc(v.reg)}')">Edit</button>
               <button class="btn danger" onclick="deleteVehicle('${esc(v.reg)}')">Del</button>
@@ -2197,6 +2205,7 @@ function editVehicle(reg) {
   if (document.getElementById('vehFitness')) document.getElementById('vehFitness').value = v.fitness || '';
   if (document.getElementById('vehAuth')) document.getElementById('vehAuth').value = v.auth_validity || '';
   if (document.getElementById('vehPucc')) document.getElementById('vehPucc').value = v.pucc || '';
+  if (document.getElementById('vehVltd')) document.getElementById('vehVltd').value = v.vltd || '';
   
   document.getElementById('fleet')?.scrollIntoView({ behavior: 'smooth' });
 }
