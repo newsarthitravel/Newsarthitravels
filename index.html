@@ -213,6 +213,7 @@ th{font-size:11px;text-transform:uppercase;color:#475467;background:#fafbfc}
     <button class="active" data-page="dashboard"><span class="ico">⌂</span><span>Dashboard</span></button>
     <button data-page="newbill" onclick="startNewBill()"><span class="ico">＋</span><span>New Bill</span></button>
     <button data-page="bills"><span class="ico">▤</span><span>Invoice History</span></button>
+    <button data-page="statements"><span class="ico">📊</span><span>Cust. Statements</span></button>
     <button data-page="docalerts"><span class="ico">🔔</span><span>Doc Alerts</span><span class="nav-badge" id="navAlertBadge">0</span></button>
     <button data-page="customers"><span class="ico">👥</span><span>Customers</span></button>
     <button data-page="fleet"><span class="ico">🚗</span><span>Fleet Vehicles</span></button>
@@ -257,6 +258,40 @@ th{font-size:11px;text-transform:uppercase;color:#475467;background:#fafbfc}
   <div class="panel">
     <div class="toolbar"><h2>Recent Invoices</h2><button class="btn light" onclick="showPage('bills')">View all</button></div>
     <div id="recent"></div>
+  </div>
+</section>
+
+<!-- CUSTOMER MONTHLY STATEMENTS -->
+<section id="statements" class="page">
+  <div class="panel">
+    <h2>Customer Monthly Statement & Total Invoices</h2>
+    <div class="grid3">
+      <div class="field">
+        <label>Select Customer</label>
+        <select id="stmtCustomer" onchange="generateCustomerMonthlyStatement()">
+          <option value="">-- All Customers --</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Select Month</label>
+        <select id="stmtMonth" onchange="generateCustomerMonthlyStatement()">
+          <option value="">-- All Months --</option>
+        </select>
+      </div>
+      <div class="field" style="display:flex; align-items:flex-end;">
+        <button class="btn primary" style="width:100%;" onclick="printCustomerStatement()">🖨️ Print Statement</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="panel" id="stmtSummaryPanel">
+    <div class="cards" style="grid-template-columns: repeat(4, 1fr); margin-bottom: 20px;">
+      <div class="card"><div class="label">TOTAL BILLS</div><div class="num" id="stmtCount">0</div></div>
+      <div class="card"><div class="label">TOTAL BILLED</div><div class="num" id="stmtTotal">₹0</div></div>
+      <div class="card"><div class="label">ADVANCE PAID</div><div class="num" id="stmtPaid" style="color:var(--green)">₹0</div></div>
+      <div class="card"><div class="label">BALANCE DUE</div><div class="num" id="stmtBalance" style="color:var(--accent)">₹0</div></div>
+    </div>
+    <div id="stmtTableContainer"></div>
   </div>
 </section>
 
@@ -831,6 +866,7 @@ function showPage(id) {
     dashboard: 'Dashboard',
     newbill: 'New Bill',
     bills: 'Invoice History',
+    statements: 'Customer Monthly Statements',
     docalerts: 'Document Expiry Alerts',
     customers: 'Customers',
     fleet: 'Fleet Vehicles',
@@ -843,6 +879,7 @@ function showPage(id) {
 
   try {
     if (id === 'dashboard') renderDash();
+    if (id === 'statements') { populateStatementFilters(); generateCustomerMonthlyStatement(); }
     if (id === 'docalerts') renderDocAlertsPage();
     if (id === 'bills') { updateMonthFilterOptions(); renderBills(); }
     if (id === 'customers') renderCustomersTable();
@@ -1209,6 +1246,7 @@ async function syncAllFromCloud(manual = false) {
     persist();
     renderDash();
     updateMonthFilterOptions();
+    populateStatementFilters();
     renderBills();
     renderCustomersTable();
     renderFleetTable();
@@ -1221,6 +1259,176 @@ async function syncAllFromCloud(manual = false) {
   } catch (err) {
     setSyncStatus('Sync Error', false);
   }
+}
+
+/* ==================== CUSTOMER MONTHLY STATEMENT LOGIC ==================== */
+function populateStatementFilters() {
+  const custSel = document.getElementById('stmtCustomer');
+  const monthSel = document.getElementById('stmtMonth');
+  if (!custSel || !monthSel) return;
+
+  const currentCust = custSel.value;
+  const currentMonth = monthSel.value;
+
+  const namesSet = new Set((data.customers || []).map(c => (c.name || '').trim()).filter(Boolean));
+  (data.bills || []).forEach(b => {
+    if (b.cust && b.cust.trim()) namesSet.add(b.cust.trim());
+  });
+
+  const sortedNames = Array.from(namesSet).sort((a, b) => a.localeCompare(b));
+  custSel.innerHTML = '<option value="">-- All Customers --</option>' + 
+    sortedNames.map(name => `<option value="${esc(name)}">${esc(name)}</option>`).join('');
+  if (currentCust && sortedNames.includes(currentCust)) custSel.value = currentCust;
+
+  const monthsMap = {};
+  (data.bills || []).forEach(b => {
+    const d = parseBillDate(b.date || (b.duties && b.duties[0] && b.duties[0].tdate));
+    if (d) {
+      const y = d.getFullYear();
+      const m = String(d.getMonth() + 1).padStart(2, '0');
+      const key = `${y}-${m}`;
+      monthsMap[key] = d.toLocaleDateString('en-IN', { month: 'long', year: 'numeric' });
+    }
+  });
+
+  const sortedMonthKeys = Object.keys(monthsMap).sort().reverse();
+  monthSel.innerHTML = '<option value="">-- All Months --</option>' +
+    sortedMonthKeys.map(k => `<option value="${k}">${monthsMap[k]}</option>`).join('');
+  if (currentMonth && sortedMonthKeys.includes(currentMonth)) monthSel.value = currentMonth;
+}
+
+function generateCustomerMonthlyStatement() {
+  const selectedCust = (document.getElementById('stmtCustomer')?.value || '').trim().toLowerCase();
+  const selectedMonth = document.getElementById('stmtMonth')?.value || '';
+
+  let totalBilled = 0;
+  let totalPaid = 0;
+  let totalBal = 0;
+
+  const matchedBills = (data.bills || []).filter(b => {
+    if (selectedCust && (!b.cust || b.cust.trim().toLowerCase() !== selectedCust)) {
+      return false;
+    }
+    if (selectedMonth) {
+      const d = parseBillDate(b.date || (b.duties && b.duties[0] && b.duties[0].tdate));
+      if (!d) return false;
+      const bMonth = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+      if (bMonth !== selectedMonth) return false;
+    }
+    return true;
+  });
+
+  matchedBills.forEach(b => {
+    const amt = getBillAmount(b);
+    const paid = Number(b.paid) || 0;
+    const bal = Number(b.bal) || (amt - paid);
+    totalBilled = round2(totalBilled + amt);
+    totalPaid = round2(totalPaid + paid);
+    totalBal = round2(totalBal + bal);
+  });
+
+  if (document.getElementById('stmtCount')) document.getElementById('stmtCount').innerText = matchedBills.length;
+  if (document.getElementById('stmtTotal')) document.getElementById('stmtTotal').innerText = money(totalBilled);
+  if (document.getElementById('stmtPaid')) document.getElementById('stmtPaid').innerText = money(totalPaid);
+  if (document.getElementById('stmtBalance')) document.getElementById('stmtBalance').innerText = money(totalBal);
+
+  const container = document.getElementById('stmtTableContainer');
+  if (!container) return;
+
+  if (!matchedBills.length) {
+    container.innerHTML = '<div style="padding:24px; text-align:center; color:var(--muted);">No invoices found for the selected customer & month.</div>';
+    return;
+  }
+
+  container.innerHTML = `
+    <table>
+      <thead>
+        <tr>
+          <th>Bill No</th>
+          <th>Date</th>
+          <th>Customer</th>
+          <th>Duties / Particulars</th>
+          <th class="right">Total</th>
+          <th class="right">Advance Paid</th>
+          <th class="right">Balance Due</th>
+          <th class="right">Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${matchedBills.map(b => {
+          const amt = getBillAmount(b);
+          const p = Number(b.paid) || 0;
+          const bl = Number(b.bal) || (amt - p);
+          const dutiesDesc = b.duties && b.duties.length ? b.duties.map(d => d.trip).join(' | ') : 'Taxi Hire Charges';
+          return `
+            <tr>
+              <td><b>#${esc(b.no)}</b></td>
+              <td>${fmtDate(b.date)}</td>
+              <td><b>${esc(b.cust)}</b></td>
+              <td style="max-width:280px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${esc(dutiesDesc)}</td>
+              <td class="right" style="font-weight:700;">${money(amt)}</td>
+              <td class="right" style="color:var(--green);">${money(p)}</td>
+              <td class="right" style="color:#b42318; font-weight:700;">${money(bl)}</td>
+              <td class="right">
+                <button class="btn dark" style="padding:4px 9px; font-size:12px;" onclick="viewBill('${esc(b.no)}')">View</button>
+              </td>
+            </tr>
+          `;
+        }).join('')}
+      </tbody>
+      <tfoot>
+        <tr style="font-weight:bold; background:#fafbfc; border-top:2px solid var(--ink);">
+          <td colspan="4" class="right">TOTAL (${matchedBills.length} Invoices):</td>
+          <td class="right" style="color:var(--ink);">${money(totalBilled)}</td>
+          <td class="right" style="color:var(--green);">${money(totalPaid)}</td>
+          <td class="right" style="color:#b42318;">${money(totalBal)}</td>
+          <td></td>
+        </tr>
+      </tfoot>
+    </table>
+  `;
+}
+
+function printCustomerStatement() {
+  const panel = document.getElementById('stmtSummaryPanel');
+  if (!panel) return;
+
+  const custSel = document.getElementById('stmtCustomer');
+  const custName = (custSel && custSel.value) ? custSel.value : 'All Customers';
+  const mSel = document.getElementById('stmtMonth');
+  const period = (mSel && mSel.value) ? (mSel.options[mSel.selectedIndex]?.text || mSel.value) : 'All Months';
+
+  const w = window.open('', '_blank');
+  w.document.write(`
+    <!doctype html>
+    <html>
+    <head>
+      <title>Customer Monthly Statement - ${esc(custName)}</title>
+      <style>
+        body { font-family: system-ui, -apple-system, sans-serif; padding: 25px; color: #182230; }
+        h1 { margin: 0 0 4px; font-size: 22px; text-transform: uppercase; }
+        p { margin: 2px 0 16px; font-size: 13px; color: #475467; }
+        table { width: 100%; border-collapse: collapse; margin-top: 14px; }
+        th, td { border: 1px solid #d0d5dd; padding: 8px 10px; font-size: 12px; text-align: left; }
+        th { background: #f2f4f7; font-weight: bold; }
+        .right { text-align: right; }
+        .cards { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 16px; }
+        .card { border: 1px solid #d0d5dd; border-radius: 8px; padding: 12px; }
+        .label { font-size: 11px; font-weight: 600; color: #475467; }
+        .num { font-size: 18px; font-weight: 700; margin-top: 4px; }
+        .btn { display: none; }
+      </style>
+    </head>
+    <body>
+      <h1>${esc(data.settings.name)}</h1>
+      <p><b>Statement Billed To:</b> ${esc(custName)} &nbsp;|&nbsp; <b>Billing Period:</b> ${esc(period)}</p>
+      ${panel.innerHTML}
+    </body>
+    </html>
+  `);
+  w.document.close();
+  w.focus();
+  setTimeout(() => { w.print(); }, 400);
 }
 
 /* ==================== DOCUMENT EXPIRY NOTIFICATIONS ==================== */
@@ -1372,6 +1580,7 @@ async function saveCustomer() {
   clearCustomerForm();
   renderCustomersTable();
   syncCustomerDropdown();
+  populateStatementFilters();
   renderDash();
 
   if (res.ok) {
@@ -1430,6 +1639,7 @@ async function deleteCustomer(id) {
   persist();
   renderCustomersTable();
   syncCustomerDropdown();
+  populateStatementFilters();
   renderDash();
   setSyncStatus(res.ok ? 'Cloud Synced' : 'Sync Error', res.ok);
 }
@@ -1916,6 +2126,8 @@ async function saveBill() {
     balance: Number(b.bal) || 0,
     notes: 'DUTIES_JSON:' + JSON.stringify(b.duties)
   });
+
+  populateStatementFilters();
 
   if (res.ok) {
     setSyncStatus('Cloud Synced', true);
@@ -2489,6 +2701,7 @@ async function deleteBill(no) {
   data.bills = data.bills.filter(x => String(x.no) !== String(no));
   persist();
   updateMonthFilterOptions();
+  populateStatementFilters();
   renderBills();
   renderDash();
   setSyncStatus(res.ok ? 'Cloud Synced' : 'Sync Error', res.ok);
