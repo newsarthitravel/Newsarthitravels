@@ -50,11 +50,12 @@ button,input,select,textarea{font:inherit}button{cursor:pointer}
 .field input,.field select,.field textarea{width:100%;border:1px solid #cfd5df;border-radius:8px;padding:10px 11px;outline:none;background:#fff}
 .field input:focus,.field select:focus,.field textarea:focus{border-color:var(--accent);box-shadow:0 0 0 3px #b52c2c1a}
 .actions{display:flex;gap:9px;justify-content:flex-end;margin-top:18px}
-.btn{border:0;border-radius:8px;padding:10px 15px;font-weight:600}
+.btn{border:0;border-radius:8px;padding:10px 15px;font-weight:600;display:inline-flex;align-items:center;gap:5px;justify-content:center}
 .primary{background:var(--accent);color:#fff}
 .dark{background:#172238;color:#fff}
 .light{background:#eef1f6;color:#25334a}
 .danger{background:#fee4e2;color:#b42318}
+.success{background:#e0f7ea;color:#0b7a42}
 .whatsapp{background:#25D366;color:#fff}
 .email-btn{background:#6001d2;color:#fff}
 table{width:100%;border-collapse:collapse}
@@ -67,6 +68,9 @@ th{font-size:11px;text-transform:uppercase;color:#475467;background:#fafbfc}
 .badge-expired{background:#fee4e2;color:#b42318;font-weight:700}
 .badge-soon{background:#fef3c7;color:#b45309;font-weight:700}
 .badge-ok{background:#dcfce7;color:#15803d}
+.badge-settled{background:#dcfce7;color:#0f766e;font-weight:700}
+.badge-due{background:#fee2e2;color:#991b1b;font-weight:700}
+.badge-partial{background:#fef3c7;color:#b45309;font-weight:700}
 .search{width:240px;padding:9px 10px;border:1px solid #ccd3df;border-radius:8px}
 .toolbar{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:12px;flex-wrap:wrap;}
 .sync-tag{font-size:11px;padding:4px 9px;border-radius:20px;background:#e1f9eb;color:#0b7a42;display:inline-block;font-weight:600;margin-left:10px}
@@ -75,8 +79,17 @@ th{font-size:11px;text-transform:uppercase;color:#475467;background:#fafbfc}
 /* ATTACHMENT BOXES */
 .receipt-box{background:#f8fafc;border:1px dashed #94a3b8;border-radius:8px;padding:10px;margin-top:8px}
 .preview-gallery{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}
-.preview-gallery img{height:65px;border-radius:4px;border:1px solid #cbd5e1;object-fit:cover}
+.preview-gallery img{height:65px;border-radius:4px;border:1px solid #cbd5e1;object-fit:cover;cursor:pointer}
 .upload-status{font-size:11px;font-weight:600;color:#0284c7;display:none;margin-top:4px}
+
+/* MODAL STYLES FOR DEDUCTIONS */
+.modal-overlay{position:fixed;inset:0;background:rgba(15,23,42,0.6);backdrop-filter:blur(3px);z-index:9999;display:none;align-items:center;justify-content:center;padding:16px;}
+.modal-overlay.active{display:flex !important;}
+.modal-card{background:#fff;border-radius:14px;width:100%;max-width:760px;max-height:90vh;overflow-y:auto;box-shadow:0 20px 40px rgba(0,0,0,0.25);border:1px solid var(--line);padding:24px;}
+.modal-head{display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--line);padding-bottom:12px;margin-bottom:16px;}
+.modal-head h3{margin:0;font-size:18px;color:var(--ink);}
+.modal-close{background:none;border:none;font-size:22px;color:var(--muted);line-height:1;cursor:pointer;}
+.modal-close:hover{color:var(--accent);}
 
 /* MULTI DUTY CARD IN FORM */
 .duty-item-box{background:#f8fafc;border:1px solid #cfd8e3;border-radius:10px;padding:15px;margin-bottom:15px}
@@ -157,7 +170,7 @@ th{font-size:11px;text-transform:uppercase;color:#475467;background:#fafbfc}
     width: 100% !important;
     min-height: auto !important;
   }
-  .side, .top, .no-print, .preview-actions, #loginOverlay, .page:not(#preview), .attached-docs {
+  .side, .top, .no-print, .preview-actions, #loginOverlay, .page:not(#preview), .attached-docs, .modal-overlay {
     display: none !important;
   }
   #preview {
@@ -242,7 +255,7 @@ th{font-size:11px;text-transform:uppercase;color:#475467;background:#fafbfc}
   <div class="cards">
     <div class="card"><div class="label">TOTAL BILLS</div><div class="num" id="statBills">0</div></div>
     <div class="card"><div class="label">THIS MONTH</div><div class="num" id="statMonth">₹0</div></div>
-    <div class="card" style="cursor:pointer;" onclick="showPage('driveradv')"><div class="label" style="color:var(--accent);">DRIVER ADVANCES</div><div class="num" id="statDriverAdv" style="color:var(--accent);">₹0</div></div>
+    <div class="card" style="cursor:pointer;" onclick="showPage('driveradv')"><div class="label" style="color:var(--accent);">ADVANCES DUE</div><div class="num" id="statDriverAdv" style="color:var(--accent);">₹0</div></div>
     <div class="card" style="cursor:pointer;" onclick="showPage('docalerts')"><div class="label" style="color:var(--accent);">DOC ALERTS (30D)</div><div class="num" id="statAlerts" style="color:var(--accent);">0</div></div>
     <div class="card"><div class="label">CUSTOMERS</div><div class="num" id="statCustomers">0</div></div>
     <div class="card"><div class="label">FLEET CARS</div><div class="num" id="statVehicles">0</div></div>
@@ -264,7 +277,7 @@ th{font-size:11px;text-transform:uppercase;color:#475467;background:#fafbfc}
   </div>
 </section>
 
-<!-- DEDICATED DRIVER ADVANCE SECTION -->
+<!-- DEDICATED DRIVER ADVANCE SECTION WITH DEDUCTIONS -->
 <section id="driveradv" class="page">
 <div class="panel">
   <h2 id="advFormHeader">Record Driver Advance</h2>
@@ -291,7 +304,7 @@ th{font-size:11px;text-transform:uppercase;color:#475467;background:#fafbfc}
   <div class="grid3" style="margin-top:14px">
     <div class="field">
       <label>Advance Amount (₹)</label>
-      <input id="advAmount" type="number" min="0" step="0.01" placeholder="e.g. 2000">
+      <input id="advAmount" type="number" min="0" step="0.01" placeholder="e.g. 5000">
     </div>
     <div class="field">
       <label>Payment Mode</label>
@@ -310,7 +323,7 @@ th{font-size:11px;text-transform:uppercase;color:#475467;background:#fafbfc}
   <div class="grid" style="margin-top:14px">
     <div class="field" style="grid-column: span 2;">
       <label>Purpose / Description of Advance</label>
-      <textarea id="advDesc" placeholder="Enter reason for advance (e.g. Diesel fuel advance for Bhopal-Indore trip, toll taxes, personal food/pocket expense, car repair)"></textarea>
+      <textarea id="advDesc" placeholder="Enter reason for advance (e.g. Outstation trip advance, diesel fuel fund, toll/parking advance, personal advance)"></textarea>
     </div>
   </div>
   <div class="actions">
@@ -321,22 +334,123 @@ th{font-size:11px;text-transform:uppercase;color:#475467;background:#fafbfc}
 
 <div class="panel">
   <div class="toolbar">
-    <h2>Driver Advance Register</h2>
+    <div>
+      <h2 style="margin:0 0 4px">Driver Advance & Expense Settlement Register</h2>
+      <p style="margin:0; font-size:12px; color:var(--muted);">Deduct toll taxes, parking fees, diesel, repair bills or return of cash directly from advance.</p>
+    </div>
     <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+      <select id="advStatusFilter" style="padding:9px 10px; border:1px solid #ccd3df; border-radius:8px;" onchange="renderDriverAdvancesTable()">
+        <option value="">All Settlement Status</option>
+        <option value="due">Pending / Due Only</option>
+        <option value="settled">Fully Settled Only</option>
+      </select>
       <select id="advDriverFilter" style="padding:9px 10px; border:1px solid #ccd3df; border-radius:8px;" onchange="renderDriverAdvancesTable()">
         <option value="">All Drivers</option>
       </select>
       <input class="search" id="advSearch" placeholder="Search driver, vehicle, reason..." oninput="renderDriverAdvancesTable()">
     </div>
   </div>
-  <div class="cards" style="grid-template-columns: repeat(3, 1fr); margin-bottom: 16px;">
+
+  <!-- ADVANCES ENHANCED METRIC CARDS -->
+  <div class="cards" style="grid-template-columns: repeat(4, 1fr); margin-bottom: 16px;">
     <div class="card"><div class="label">TOTAL ENTRIES</div><div class="num" id="advTotalEntries">0</div></div>
-    <div class="card"><div class="label">TOTAL ADVANCES DISBURSED</div><div class="num" id="advTotalSum" style="color:var(--accent);">₹0</div></div>
-    <div class="card"><div class="label">ACTIVE DRIVERS RECORDED</div><div class="num" id="advDriverCount">0</div></div>
+    <div class="card"><div class="label">TOTAL DISBURSED (ADVANCES)</div><div class="num" id="advTotalSum" style="color:var(--ink);">₹0</div></div>
+    <div class="card"><div class="label">TOTAL DEDUCTED / EXPENSES</div><div class="num" id="advTotalDeductions" style="color:var(--green);">₹0</div></div>
+    <div class="card"><div class="label">NET OUTSTANDING BALANCE</div><div class="num" id="advNetBalance" style="color:var(--accent);">₹0</div></div>
   </div>
+
   <div id="advancesTableContainer"></div>
 </div>
 </section>
+
+<!-- MODAL: MANAGE ADVANCE DEDUCTIONS & EXPENSE SETTLEMENT -->
+<div id="deductionModal" class="modal-overlay">
+  <div class="modal-card">
+    <div class="modal-head">
+      <div>
+        <h3 id="deductModalTitle">Deduct Amount from Advance</h3>
+        <p style="margin:2px 0 0; font-size:12px; color:var(--muted);" id="deductModalSubtitle">Driver: &mdash;</p>
+      </div>
+      <button class="modal-close" onclick="closeDeductionModal()">&times;</button>
+    </div>
+
+    <!-- OVERVIEW INFO STRIP -->
+    <div style="background:#f8fafc; border:1px solid var(--line); border-radius:10px; padding:12px 16px; display:flex; justify-content:space-between; flex-wrap:wrap; gap:10px; margin-bottom:18px;">
+      <div>
+        <span style="font-size:11px; color:var(--muted); font-weight:600; display:block;">ORIGINAL ADVANCE</span>
+        <b style="font-size:16px; color:var(--ink);" id="deductModalAdvAmount">₹0</b>
+      </div>
+      <div>
+        <span style="font-size:11px; color:var(--muted); font-weight:600; display:block;">TOTAL DEDUCTIONS</span>
+        <b style="font-size:16px; color:var(--green);" id="deductModalTotalDeductions">₹0</b>
+      </div>
+      <div>
+        <span style="font-size:11px; color:var(--muted); font-weight:600; display:block;">REMAINING DUE / BAL</span>
+        <b style="font-size:16px; color:var(--accent);" id="deductModalRemaining">₹0</b>
+      </div>
+      <div>
+        <span style="font-size:11px; color:var(--muted); font-weight:600; display:block;">ADVANCE DATE</span>
+        <span style="font-size:13px; font-weight:600;" id="deductModalAdvDate">&mdash;</span>
+      </div>
+    </div>
+
+    <!-- ADD NEW DEDUCTION FORM -->
+    <div style="background:#fff; border:1px solid #cfd8e3; border-radius:10px; padding:16px; margin-bottom:20px;">
+      <h4 style="margin:0 0 12px; font-size:14px; color:var(--ink);">➕ Record New Deduction / Expense Receipt</h4>
+      <div class="grid4">
+        <div class="field">
+          <label>Expense / Deduction Type</label>
+          <select id="newDeductCategory">
+            <option value="Toll Tax">Toll Tax</option>
+            <option value="Parking Fee">Parking Fee</option>
+            <option value="Diesel / Fuel">Diesel / Fuel</option>
+            <option value="Vehicle Repair / Maintenance">Vehicle Repair / Tyre</option>
+            <option value="Driver Daily Allowance (Food/Stay)">Driver Allowance (DA)</option>
+            <option value="Trip Expense Settled">Trip Expense Settled</option>
+            <option value="Cash Return by Driver">Cash Return / Refund</option>
+            <option value="Salary Deduction">Salary Deduction</option>
+            <option value="Other Deduction">Other Deduction</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Deduction Amount (₹)</label>
+          <input id="newDeductAmount" type="number" min="0" step="0.01" placeholder="e.g. 450">
+        </div>
+        <div class="field">
+          <label>Date of Expense / Deduction</label>
+          <input id="newDeductDate" type="date">
+        </div>
+        <div class="field">
+          <label>Slip / Receipt Ref. No.</label>
+          <input id="newDeductRef" placeholder="Toll slip # / bill #">
+        </div>
+      </div>
+      <div class="grid" style="margin-top:10px;">
+        <div class="field" style="grid-column: span 2;">
+          <label>Remarks / Trip Particulars</label>
+          <input id="newDeductRemarks" placeholder="e.g. Fastag toll deducted or manual toll receipt paid near Indore bypass">
+        </div>
+      </div>
+      <div class="receipt-box" style="margin-top:12px;">
+        <label style="font-size:12px; font-weight:700; display:block; margin-bottom:4px;">📷 Attach Expense Bill / Toll / Fuel Receipt Photo</label>
+        <input type="file" accept="image/*" id="newDeductReceiptFile" onchange="handleDeductionReceiptUpload(event)">
+        <input type="hidden" id="newDeductReceiptUrl">
+        <div id="newDeductReceiptStatus" class="upload-status"></div>
+        <div id="newDeductReceiptPreview" class="preview-gallery"></div>
+      </div>
+      <div class="actions" style="margin-top:12px;">
+        <button class="btn light" onclick="resetNewDeductionForm()">Clear Input</button>
+        <button class="btn primary" onclick="addDeductionToCurrentAdvance()">Add Deduction & Settle</button>
+      </div>
+    </div>
+
+    <!-- DEDUCTION HISTORY TABLE -->
+    <div style="margin-top:10px;">
+      <h4 style="margin:0 0 10px; font-size:14px; color:var(--ink);">Settlement & Deduction History</h4>
+      <div id="deductionsListTable"></div>
+    </div>
+  </div>
+</div>
 
 <!-- CUSTOMER MONTHLY STATEMENTS -->
 <section id="statements" class="page">
@@ -356,7 +470,7 @@ th{font-size:11px;text-transform:uppercase;color:#475467;background:#fafbfc}
         </select>
       </div>
       <div class="field" style="display:flex; align-items:flex-end;">
-        <button class="btn primary" style="width:100%;" onclick="printCustomerStatement()">🖨️ Print Statement</button>
+        <button class="btn primary" style="width:100%;" onclick="printCustomerStatement()">🖨️️ Print Statement</button>
       </div>
     </div>
   </div>
@@ -603,7 +717,7 @@ const SUPABASE_STORAGE = 'https://tjkgjkeuplqzzzdfqmuc.supabase.co/storage/v1/ob
 const SUPABASE_UPLOAD = 'https://tjkgjkeuplqzzzdfqmuc.supabase.co/storage/v1/object/receipts';
 const S_KEY = 'sb_publishable_AiO0RJRFusjUSlVZU5QePQ_-7Svkmx8';
 
-const KEY = 'nst_v19';
+const KEY = 'nst_v20'; // Incremented key for deductions model
 const defaults = {
   adminUser: 'admin',
   adminPass: 'sarthi@123',
@@ -627,6 +741,16 @@ let data = JSON.parse(localStorage.getItem(KEY)) || {
   driverAdvances: []
 };
 
+// Migrate from previous nst_v19 storage if exists
+if (!localStorage.getItem(KEY) && localStorage.getItem('nst_v19')) {
+  try {
+    const prev = JSON.parse(localStorage.getItem('nst_v19'));
+    if (prev) {
+      data = { ...data, ...prev };
+    }
+  } catch(e) {}
+}
+
 data.settings = { ...defaults, ...data.settings };
 data.bills = data.bills || [];
 data.vehicles = data.vehicles || [];
@@ -634,10 +758,18 @@ data.vendors = data.vendors || [];
 data.customers = data.customers || [];
 data.driverAdvances = data.driverAdvances || [];
 
+// Ensure all driverAdvances have a deductions array
+data.driverAdvances.forEach(adv => {
+  if (!Array.isArray(adv.deductions)) {
+    adv.deductions = [];
+  }
+});
+
 let editingVehReg = null;
 let editingCustId = null;
 let editingVendorId = null;
 let editingAdvId = null;
+let activeDeductAdvId = null;
 let dutyIndex = 0;
 let activePreviewBill = null;
 let isFormDirty = false;
@@ -705,7 +837,6 @@ async function cloudReq(endpoint, method = 'GET', body = null) {
   }
 }
 
-/* ==================== MULTI-PHOTO ATTACHMENT ==================== */
 async function uploadSingleFile(file) {
   const filename = `${Date.now()}_${Math.floor(Math.random()*1000)}_${file.name.replace(/[^a-zA-Z0-9._-]/g, '')}`;
   try {
@@ -759,7 +890,36 @@ async function handleMultiPhotoAttach(boxId, type) {
   isFormDirty = true;
 }
 
-/* ==================== DIGITAL SIGNATURE ==================== */
+async function handleDeductionReceiptUpload(e) {
+  const file = e.target.files?.[0];
+  if (!file) return;
+
+  const statusEl = document.getElementById('newDeductReceiptStatus');
+  const previewEl = document.getElementById('newDeductReceiptPreview');
+  const urlEl = document.getElementById('newDeductReceiptUrl');
+
+  if (statusEl) {
+    statusEl.innerText = '⏳ Uploading receipt...';
+    statusEl.style.display = 'block';
+  }
+
+  const reader = new FileReader();
+  reader.onload = evt => {
+    if (previewEl) {
+      previewEl.innerHTML = `<img src="${evt.target.result}" style="max-height:80px; border-radius:4px; border:1px solid #ccc;">`;
+    }
+  };
+  reader.readAsDataURL(file);
+
+  const uploadedUrl = await uploadSingleFile(file);
+  if (uploadedUrl) {
+    if (urlEl) urlEl.value = uploadedUrl;
+    if (statusEl) statusEl.innerText = '✅ Receipt uploaded successfully!';
+  } else {
+    if (statusEl) statusEl.innerText = '⚠️ Saved local preview';
+  }
+}
+
 async function handleSignUpload(e) {
   const file = e.target.files?.[0];
   if (!file) return;
@@ -802,7 +962,6 @@ function renderSignPreview(url) {
   }
 }
 
-/* ==================== AUTH ENGINE ==================== */
 function checkAuth() {
   const isAuth = sessionStorage.getItem('nst_authenticated') === 'true';
   const overlay = document.getElementById('loginOverlay');
@@ -947,7 +1106,7 @@ function showPage(id) {
     dashboard: 'Dashboard',
     newbill: 'New Bill',
     bills: 'Invoice History',
-    driveradv: 'Driver Advances',
+    driveradv: 'Driver Advances & Deductions',
     statements: 'Customer Monthly Statements',
     docalerts: 'Document Expiry Alerts',
     customers: 'Customers',
@@ -981,7 +1140,426 @@ function startNewBill() {
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
-/* ==================== MULTI-DUTY BUILDER ==================== */
+function getAdvanceMetrics(adv) {
+  const disbursed = Number(adv.amount) || 0;
+  const deductions = Array.isArray(adv.deductions) ? adv.deductions : [];
+  const totalDeducted = deductions.reduce((sum, d) => sum + (Number(d.amount) || 0), 0);
+  const netBalance = round2(disbursed - totalDeducted);
+  return { disbursed, totalDeducted: round2(totalDeducted), netBalance };
+}
+
+function syncAdvVehiclesDropdown() {
+  const sel = document.getElementById('advVehSelect');
+  if (!sel) return;
+  const currentVal = sel.value;
+  sel.innerHTML = '<option value="">-- Choose fleet car or type below --</option>' +
+    (data.vehicles || []).map(v => `<option value="${esc(v.reg)}">${esc(v.reg)} (${esc(v.model || 'Car')}) ${v.driver ? '— ' + esc(v.driver) : ''}</option>`).join('');
+  if (currentVal) sel.value = currentVal;
+}
+
+function applyVehicleToAdvance() {
+  const reg = document.getElementById('advVehSelect')?.value;
+  if (!reg) return;
+  const car = (data.vehicles || []).find(v => v.reg.toUpperCase() === reg.toUpperCase());
+  if (car) {
+    const regInput = document.getElementById('advVehReg');
+    if (regInput) regInput.value = car.reg;
+    const driverInput = document.getElementById('advDriverName');
+    if (driverInput && car.driver && !driverInput.value.trim()) {
+      driverInput.value = car.driver;
+    }
+  }
+}
+
+function clearAdvanceForm() {
+  editingAdvId = null;
+  const header = document.getElementById('advFormHeader');
+  if (header) header.innerText = "Record Driver Advance";
+  ['advDriverName', 'advVehReg', 'advAmount', 'advDesc', 'advGivenBy'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.value = '';
+  });
+  const vSel = document.getElementById('advVehSelect');
+  if (vSel) vSel.value = '';
+  const modeSel = document.getElementById('advPaymentMode');
+  if (modeSel) modeSel.value = 'Cash';
+  const dInput = document.getElementById('advDate');
+  if (dInput) dInput.value = new Date().toISOString().slice(0, 10);
+}
+
+function saveDriverAdvance() {
+  const driver = (document.getElementById('advDriverName')?.value || '').trim();
+  const amount = Number(document.getElementById('advAmount')?.value) || 0;
+  const date = document.getElementById('advDate')?.value || new Date().toISOString().slice(0, 10);
+  const vehicle = (document.getElementById('advVehReg')?.value || '').trim().toUpperCase();
+  const mode = document.getElementById('advPaymentMode')?.value || 'Cash';
+  const givenBy = (document.getElementById('advGivenBy')?.value || '').trim();
+  const desc = (document.getElementById('advDesc')?.value || '').trim();
+
+  if (!driver) return alert("Please enter the driver's name.");
+  if (amount <= 0) return alert("Please enter a valid advance amount greater than 0.");
+
+  data.driverAdvances = data.driverAdvances || [];
+
+  if (editingAdvId) {
+    const idx = data.driverAdvances.findIndex(a => a.id === editingAdvId);
+    if (idx > -1) {
+      data.driverAdvances[idx] = {
+        ...data.driverAdvances[idx],
+        driver,
+        vehicle,
+        date,
+        amount: round2(amount),
+        mode,
+        givenBy,
+        desc
+      };
+    }
+  } else {
+    const record = {
+      id: genUUID(),
+      driver,
+      vehicle,
+      date,
+      amount: round2(amount),
+      mode,
+      givenBy,
+      desc,
+      deductions: []
+    };
+    data.driverAdvances.unshift(record);
+  }
+
+  persist();
+  clearAdvanceForm();
+  updateDriverFilterOptions();
+  renderDriverAdvancesTable();
+  renderDash();
+  alert("Driver advance saved successfully!");
+}
+
+function editAdvance(id) {
+  const adv = (data.driverAdvances || []).find(a => a.id === id);
+  if (!adv) return;
+  editingAdvId = adv.id;
+  
+  const header = document.getElementById('advFormHeader');
+  if (header) header.innerText = `Edit Driver Advance (${adv.driver})`;
+
+  if (document.getElementById('advDriverName')) document.getElementById('advDriverName').value = adv.driver || '';
+  if (document.getElementById('advVehReg')) document.getElementById('advVehReg').value = adv.vehicle || '';
+  if (document.getElementById('advDate')) document.getElementById('advDate').value = adv.date || '';
+  if (document.getElementById('advAmount')) document.getElementById('advAmount').value = adv.amount || 0;
+  if (document.getElementById('advPaymentMode')) document.getElementById('advPaymentMode').value = adv.mode || 'Cash';
+  if (document.getElementById('advGivenBy')) document.getElementById('advGivenBy').value = adv.givenBy || '';
+  if (document.getElementById('advDesc')) document.getElementById('advDesc').value = adv.desc || '';
+
+  const vSel = document.getElementById('advVehSelect');
+  if (vSel && adv.vehicle) {
+    const match = (data.vehicles || []).find(v => v.reg.toUpperCase() === adv.vehicle.toUpperCase());
+    if (match) vSel.value = match.reg;
+  }
+
+  document.getElementById('driveradv')?.scrollIntoView({ behavior: 'smooth' });
+}
+
+function deleteAdvance(id) {
+  if (!confirm("Are you sure you want to delete this driver advance entry and its deductions?")) return;
+  data.driverAdvances = (data.driverAdvances || []).filter(a => a.id !== id);
+  persist();
+  updateDriverFilterOptions();
+  renderDriverAdvancesTable();
+  renderDash();
+}
+
+function updateDriverFilterOptions() {
+  const sel = document.getElementById('advDriverFilter');
+  if (!sel) return;
+  const currVal = sel.value;
+  const drivers = Array.from(new Set((data.driverAdvances || []).map(a => (a.driver || '').trim()).filter(Boolean))).sort();
+  sel.innerHTML = '<option value="">All Drivers</option>' + 
+    drivers.map(d => `<option value="${esc(d)}">${esc(d)}</option>`).join('');
+  if (currVal && drivers.includes(currVal)) sel.value = currVal;
+}
+
+function openDeductionModal(advId) {
+  const adv = (data.driverAdvances || []).find(a => a.id === advId);
+  if (!adv) return;
+  activeDeductAdvId = adv.id;
+
+  const modal = document.getElementById('deductionModal');
+  if (modal) modal.classList.add('active');
+
+  const titleEl = document.getElementById('deductModalTitle');
+  const subEl = document.getElementById('deductModalSubtitle');
+  if (titleEl) titleEl.innerText = `Settle / Deduct from Advance (${adv.driver})`;
+  if (subEl) subEl.innerText = `Vehicle: ${adv.vehicle || 'N/A'} | Advance Disbursed: ${money(adv.amount)}`;
+
+  resetNewDeductionForm();
+  refreshDeductionModalView();
+}
+
+function closeDeductionModal() {
+  activeDeductAdvId = null;
+  const modal = document.getElementById('deductionModal');
+  if (modal) modal.classList.remove('active');
+  renderDriverAdvancesTable();
+  renderDash();
+}
+
+function resetNewDeductionForm() {
+  const amtEl = document.getElementById('newDeductAmount');
+  if (amtEl) amtEl.value = '';
+  const dateEl = document.getElementById('newDeductDate');
+  if (dateEl) dateEl.value = new Date().toISOString().slice(0, 10);
+  const refEl = document.getElementById('newDeductRef');
+  if (refEl) refEl.value = '';
+  const remEl = document.getElementById('newDeductRemarks');
+  if (remEl) remEl.value = '';
+  const fileEl = document.getElementById('newDeductReceiptFile');
+  if (fileEl) fileEl.value = '';
+  const urlEl = document.getElementById('newDeductReceiptUrl');
+  if (urlEl) urlEl.value = '';
+  const statEl = document.getElementById('newDeductReceiptStatus');
+  if (statEl) statEl.style.display = 'none';
+  const prevEl = document.getElementById('newDeductReceiptPreview');
+  if (prevEl) prevEl.innerHTML = '';
+}
+
+function refreshDeductionModalView() {
+  const adv = (data.driverAdvances || []).find(a => a.id === activeDeductAdvId);
+  if (!adv) return;
+
+  const m = getAdvanceMetrics(adv);
+
+  const amtEl = document.getElementById('deductModalAdvAmount');
+  if (amtEl) amtEl.innerText = money(m.disbursed);
+  const totDedEl = document.getElementById('deductModalTotalDeductions');
+  if (totDedEl) totDedEl.innerText = money(m.totalDeducted);
+  const remEl = document.getElementById('deductModalRemaining');
+  if (remEl) {
+    remEl.innerText = money(m.netBalance);
+    remEl.style.color = (m.netBalance <= 0) ? 'var(--green)' : 'var(--accent)';
+  }
+  const dateEl = document.getElementById('deductModalAdvDate');
+  if (dateEl) dateEl.innerText = fmtDate(adv.date);
+
+  const deductions = adv.deductions || [];
+  const container = document.getElementById('deductionsListTable');
+  if (!container) return;
+
+  if (!deductions.length) {
+    container.innerHTML = '<div style="padding:16px; text-align:center; color:var(--muted); font-size:13px; background:#f8fafc; border-radius:8px;">No deductions recorded against this advance yet. Add toll, parking, or fuel deduction using the form above.</div>';
+    return;
+  }
+
+  container.innerHTML = `
+    <table>
+      <thead>
+        <tr>
+          <th>Date</th>
+          <th>Deduction Type</th>
+          <th>Slip / Ref</th>
+          <th>Remarks</th>
+          <th>Receipt</th>
+          <th class="right">Amount Deducted</th>
+          <th class="right">Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${deductions.map(d => `
+          <tr>
+            <td>${fmtDate(d.date)}</td>
+            <td><b>${esc(d.category || 'Deduction')}</b></td>
+            <td>${esc(d.refNo || '—')}</td>
+            <td style="max-width:200px;">${esc(d.remarks || '—')}</td>
+            <td>
+              ${d.receiptUrl ? `<a href="${esc(d.receiptUrl)}" target="_blank" style="text-decoration:none;"><img src="${esc(d.receiptUrl)}" style="height:35px; width:35px; object-fit:cover; border-radius:4px; border:1px solid #ccc;" title="Click to view slip"></a>` : '<span style="color:var(--muted);">None</span>'}
+            </td>
+            <td class="right" style="font-weight:700; color:var(--green);">${money(d.amount)}</td>
+            <td class="right">
+              <button class="btn danger" style="padding:3px 7px; font-size:11px;" onclick="removeDeduction('${esc(d.id)}')">Remove</button>
+            </td>
+          </tr>
+        `).join('')}
+      </tbody>
+      <tfoot>
+        <tr style="font-weight:bold; background:#fafbfc; border-top:2px solid var(--ink);">
+          <td colspan="5" class="right">TOTAL DEDUCTED:</td>
+          <td class="right" style="color:var(--green); font-size:13px;">${money(m.totalDeducted)}</td>
+          <td></td>
+        </tr>
+        <tr style="font-weight:bold; background:#f8fafc;">
+          <td colspan="5" class="right">NET REMAINING BALANCE:</td>
+          <td class="right" style="color:${m.netBalance <= 0 ? 'var(--green)' : 'var(--accent)'}; font-size:14px;">${money(m.netBalance)}</td>
+          <td></td>
+        </tr>
+      </tfoot>
+    </table>
+  `;
+}
+
+function addDeductionToCurrentAdvance() {
+  if (!activeDeductAdvId) return;
+  const adv = (data.driverAdvances || []).find(a => a.id === activeDeductAdvId);
+  if (!adv) return;
+
+  const category = document.getElementById('newDeductCategory')?.value || 'Toll Tax';
+  const amount = Number(document.getElementById('newDeductAmount')?.value) || 0;
+  const date = document.getElementById('newDeductDate')?.value || new Date().toISOString().slice(0, 10);
+  const refNo = (document.getElementById('newDeductRef')?.value || '').trim();
+  const remarks = (document.getElementById('newDeductRemarks')?.value || '').trim();
+  const receiptUrl = (document.getElementById('newDeductReceiptUrl')?.value || '').trim();
+
+  if (amount <= 0) {
+    return alert("Please enter a valid deduction amount greater than 0.");
+  }
+
+  const deductionItem = {
+    id: genUUID(),
+    category,
+    amount: round2(amount),
+    date,
+    refNo,
+    remarks,
+    receiptUrl
+  };
+
+  adv.deductions = adv.deductions || [];
+  adv.deductions.unshift(deductionItem);
+
+  persist();
+  resetNewDeductionForm();
+  refreshDeductionModalView();
+  renderDriverAdvancesTable();
+  renderDash();
+}
+
+function removeDeduction(deductId) {
+  if (!activeDeductAdvId) return;
+  const adv = (data.driverAdvances || []).find(a => a.id === activeDeductAdvId);
+  if (!adv) return;
+
+  if (!confirm("Are you sure you want to remove this deduction?")) return;
+
+  adv.deductions = (adv.deductions || []).filter(d => d.id !== deductId);
+  persist();
+  refreshDeductionModalView();
+  renderDriverAdvancesTable();
+  renderDash();
+}
+
+function renderDriverAdvancesTable() {
+  const q = (document.getElementById('advSearch')?.value || '').toLowerCase().trim();
+  const filterDriver = (document.getElementById('advDriverFilter')?.value || '').toLowerCase().trim();
+  const filterStatus = (document.getElementById('advStatusFilter')?.value || '').trim();
+
+  const allAdvances = data.driverAdvances || [];
+
+  const filtered = allAdvances.filter(a => {
+    if (filterDriver && (a.driver || '').toLowerCase().trim() !== filterDriver) return false;
+    
+    const m = getAdvanceMetrics(a);
+    if (filterStatus === 'settled' && m.netBalance > 0) return false;
+    if (filterStatus === 'due' && m.netBalance <= 0) return false;
+
+    if (!q) return true;
+    const matchDeduction = (a.deductions || []).some(d => (d.category && d.category.toLowerCase().includes(q)) || (d.remarks && d.remarks.toLowerCase().includes(q)));
+    return (a.driver && a.driver.toLowerCase().includes(q)) ||
+           (a.vehicle && a.vehicle.toLowerCase().includes(q)) ||
+           (a.desc && a.desc.toLowerCase().includes(q)) ||
+           (a.mode && a.mode.toLowerCase().includes(q)) ||
+           matchDeduction;
+  });
+
+  let totalDisbursed = 0;
+  let totalDeducted = 0;
+  let totalNetDue = 0;
+
+  allAdvances.forEach(a => {
+    const m = getAdvanceMetrics(a);
+    totalDisbursed += m.disbursed;
+    totalDeducted += m.totalDeducted;
+    if (m.netBalance > 0) totalNetDue += m.netBalance;
+  });
+
+  if (document.getElementById('advTotalEntries')) document.getElementById('advTotalEntries').innerText = filtered.length;
+  if (document.getElementById('advTotalSum')) document.getElementById('advTotalSum').innerText = money(totalDisbursed);
+  if (document.getElementById('advTotalDeductions')) document.getElementById('advTotalDeductions').innerText = money(totalDeducted);
+  if (document.getElementById('advNetBalance')) document.getElementById('advNetBalance').innerText = money(totalNetDue);
+
+  const container = document.getElementById('advancesTableContainer');
+  if (!container) return;
+
+  if (!filtered.length) {
+    container.innerHTML = '<div style="padding:24px; text-align:center; color:var(--muted);">No driver advances found matching your filter criteria.</div>';
+    return;
+  }
+
+  container.innerHTML = `
+    <table>
+      <thead>
+        <tr>
+          <th>Date</th>
+          <th>Driver</th>
+          <th>Vehicle</th>
+          <th>Advance Reason</th>
+          <th class="right">Advance Given</th>
+          <th class="right">Deducted (Toll/Fuel)</th>
+          <th class="right">Net Due Balance</th>
+          <th>Status</th>
+          <th class="right">Settlement & Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${filtered.map(a => {
+          const m = getAdvanceMetrics(a);
+          const isSettled = m.netBalance <= 0;
+          const isPartiallySettled = m.totalDeducted > 0 && m.netBalance > 0;
+          const statusBadge = isSettled 
+            ? '<span class="badge badge-settled">✓ Settled</span>' 
+            : (isPartiallySettled ? '<span class="badge badge-partial">Partial Settled</span>' : '<span class="badge badge-due">Pending Due</span>');
+
+          return `
+            <tr>
+              <td>${fmtDate(a.date)}</td>
+              <td><b>${esc(a.driver)}</b></td>
+              <td>${esc(a.vehicle || '—')}</td>
+              <td style="max-width:200px; line-height:1.35; font-size:12px;">
+                ${esc(a.desc || 'No description')}
+                <div style="font-size:11px; color:var(--muted); margin-top:2px;">Mode: ${esc(a.mode || 'Cash')} ${a.givenBy ? '| By: ' + esc(a.givenBy) : ''}</div>
+              </td>
+              <td class="right" style="font-weight:700; color:var(--ink); font-size:13.5px;">${money(m.disbursed)}</td>
+              <td class="right" style="font-weight:700; color:var(--green); font-size:13.5px;">
+                ${money(m.totalDeducted)}
+                ${(a.deductions && a.deductions.length) ? `<div style="font-size:11px; font-weight:normal; color:var(--muted);">${a.deductions.length} deduction(s)</div>` : ''}
+              </td>
+              <td class="right" style="font-weight:800; color:${isSettled ? 'var(--green)' : 'var(--accent)'}; font-size:14px;">
+                ${money(m.netBalance)}
+              </td>
+              <td>${statusBadge}</td>
+              <td class="right" style="white-space:nowrap;">
+                <button class="btn success" style="padding:4px 9px; font-size:12px;" onclick="openDeductionModal('${esc(a.id)}')">➖ Deduct / Settle</button>
+                <button class="btn light" style="padding:4px 7px; font-size:12px;" onclick="editAdvance('${esc(a.id)}')">Edit</button>
+                <button class="btn danger" style="padding:4px 7px; font-size:12px;" onclick="deleteAdvance('${esc(a.id)}')">Del</button>
+              </td>
+            </tr>
+          `;
+        }).join('')}
+      </tbody>
+      <tfoot>
+        <tr style="font-weight:bold; background:#fafbfc; border-top:2px solid var(--ink);">
+          <td colspan="4" class="right">PAGE TOTALS:</td>
+          <td class="right" style="color:var(--ink);">${money(filtered.reduce((s, a) => s + (Number(a.amount) || 0), 0))}</td>
+          <td class="right" style="color:var(--green);">${money(filtered.reduce((s, a) => s + getAdvanceMetrics(a).totalDeducted, 0))}</td>
+          <td class="right" style="color:var(--accent); font-size:14px;">${money(filtered.reduce((s, a) => s + Math.max(0, getAdvanceMetrics(a).netBalance), 0))}</td>
+          <td colspan="2"></td>
+        </tr>
+      </tfoot>
+    </table>
+  `;
+}
+
 function addDutyItem(initial = {}) {
   dutyIndex++;
   const id = 'duty_' + dutyIndex;
@@ -1197,7 +1775,6 @@ function applyVehicleToDuty(boxId) {
   isFormDirty = true;
 }
 
-/* ==================== TWO-WAY SYNC CORE ==================== */
 async function syncAllFromCloud(manual = false) {
   const isEditingBill = isFormDirty || (document.activeElement && document.activeElement.closest('#newbill'));
   if (!manual && isEditingBill) return;
@@ -1349,201 +1926,6 @@ async function syncAllFromCloud(manual = false) {
   }
 }
 
-/* ==================== DRIVER ADVANCES MANAGER ==================== */
-function syncAdvVehiclesDropdown() {
-  const sel = document.getElementById('advVehSelect');
-  if (!sel) return;
-  const currentVal = sel.value;
-  sel.innerHTML = '<option value="">-- Choose fleet car or type below --</option>' +
-    (data.vehicles || []).map(v => `<option value="${esc(v.reg)}">${esc(v.reg)} (${esc(v.model || 'Car')}) ${v.driver ? '— ' + esc(v.driver) : ''}</option>`).join('');
-  if (currentVal) sel.value = currentVal;
-}
-
-function applyVehicleToAdvance() {
-  const reg = document.getElementById('advVehSelect')?.value;
-  if (!reg) return;
-  const car = (data.vehicles || []).find(v => v.reg.toUpperCase() === reg.toUpperCase());
-  if (car) {
-    const regInput = document.getElementById('advVehReg');
-    if (regInput) regInput.value = car.reg;
-    const driverInput = document.getElementById('advDriverName');
-    if (driverInput && car.driver && !driverInput.value.trim()) {
-      driverInput.value = car.driver;
-    }
-  }
-}
-
-function clearAdvanceForm() {
-  editingAdvId = null;
-  const header = document.getElementById('advFormHeader');
-  if (header) header.innerText = "Record Driver Advance";
-  ['advDriverName', 'advVehReg', 'advAmount', 'advDesc', 'advGivenBy'].forEach(id => {
-    const el = document.getElementById(id);
-    if (el) el.value = '';
-  });
-  const vSel = document.getElementById('advVehSelect');
-  if (vSel) vSel.value = '';
-  const modeSel = document.getElementById('advPaymentMode');
-  if (modeSel) modeSel.value = 'Cash';
-  const dInput = document.getElementById('advDate');
-  if (dInput) dInput.value = new Date().toISOString().slice(0, 10);
-}
-
-function saveDriverAdvance() {
-  const driver = (document.getElementById('advDriverName')?.value || '').trim();
-  const amount = Number(document.getElementById('advAmount')?.value) || 0;
-  const date = document.getElementById('advDate')?.value || new Date().toISOString().slice(0, 10);
-  const vehicle = (document.getElementById('advVehReg')?.value || '').trim().toUpperCase();
-  const mode = document.getElementById('advPaymentMode')?.value || 'Cash';
-  const givenBy = (document.getElementById('advGivenBy')?.value || '').trim();
-  const desc = (document.getElementById('advDesc')?.value || '').trim();
-
-  if (!driver) return alert("Please enter the driver's name.");
-  if (amount <= 0) return alert("Please enter a valid advance amount greater than 0.");
-
-  const record = {
-    id: editingAdvId || genUUID(),
-    driver,
-    vehicle,
-    date,
-    amount: round2(amount),
-    mode,
-    givenBy,
-    desc
-  };
-
-  data.driverAdvances = data.driverAdvances || [];
-  if (editingAdvId) {
-    const idx = data.driverAdvances.findIndex(a => a.id === editingAdvId);
-    if (idx > -1) data.driverAdvances[idx] = record;
-    else data.driverAdvances.unshift(record);
-  } else {
-    data.driverAdvances.unshift(record);
-  }
-
-  persist();
-  clearAdvanceForm();
-  updateDriverFilterOptions();
-  renderDriverAdvancesTable();
-  renderDash();
-  alert("Driver advance saved successfully!");
-}
-
-function editAdvance(id) {
-  const adv = (data.driverAdvances || []).find(a => a.id === id);
-  if (!adv) return;
-  editingAdvId = adv.id;
-  
-  const header = document.getElementById('advFormHeader');
-  if (header) header.innerText = `Edit Driver Advance (ID: ${adv.id.slice(0, 8)})`;
-
-  if (document.getElementById('advDriverName')) document.getElementById('advDriverName').value = adv.driver || '';
-  if (document.getElementById('advVehReg')) document.getElementById('advVehReg').value = adv.vehicle || '';
-  if (document.getElementById('advDate')) document.getElementById('advDate').value = adv.date || '';
-  if (document.getElementById('advAmount')) document.getElementById('advAmount').value = adv.amount || 0;
-  if (document.getElementById('advPaymentMode')) document.getElementById('advPaymentMode').value = adv.mode || 'Cash';
-  if (document.getElementById('advGivenBy')) document.getElementById('advGivenBy').value = adv.givenBy || '';
-  if (document.getElementById('advDesc')) document.getElementById('advDesc').value = adv.desc || '';
-
-  const vSel = document.getElementById('advVehSelect');
-  if (vSel && adv.vehicle) {
-    const match = (data.vehicles || []).find(v => v.reg.toUpperCase() === adv.vehicle.toUpperCase());
-    if (match) vSel.value = match.reg;
-  }
-
-  document.getElementById('driveradv')?.scrollIntoView({ behavior: 'smooth' });
-}
-
-function deleteAdvance(id) {
-  if (!confirm("Are you sure you want to delete this driver advance entry?")) return;
-  data.driverAdvances = (data.driverAdvances || []).filter(a => a.id !== id);
-  persist();
-  updateDriverFilterOptions();
-  renderDriverAdvancesTable();
-  renderDash();
-}
-
-function updateDriverFilterOptions() {
-  const sel = document.getElementById('advDriverFilter');
-  if (!sel) return;
-  const currVal = sel.value;
-  const drivers = Array.from(new Set((data.driverAdvances || []).map(a => (a.driver || '').trim()).filter(Boolean))).sort();
-  sel.innerHTML = '<option value="">All Drivers</option>' + 
-    drivers.map(d => `<option value="${esc(d)}">${esc(d)}</option>`).join('');
-  if (currVal && drivers.includes(currVal)) sel.value = currVal;
-}
-
-function renderDriverAdvancesTable() {
-  const q = (document.getElementById('advSearch')?.value || '').toLowerCase().trim();
-  const filterDriver = (document.getElementById('advDriverFilter')?.value || '').toLowerCase().trim();
-
-  const filtered = (data.driverAdvances || []).filter(a => {
-    if (filterDriver && (a.driver || '').toLowerCase().trim() !== filterDriver) return false;
-    if (!q) return true;
-    return (a.driver && a.driver.toLowerCase().includes(q)) ||
-           (a.vehicle && a.vehicle.toLowerCase().includes(q)) ||
-           (a.desc && a.desc.toLowerCase().includes(q)) ||
-           (a.mode && a.mode.toLowerCase().includes(q));
-  });
-
-  const totalSum = filtered.reduce((acc, curr) => acc + (Number(curr.amount) || 0), 0);
-  const uniqueDrivers = new Set(filtered.map(a => (a.driver || '').trim()).filter(Boolean)).size;
-
-  if (document.getElementById('advTotalEntries')) document.getElementById('advTotalEntries').innerText = filtered.length;
-  if (document.getElementById('advTotalSum')) document.getElementById('advTotalSum').innerText = money(totalSum);
-  if (document.getElementById('advDriverCount')) document.getElementById('advDriverCount').innerText = uniqueDrivers;
-
-  const container = document.getElementById('advancesTableContainer');
-  if (!container) return;
-
-  if (!filtered.length) {
-    container.innerHTML = '<div style="padding:24px; text-align:center; color:var(--muted);">No driver advance entries found. Use the form above to add an advance.</div>';
-    return;
-  }
-
-  container.innerHTML = `
-    <table>
-      <thead>
-        <tr>
-          <th>Date</th>
-          <th>Driver</th>
-          <th>Vehicle</th>
-          <th>Purpose / Description</th>
-          <th>Mode</th>
-          <th>Given By</th>
-          <th class="right">Advance Amount</th>
-          <th class="right">Actions</th>
-        </tr>
-      </thead>
-      <tbody>
-        ${filtered.map(a => `
-          <tr>
-            <td>${fmtDate(a.date)}</td>
-            <td><b>${esc(a.driver)}</b></td>
-            <td>${esc(a.vehicle || '—')}</td>
-            <td style="max-width:260px; line-height:1.4;">${esc(a.desc || 'No description provided')}</td>
-            <td><span class="badge badge-own">${esc(a.mode || 'Cash')}</span></td>
-            <td>${esc(a.givenBy || '—')}</td>
-            <td class="right" style="font-weight:700; color:var(--accent); font-size:14px;">${money(a.amount)}</td>
-            <td class="right">
-              <button class="btn light" style="padding:4px 9px; font-size:12px;" onclick="editAdvance('${esc(a.id)}')">Edit</button>
-              <button class="btn danger" style="padding:4px 9px; font-size:12px;" onclick="deleteAdvance('${esc(a.id)}')">Del</button>
-            </td>
-          </tr>
-        `).join('')}
-      </tbody>
-      <tfoot>
-        <tr style="font-weight:bold; background:#fafbfc; border-top:2px solid var(--ink);">
-          <td colspan="6" class="right">TOTAL ADVANCE:</td>
-          <td class="right" style="color:var(--accent); font-size:14px;">${money(totalSum)}</td>
-          <td></td>
-        </tr>
-      </tfoot>
-    </table>
-  `;
-}
-
-/* ==================== CUSTOMER MONTHLY STATEMENT LOGIC ==================== */
 function populateStatementFilters() {
   const custSel = document.getElementById('stmtCustomer');
   const monthSel = document.getElementById('stmtMonth');
@@ -1713,7 +2095,6 @@ function printCustomerStatement() {
   setTimeout(() => { w.print(); }, 400);
 }
 
-/* ==================== DOCUMENT EXPIRY NOTIFICATIONS ==================== */
 function getVehicleExpiryAlerts() {
   const alerts = [];
   const today = new Date();
@@ -1823,7 +2204,6 @@ function renderDocAlertsPage() {
   `;
 }
 
-/* ==================== CUSTOMERS LOGIC ==================== */
 function clearCustomerForm() {
   editingCustId = null;
   ['clientName', 'clientEmail', 'clientPhone', 'clientGst', 'clientAddress', 'clientNotes'].forEach(id => {
@@ -1947,7 +2327,6 @@ function applyCustomerSelection() {
   }
 }
 
-/* ==================== VENDOR LOGIC ==================== */
 function clearVendorForm() {
   editingVendorId = null;
   ['venName', 'venContact', 'venPhone', 'venCity', 'venNotes'].forEach(id => {
@@ -2056,7 +2435,6 @@ function syncVendorDropdowns() {
   if (curr) sel.value = curr;
 }
 
-/* ==================== FLEET LOGIC ==================== */
 function toggleVendorSelect() {
   const typeEl = document.getElementById('vehType');
   const wrap = document.getElementById('vendorSelectWrap');
@@ -2223,7 +2601,6 @@ async function deleteVehicle(reg) {
   setSyncStatus(res.ok ? 'Cloud Synced' : 'Sync Error', res.ok);
 }
 
-/* ==================== BILLING / CALCULATION LOGIC ==================== */
 function calculateAmounts() {
   let subtotal = 0;
   const cards = document.querySelectorAll('.duty-item-box');
@@ -2432,7 +2809,6 @@ function previewBill() {
   showPage('preview');
 }
 
-/* ==================== PRECISE 1-PAGE PDF GENERATION ==================== */
 async function shareBillWhatsApp() {
   const b = activePreviewBill || getBillData();
   if (!b || !b.cust) return alert("Please create or preview a bill first.");
@@ -2522,7 +2898,6 @@ async function shareBillWhatsApp() {
   }
 }
 
-/* ==================== YAHOO MAIL COMPOSE ==================== */
 function sendInvoiceMail() {
   const b = activePreviewBill || getBillData();
   if (!b || !b.cust) return alert("Please create or preview a bill first.");
@@ -2750,7 +3125,6 @@ function buildInvoice(b) {
   `;
 }
 
-/* ==================== DASHBOARD & MONTH-WISE LOGIC ==================== */
 function getBillAmount(b) {
   let billTotal = Number(b.total);
   if (isNaN(billTotal) || billTotal <= 0) {
@@ -2810,9 +3184,15 @@ function renderDash() {
     document.getElementById('statMonth').innerText = money(mTotal);
   }
 
-  const totalAdvAll = (data.driverAdvances || []).reduce((acc, curr) => acc + (Number(curr.amount) || 0), 0);
+  // Calculate Net Outstanding Advances Due
+  let netAdvDue = 0;
+  (data.driverAdvances || []).forEach(a => {
+    const m = getAdvanceMetrics(a);
+    if (m.netBalance > 0) netAdvDue += m.netBalance;
+  });
+
   if (document.getElementById('statDriverAdv')) {
-    document.getElementById('statDriverAdv').innerText = money(totalAdvAll);
+    document.getElementById('statDriverAdv').innerText = money(netAdvDue);
   }
 
   if (document.getElementById('statCustomers')) {
