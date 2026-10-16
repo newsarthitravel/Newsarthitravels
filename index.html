@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>NEW SARTHI TRAVELS — Fleet & Professional Billing</title>
+<title>NEW SARTHI TRAVELS — Fleet, Invoicing & Customer Ledger</title>
 <!-- Client-side PDF Generation Engine -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 <style>
@@ -22,16 +22,16 @@ button,input,select,textarea{font:inherit}button{cursor:pointer}
 .login-err{color:#b42318;font-size:12px;margin-top:10px;display:none}
 
 .app{display:none;min-height:100vh}
-.side{width:245px;background:#172238;color:#fff;padding:22px 14px;position:fixed;inset:0 auto 0 0;z-index:10;height:100vh;overflow-y:auto}
+.side{width:250px;background:#172238;color:#fff;padding:22px 14px;position:fixed;inset:0 auto 0 0;z-index:10;height:100vh;overflow-y:auto}
 .brand{padding:4px 12px 22px;border-bottom:1px solid #31405b;margin-bottom:14px}
 .brand b{display:block;font-size:19px;letter-spacing:0.5px}
 .brand span{font-size:11px;color:#aeb8c9;letter-spacing:.12em}
-.nav button{width:100%;background:transparent;border:0;color:#cdd5e2;text-align:left;padding:12px 13px;border-radius:9px;margin:3px 0;transition:0.2s;display:flex;align-items:center;position:relative}
+.nav button{width:100%;background:transparent;border:0;color:#cdd5e2;text-align:left;padding:11px 13px;border-radius:9px;margin:3px 0;transition:0.2s;display:flex;align-items:center;position:relative}
 .nav button:hover,.nav button.active{background:#293851;color:#fff}
 .nav .ico{display:inline-block;width:25px;font-size:16px}
 .nav-badge{position:absolute;right:10px;top:50%;transform:translateY(-50%);background:var(--accent);color:#fff;font-size:10px;font-weight:800;padding:2px 7px;border-radius:12px;display:none}
-.main{margin-left:245px;width:calc(100% - 245px);padding:26px;min-height:100vh}
-.top{display:flex;justify-content:space-between;align-items:center;margin-bottom:24px}
+.main{margin-left:250px;width:calc(100% - 250px);padding:26px;min-height:100vh}
+.top{display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;flex-wrap:wrap;gap:12px;}
 .top h1{font-size:25px;margin:0}
 .top p{margin:5px 0 0;color:var(--muted);font-size:13px}
 .page{display:none}.page.active{display:block !important}
@@ -49,8 +49,8 @@ button,input,select,textarea{font:inherit}button{cursor:pointer}
 .field label{font-size:12px;color:#344054;display:block;margin-bottom:6px;font-weight:600}
 .field input,.field select,.field textarea{width:100%;border:1px solid #cfd5df;border-radius:8px;padding:10px 11px;outline:none;background:#fff}
 .field input:focus,.field select:focus,.field textarea:focus{border-color:var(--accent);box-shadow:0 0 0 3px #b52c2c1a}
-.actions{display:flex;gap:9px;justify-content:flex-end;margin-top:18px}
-.btn{border:0;border-radius:8px;padding:10px 15px;font-weight:600;display:inline-flex;align-items:center;gap:5px;justify-content:center}
+.actions{display:flex;gap:9px;justify-content:flex-end;margin-top:18px;flex-wrap:wrap;}
+.btn{border:0;border-radius:8px;padding:10px 15px;font-weight:600;display:inline-flex;align-items:center;gap:6px;justify-content:center}
 .primary{background:var(--accent);color:#fff}
 .dark{background:#172238;color:#fff}
 .light{background:#eef1f6;color:#25334a}
@@ -82,13 +82,13 @@ th{font-size:11px;text-transform:uppercase;color:#475467;background:#fafbfc}
 .preview-gallery img{height:65px;border-radius:4px;border:1px solid #cbd5e1;object-fit:cover;cursor:pointer}
 .upload-status{font-size:11px;font-weight:600;color:#0284c7;display:none;margin-top:4px}
 
-/* MODAL STYLES FOR DEDUCTIONS */
-.modal-overlay{position:fixed;inset:0;background:rgba(15,23,42,0.6);backdrop-filter:blur(3px);z-index:9999;display:none;align-items:center;justify-content:center;padding:16px;}
+/* MODAL STYLES */
+.modal-overlay{position:fixed;inset:0;background:rgba(15,23,42,0.65);backdrop-filter:blur(3px);z-index:9999;display:none;align-items:center;justify-content:center;padding:16px;}
 .modal-overlay.active{display:flex !important;}
 .modal-card{background:#fff;border-radius:14px;width:100%;max-width:760px;max-height:90vh;overflow-y:auto;box-shadow:0 20px 40px rgba(0,0,0,0.25);border:1px solid var(--line);padding:24px;}
 .modal-head{display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--line);padding-bottom:12px;margin-bottom:16px;}
 .modal-head h3{margin:0;font-size:18px;color:var(--ink);}
-.modal-close{background:none;border:none;font-size:22px;color:var(--muted);line-height:1;cursor:pointer;}
+.modal-close{background:none;border:none;font-size:24px;color:var(--muted);line-height:1;cursor:pointer;}
 .modal-close:hover{color:var(--accent);}
 
 /* MULTI DUTY CARD IN FORM */
@@ -134,7 +134,7 @@ th{font-size:11px;text-transform:uppercase;color:#475467;background:#fafbfc}
 .attached-docs { margin-top: 12px; padding: 8px; border: 1px dashed #777; border-radius: 6px; font-size: 11px; }
 .attached-docs img { max-height: 90px; margin: 3px; border: 1px solid #ccc; border-radius: 4px; }
 
-/* MOBILE RESPONSIVENESS */
+/* RESPONSIVE LAYOUT BREAKPOINTS */
 @media(max-width:1300px){.cards{grid-template-columns:repeat(4,1fr)}}
 @media(max-width:768px){.cards{grid-template-columns:repeat(2,1fr)}}
 @media(max-width:900px){
@@ -245,7 +245,8 @@ th{font-size:11px;text-transform:uppercase;color:#475467;background:#fafbfc}
     <span id="syncStatus" class="sync-tag">Cloud Ready</span>
     <p>NEW SARTHI TRAVELS — Multi-Device Live Platform</p>
   </div>
-  <div style="display:flex; gap:10px;">
+  <div style="display:flex; gap:10px; flex-wrap:wrap;">
+    <button class="btn success" onclick="openPaymentModal()"><span style="font-size:15px;">₹</span> Record Payment</button>
     <button class="btn light" onclick="syncAllFromCloud(true)">🔄 Sync Cloud</button>
     <button class="btn primary" onclick="startNewBill()">＋ New Bill</button>
   </div>
@@ -287,7 +288,8 @@ th{font-size:11px;text-transform:uppercase;color:#475467;background:#fafbfc}
         <h2 style="margin:0 0 4px">📒 Customer Account Ledger (Khata & Running Balance)</h2>
         <p style="margin:0; font-size:12px; color:var(--muted);">View chronological Debit/Credit entries, running balances, payment settlements & print professional statement of accounts.</p>
       </div>
-      <div style="display:flex; gap:8px;">
+      <div style="display:flex; gap:8px; flex-wrap:wrap;">
+        <button class="btn success" onclick="openPaymentModal()"><span style="font-size:14px;">₹</span> Receive Payment</button>
         <button class="btn light" id="btnToggleAllLedger" onclick="toggleAllLedgerView()">👥 All Customers Balance</button>
         <button class="btn primary" onclick="printCustomerLedger()">🖨️ Print Ledger</button>
         <button class="btn whatsapp" onclick="shareLedgerWhatsApp()">WhatsApp Statement</button>
@@ -542,6 +544,103 @@ th{font-size:11px;text-transform:uppercase;color:#475467;background:#fafbfc}
   </div>
 </div>
 
+<!-- MODAL: RECORD PAYMENT RECEIVED AGAINST BILL -->
+<div id="paymentModal" class="modal-overlay">
+  <div class="modal-card">
+    <div class="modal-head">
+      <div>
+        <h3 id="payModalTitle">Record Payment Received</h3>
+        <p style="margin:2px 0 0; font-size:12px; color:var(--muted);">Select bill number or customer to receive payment and post directly into the Customer Ledger.</p>
+      </div>
+      <button class="modal-close" onclick="closePaymentModal()">&times;</button>
+    </div>
+
+    <div class="grid" style="margin-bottom:14px;">
+      <div class="field">
+        <label>Select Bill / Invoice No. (Shows Pending Balance)</label>
+        <select id="payBillSelect" onchange="applyBillToPaymentModal()">
+          <option value="">-- Choose Invoice to Settle --</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Customer Name</label>
+        <input id="payCustomerName" readonly style="background:#f1f5f9; font-weight:700;">
+      </div>
+    </div>
+
+    <!-- INVOICE FINANCIAL OVERVIEW STRIP -->
+    <div style="background:#f8fafc; border:1px solid var(--line); border-radius:10px; padding:12px 16px; display:flex; justify-content:space-between; flex-wrap:wrap; gap:10px; margin-bottom:16px;">
+      <div>
+        <span style="font-size:11px; color:var(--muted); font-weight:600; display:block;">INVOICE TOTAL</span>
+        <b style="font-size:16px; color:var(--ink);" id="payInfoTotal">₹0</b>
+      </div>
+      <div>
+        <span style="font-size:11px; color:var(--muted); font-weight:600; display:block;">PREVIOUSLY RECEIVED</span>
+        <b style="font-size:16px; color:var(--green);" id="payInfoPaid">₹0</b>
+      </div>
+      <div>
+        <span style="font-size:11px; color:var(--muted); font-weight:600; display:block;">CURRENT BALANCE DUE</span>
+        <b style="font-size:16px; color:var(--accent);" id="payInfoBal">₹0</b>
+      </div>
+      <div>
+        <span style="font-size:11px; color:var(--muted); font-weight:600; display:block;">INVOICE DATE</span>
+        <span style="font-size:13px; font-weight:600;" id="payInfoDate">&mdash;</span>
+      </div>
+    </div>
+
+    <!-- PAYMENT ENTRY FORM -->
+    <div style="background:#fff; border:1px solid #cfd8e3; border-radius:10px; padding:16px; margin-bottom:16px;">
+      <h4 style="margin:0 0 12px; font-size:14px; color:var(--ink);">Receipt Entry Details</h4>
+      <div class="grid3">
+        <div class="field">
+          <label>Payment Amount Received (₹)</label>
+          <input id="payAmount" type="number" min="0.01" step="0.01" placeholder="e.g. 5000">
+        </div>
+        <div class="field">
+          <label>Payment Date</label>
+          <input id="payDate" type="date">
+        </div>
+        <div class="field">
+          <label>Payment Mode</label>
+          <select id="payMode">
+            <option value="UPI / Online">UPI / GPay / PhonePe</option>
+            <option value="Bank Transfer (NEFT/RTGS)">Bank Transfer (NEFT/RTGS/IMPS)</option>
+            <option value="Cash">Cash</option>
+            <option value="Cheque">Cheque</option>
+            <option value="Card Payment">Debit/Credit Card</option>
+          </select>
+        </div>
+      </div>
+      <div class="grid" style="margin-top:12px;">
+        <div class="field">
+          <label>UTR / Transaction / Cheque Ref. No.</label>
+          <input id="payRefNo" placeholder="e.g. UPI Ref # / Cheque # / Bank UTR">
+        </div>
+        <div class="field">
+          <label>Received Into Bank Account / Cash</label>
+          <input id="payReceivedIn" placeholder="e.g. ICICI Bank Account or Cash in Office">
+        </div>
+      </div>
+      <div class="grid" style="margin-top:12px;">
+        <div class="field" style="grid-column: span 2;">
+          <label>Payment Remarks / Notes</label>
+          <input id="payRemarks" placeholder="e.g. Part payment or full settlement for taxi duty">
+        </div>
+      </div>
+      <div class="actions" style="margin-top:16px;">
+        <button class="btn light" onclick="closePaymentModal()">Cancel</button>
+        <button class="btn success" onclick="savePaymentReceipt()">✔ Confirm & Record Payment</button>
+      </div>
+    </div>
+
+    <!-- PREVIOUS PAYMENTS LOG FOR THIS BILL -->
+    <div>
+      <h4 style="margin:0 0 8px; font-size:13.5px; color:var(--ink);">Payment Receipts History for this Invoice</h4>
+      <div id="payHistoryContainer"></div>
+    </div>
+  </div>
+</div>
+
 <!-- CUSTOMER MONTHLY STATEMENTS -->
 <section id="statements" class="page">
   <div class="panel">
@@ -652,8 +751,12 @@ th{font-size:11px;text-transform:uppercase;color:#475467;background:#fafbfc}
 <section id="bills" class="page">
 <div class="panel">
   <div class="toolbar">
-    <h2>Invoice History</h2>
+    <div>
+      <h2 style="margin:0 0 4px">Invoice History</h2>
+      <p style="margin:0; font-size:12px; color:var(--muted);">Manage invoices, track payments, generate single-page bills and collect dues.</p>
+    </div>
     <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+      <button class="btn success" onclick="openPaymentModal()"><span style="font-size:14px;">₹</span> Collect Payment</button>
       <select id="billMonthFilter" style="padding:9px 10px; border:1px solid #ccd3df; border-radius:8px;" onchange="renderBills()">
         <option value="">All Months</option>
       </select>
@@ -807,7 +910,7 @@ const SUPABASE_STORAGE = 'https://tjkgjkeuplqzzzdfqmuc.supabase.co/storage/v1/ob
 const SUPABASE_UPLOAD = 'https://tjkgjkeuplqzzzdfqmuc.supabase.co/storage/v1/object/receipts';
 const S_KEY = 'sb_publishable_AiO0RJRFusjUSlVZU5QePQ_-7Svkmx8';
 
-const KEY = 'nst_v21'; // Version bump for Customer Ledger & Advances
+const KEY = 'nst_v22'; // Latest robust storage key
 const defaults = {
   adminUser: 'admin',
   adminPass: 'sarthi@123',
@@ -828,11 +931,12 @@ let data = JSON.parse(localStorage.getItem(KEY)) || {
   vehicles: [],
   vendors: [],
   customers: [],
-  driverAdvances: []
+  driverAdvances: [],
+  payments: []
 };
 
-// Migrate from legacy local stores if upgrading
-['nst_v20', 'nst_v19'].forEach(oldK => {
+// Migrate from legacy keys if exists
+['nst_v21', 'nst_v20', 'nst_v19'].forEach(oldK => {
   if (!localStorage.getItem(KEY) && localStorage.getItem(oldK)) {
     try {
       const prev = JSON.parse(localStorage.getItem(oldK));
@@ -847,6 +951,7 @@ data.vehicles = data.vehicles || [];
 data.vendors = data.vendors || [];
 data.customers = data.customers || [];
 data.driverAdvances = data.driverAdvances || [];
+data.payments = data.payments || [];
 
 // Ensure advance deductions array format
 data.driverAdvances.forEach(adv => {
@@ -858,6 +963,7 @@ let editingCustId = null;
 let editingVendorId = null;
 let editingAdvId = null;
 let activeDeductAdvId = null;
+let activePaymentBillNo = null;
 let dutyIndex = 0;
 let activePreviewBill = null;
 let isFormDirty = false;
@@ -1461,12 +1567,8 @@ function renderCustomerLedger() {
   // Gather all bills for this customer
   const matchedBills = (data.bills || []).filter(b => b.cust && b.cust.trim().toLowerCase() === custName.toLowerCase());
 
-  // Sort bills chronologically by date
-  matchedBills.sort((a, b) => {
-    const da = parseBillDate(a.date || (a.duties && a.duties[0] && a.duties[0].tdate)) || new Date(0);
-    const db = parseBillDate(b.date || (b.duties && b.duties[0] && b.duties[0].tdate)) || new Date(0);
-    return da - db;
-  });
+  // Gather all payment receipts recorded for this customer
+  const matchedPayments = (data.payments || []).filter(p => p.custName && p.custName.trim().toLowerCase() === custName.toLowerCase());
 
   const startDate = startDateStr ? new Date(startDateStr + 'T00:00:00') : null;
   const endDate = endDateStr ? new Date(endDateStr + 'T23:59:59') : null;
@@ -1474,19 +1576,18 @@ function renderCustomerLedger() {
   let openingBalance = 0;
   let ledgerRows = [];
 
+  // 1. Add Invoices as Debit entries
   matchedBills.forEach(b => {
     const billDate = parseBillDate(b.date || (b.duties && b.duties[0] && b.duties[0].tdate)) || new Date(0);
     const totalAmount = getBillAmount(b);
-    const paidAmount = Number(b.paid) || 0;
 
     if (startDate && billDate < startDate) {
-      openingBalance = round2(openingBalance + totalAmount - paidAmount);
+      openingBalance = round2(openingBalance + totalAmount);
     } else if (!endDate || billDate <= endDate) {
       const particularsDesc = (b.duties && b.duties.length) 
         ? b.duties.map(d => `${d.trip || 'TAXI'} (${d.veh || 'Car'})`).join('; ')
         : 'TAXI HIRE CHARGES';
 
-      // 1. Debit Entry for Invoice
       ledgerRows.push({
         date: b.date,
         dateObj: billDate,
@@ -1495,25 +1596,58 @@ function renderCustomerLedger() {
         particulars: particularsDesc,
         debit: totalAmount,
         credit: 0,
-        isBill: true
+        isBill: true,
+        billNo: b.no
       });
+    }
 
-      // 2. Credit Entry for Advance / Payment Received (if any)
-      if (paidAmount > 0) {
+    // If an initial advance was recorded inside the bill and NOT in payments table, add it as a Credit
+    const recordedInPayments = matchedPayments.filter(p => String(p.billNo) === String(b.no)).reduce((sum, p) => sum + (Number(p.amount) || 0), 0);
+    const initialAdvance = Math.max(0, round2((Number(b.paid) || 0) - recordedInPayments));
+
+    if (initialAdvance > 0) {
+      if (startDate && billDate < startDate) {
+        openingBalance = round2(openingBalance - initialAdvance);
+      } else if (!endDate || billDate <= endDate) {
         ledgerRows.push({
           date: b.date,
           dateObj: billDate,
-          voucherType: 'Advance / Receipt',
-          refNo: `REC-${b.no}`,
-          particulars: `Advance/Payment received against Invoice #${b.no}`,
+          voucherType: 'Advance / Deposit',
+          refNo: `ADV-${b.no}`,
+          particulars: `Advance payment recorded at booking for Bill #${b.no}`,
           debit: 0,
-          credit: paidAmount,
+          credit: initialAdvance,
           isBill: false,
           billNo: b.no
         });
       }
     }
   });
+
+  // 2. Add Subsequent Payment Receipts as Credit entries
+  matchedPayments.forEach(p => {
+    const payDate = parseBillDate(p.date) || new Date(0);
+    const payAmount = Number(p.amount) || 0;
+
+    if (startDate && payDate < startDate) {
+      openingBalance = round2(openingBalance - payAmount);
+    } else if (!endDate || payDate <= endDate) {
+      ledgerRows.push({
+        date: p.date,
+        dateObj: payDate,
+        voucherType: 'Payment Received',
+        refNo: p.refNo ? `REC (${p.refNo})` : `REC-B#${p.billNo}`,
+        particulars: `${esc(p.mode)} receipt for Bill #${p.billNo}${p.remarks ? ' — ' + p.remarks : ''}`,
+        debit: 0,
+        credit: payAmount,
+        isBill: false,
+        billNo: p.billNo
+      });
+    }
+  });
+
+  // Sort all ledger rows chronologically
+  ledgerRows.sort((a, b) => a.dateObj - b.dateObj);
 
   // Calculate Running Balance
   let runningBal = openingBalance;
@@ -1579,8 +1713,8 @@ function renderCustomerLedger() {
             <td class="right" style="font-weight:800; color:${r.runningBalance > 0 ? 'var(--accent)' : 'var(--green)'}; font-size:13.5px;">
               ${money(r.runningBalance)} ${r.runningBalance > 0 ? '<span style="font-size:10px;">Dr</span>' : (r.runningBalance < 0 ? '<span style="font-size:10px;">Cr</span>' : '')}
             </td>
-            <td class="right">
-              ${r.isBill ? `<button class="btn light" style="padding:3px 8px; font-size:11px;" onclick="viewBill('${esc(r.refNo)}')">View Bill</button>` : `<button class="btn light" style="padding:3px 8px; font-size:11px;" onclick="viewBill('${esc(r.billNo)}')">View Bill</button>`}
+            <td class="right" style="white-space:nowrap;">
+              ${r.isBill ? `<button class="btn success" style="padding:3px 7px; font-size:11px; margin-right:4px;" onclick="openPaymentModal('${esc(r.refNo)}')">₹ Pay</button><button class="btn light" style="padding:3px 8px; font-size:11px;" onclick="viewBill('${esc(r.refNo)}')">View</button>` : `<button class="btn light" style="padding:3px 8px; font-size:11px;" onclick="viewBill('${esc(r.billNo)}')">Bill #${esc(r.billNo)}</button>`}
             </td>
           </tr>
         `).join('')}
@@ -2139,7 +2273,7 @@ function renderDriverAdvancesTable() {
   `;
 }
 
-/* ==================== MULTI-DUTY BUILDER ==================== */
+/* ==================== MULTI-DUTY INVOICE BUILDER ==================== */
 function addDutyItem(initial = {}) {
   dutyIndex++;
   const id = 'duty_' + dutyIndex;
@@ -2460,6 +2594,24 @@ async function syncAllFromCloud(manual = false) {
       });
     }
 
+    // Sync payments if available
+    try {
+      const payRes = await cloudReq('customer_payments?select=*&order=payment_date.desc');
+      if (payRes && payRes.ok && Array.isArray(payRes.data)) {
+        data.payments = payRes.data.map(p => ({
+          id: String(p.id),
+          billNo: String(p.bill_no),
+          custName: p.customer_name || '',
+          amount: Number(p.amount) || 0,
+          date: p.payment_date || '',
+          mode: p.mode || 'UPI / Online',
+          refNo: p.ref_no || '',
+          receivedIn: p.received_in || '',
+          remarks: p.remarks || ''
+        }));
+      }
+    } catch(e) {}
+
     if (vehRes && vehRes.ok && Array.isArray(vehRes.data)) {
       data.vehicles = vehRes.data.map(v => ({
         reg: String(v.reg),
@@ -2517,6 +2669,7 @@ async function syncAllFromCloud(manual = false) {
     syncLedgerCustomersDropdown();
     renderCustomerLedger();
     renderAllCustomersLedgerTable();
+    syncPaymentBillDropdown();
 
     setSyncStatus('Cloud Synced', true);
     if (manual) alert('All data synced successfully!');
@@ -2525,686 +2678,284 @@ async function syncAllFromCloud(manual = false) {
   }
 }
 
-function populateStatementFilters() {
-  const custSel = document.getElementById('stmtCustomer');
-  const monthSel = document.getElementById('stmtMonth');
-  if (!custSel || !monthSel) return;
+/* ==================== PAYMENT COLLECTION / RECEIPT SYSTEM ==================== */
+function syncPaymentBillDropdown(selectedBillNo = null) {
+  const sel = document.getElementById('payBillSelect');
+  if (!sel) return;
 
-  const currentCust = custSel.value;
-  const currentMonth = monthSel.value;
+  const bills = data.bills || [];
+  const sortedBills = [...bills].sort((a, b) => (Number(b.no) || 0) - (Number(a.no) || 0));
 
-  const namesSet = new Set((data.customers || []).map(c => (c.name || '').trim()).filter(Boolean));
-  (data.bills || []).forEach(b => {
-    if (b.cust && b.cust.trim()) namesSet.add(b.cust.trim());
+  let html = '<option value="">-- Choose Invoice to Settle --</option>';
+  sortedBills.forEach(b => {
+    const tot = getBillAmount(b);
+    const pd = Number(b.paid) || 0;
+    const bl = round2(tot - pd);
+    const statusTxt = bl <= 0 ? '✓ Paid' : `Due: ${money(bl)}`;
+    html += `<option value="${esc(b.no)}">#${esc(b.no)} — ${esc(b.cust)} (${statusTxt})</option>`;
   });
+  sel.innerHTML = html;
 
-  const sortedNames = Array.from(namesSet).sort((a, b) => a.localeCompare(b));
-  custSel.innerHTML = '<option value="">-- All Customers --</option>' + 
-    sortedNames.map(name => `<option value="${esc(name)}">${esc(name)}</option>`).join('');
-  if (currentCust && sortedNames.includes(currentCust)) custSel.value = currentCust;
-
-  const monthsMap = {};
-  (data.bills || []).forEach(b => {
-    const d = parseBillDate(b.date || (b.duties && b.duties[0] && b.duties[0].tdate));
-    if (d) {
-      const y = d.getFullYear();
-      const m = String(d.getMonth() + 1).padStart(2, '0');
-      const key = `${y}-${m}`;
-      monthsMap[key] = d.toLocaleDateString('en-IN', { month: 'long', year: 'numeric' });
-    }
-  });
-
-  const sortedMonthKeys = Object.keys(monthsMap).sort().reverse();
-  monthSel.innerHTML = '<option value="">-- All Months --</option>' +
-    sortedMonthKeys.map(k => `<option value="${k}">${monthsMap[k]}</option>`).join('');
-  if (currentMonth && sortedMonthKeys.includes(currentMonth)) monthSel.value = currentMonth;
+  if (selectedBillNo) {
+    sel.value = String(selectedBillNo);
+  }
 }
 
-function generateCustomerMonthlyStatement() {
-  const selectedCust = (document.getElementById('stmtCustomer')?.value || '').trim().toLowerCase();
-  const selectedMonth = document.getElementById('stmtMonth')?.value || '';
+function openPaymentModal(billNo = null) {
+  activePaymentBillNo = billNo ? String(billNo) : null;
+  const modal = document.getElementById('paymentModal');
+  if (modal) modal.classList.add('active');
 
-  let totalBilled = 0;
-  let totalPaid = 0;
-  let totalBal = 0;
+  syncPaymentBillDropdown(activePaymentBillNo);
 
-  const matchedBills = (data.bills || []).filter(b => {
-    if (selectedCust && (!b.cust || b.cust.trim().toLowerCase() !== selectedCust)) {
-      return false;
-    }
-    if (selectedMonth) {
-      const d = parseBillDate(b.date || (b.duties && b.duties[0] && b.duties[0].tdate));
-      if (!d) return false;
-      const bMonth = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
-      if (bMonth !== selectedMonth) return false;
-    }
-    return true;
-  });
+  const dateInput = document.getElementById('payDate');
+  if (dateInput) dateInput.value = new Date().toISOString().slice(0, 10);
 
-  matchedBills.forEach(b => {
-    const amt = getBillAmount(b);
-    const paid = Number(b.paid) || 0;
-    const bal = Number(b.bal) || (amt - paid);
-    totalBilled = round2(totalBilled + amt);
-    totalPaid = round2(totalPaid + paid);
-    totalBal = round2(totalBal + bal);
-  });
+  const modeSelect = document.getElementById('payMode');
+  if (modeSelect) modeSelect.value = 'UPI / Online';
 
-  if (document.getElementById('stmtCount')) document.getElementById('stmtCount').innerText = matchedBills.length;
-  if (document.getElementById('stmtTotal')) document.getElementById('stmtTotal').innerText = money(totalBilled);
-  if (document.getElementById('stmtPaid')) document.getElementById('stmtPaid').innerText = money(totalPaid);
-  if (document.getElementById('stmtBalance')) document.getElementById('stmtBalance').innerText = money(totalBal);
+  const refInput = document.getElementById('payRefNo');
+  if (refInput) refInput.value = '';
 
-  const container = document.getElementById('stmtTableContainer');
-  if (!container) return;
+  const recInInput = document.getElementById('payReceivedIn');
+  if (recInInput) recInInput.value = 'ICICI Bank Account';
 
-  if (!matchedBills.length) {
-    container.innerHTML = '<div style="padding:24px; text-align:center; color:var(--muted);">No invoices found for the selected customer & month.</div>';
+  const remInput = document.getElementById('payRemarks');
+  if (remInput) remInput.value = '';
+
+  const amtInput = document.getElementById('payAmount');
+  if (amtInput) amtInput.value = '';
+
+  if (activePaymentBillNo) {
+    applyBillToPaymentModal();
+  } else {
+    resetPaymentModalDisplay();
+  }
+}
+
+function closePaymentModal() {
+  activePaymentBillNo = null;
+  const modal = document.getElementById('paymentModal');
+  if (modal) modal.classList.remove('active');
+}
+
+function resetPaymentModalDisplay() {
+  document.getElementById('payCustomerName').value = '';
+  document.getElementById('payInfoTotal').innerText = '₹0';
+  document.getElementById('payInfoPaid').innerText = '₹0';
+  document.getElementById('payInfoBal').innerText = '₹0';
+  document.getElementById('payInfoDate').innerText = '—';
+  const hist = document.getElementById('payHistoryContainer');
+  if (hist) hist.innerHTML = '<div style="padding:10px; font-size:12px; color:var(--muted); text-align:center;">Select an invoice above to view payment history.</div>';
+}
+
+function applyBillToPaymentModal() {
+  const sel = document.getElementById('payBillSelect');
+  const bNo = sel ? sel.value : null;
+  if (!bNo) {
+    resetPaymentModalDisplay();
     return;
   }
+
+  const b = (data.bills || []).find(x => String(x.no) === String(bNo));
+  if (!b) {
+    resetPaymentModalDisplay();
+    return;
+  }
+
+  const total = getBillAmount(b);
+  const paid = Number(b.paid) || 0;
+  const bal = round2(total - paid);
+
+  document.getElementById('payCustomerName').value = b.cust || '';
+  document.getElementById('payInfoTotal').innerText = money(total);
+  document.getElementById('payInfoPaid').innerText = money(paid);
+  document.getElementById('payInfoBal').innerText = money(bal);
+  document.getElementById('payInfoBal').style.color = bal <= 0 ? 'var(--green)' : 'var(--accent)';
+  document.getElementById('payInfoDate').innerText = fmtDate(b.date);
+
+  const amtInput = document.getElementById('payAmount');
+  if (amtInput) {
+    amtInput.value = bal > 0 ? bal : '';
+  }
+
+  renderBillPaymentReceipts(b.no);
+}
+
+function renderBillPaymentReceipts(billNo) {
+  const container = document.getElementById('payHistoryContainer');
+  if (!container) return;
+
+  const bPayments = (data.payments || []).filter(p => String(p.billNo) === String(billNo));
+  const b = (data.bills || []).find(x => String(x.no) === String(billNo));
+
+  if (!bPayments.length && (!b || (Number(b.paid) || 0) <= 0)) {
+    container.innerHTML = '<div style="padding:8px; font-size:12px; color:var(--muted); background:#f8fafc; border-radius:6px; text-align:center;">No payment receipts recorded for this invoice yet.</div>';
+    return;
+  }
+
+  let rowsHtml = '';
+  if (b && Number(b.paid) > 0 && !bPayments.some(p => p.remarks && p.remarks.includes('Initial Advance during bill creation'))) {
+    rowsHtml += `
+      <tr>
+        <td>${fmtDate(b.date)}</td>
+        <td><span class="badge badge-own">Advance at Billing</span></td>
+        <td>—</td>
+        <td>Initial advance recorded at invoice creation</td>
+        <td class="right" style="font-weight:700; color:var(--green);">${money(b.paid)}</td>
+        <td></td>
+      </tr>
+    `;
+  }
+
+  bPayments.forEach(p => {
+    rowsHtml += `
+      <tr>
+        <td>${fmtDate(p.date)}</td>
+        <td><span class="badge badge-ok">${esc(p.mode)}</span></td>
+        <td>${esc(p.refNo || '—')}</td>
+        <td>${esc(p.remarks || 'Payment received')}</td>
+        <td class="right" style="font-weight:700; color:var(--green);">${money(p.amount)}</td>
+        <td class="right">
+          <button class="btn danger" style="padding:2px 6px; font-size:10px;" onclick="deletePaymentReceipt('${esc(p.id)}')">Delete</button>
+        </td>
+      </tr>
+    `;
+  });
 
   container.innerHTML = `
     <table>
       <thead>
         <tr>
-          <th>Bill No</th>
           <th>Date</th>
-          <th>Customer</th>
-          <th>Duties / Particulars</th>
-          <th class="right">Total</th>
-          <th class="right">Advance Paid</th>
-          <th class="right">Balance Due</th>
+          <th>Mode</th>
+          <th>Ref / UTR</th>
+          <th>Remarks</th>
+          <th class="right">Amount (₹)</th>
           <th class="right">Action</th>
         </tr>
       </thead>
       <tbody>
-        ${matchedBills.map(b => {
-          const amt = getBillAmount(b);
-          const p = Number(b.paid) || 0;
-          const bl = Number(b.bal) || (amt - p);
-          const dutiesDesc = b.duties && b.duties.length ? b.duties.map(d => d.trip).join(' | ') : 'Taxi Hire Charges';
-          return `
-            <tr>
-              <td><b>#${esc(b.no)}</b></td>
-              <td>${fmtDate(b.date)}</td>
-              <td><b>${esc(b.cust)}</b></td>
-              <td style="max-width:280px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${esc(dutiesDesc)}</td>
-              <td class="right" style="font-weight:700;">${money(amt)}</td>
-              <td class="right" style="color:var(--green);">${money(p)}</td>
-              <td class="right" style="color:#b42318; font-weight:700;">${money(bl)}</td>
-              <td class="right">
-                <button class="btn dark" style="padding:4px 9px; font-size:12px;" onclick="viewBill('${esc(b.no)}')">View</button>
-              </td>
-            </tr>
-          `;
-        }).join('')}
+        ${rowsHtml}
       </tbody>
-      <tfoot>
-        <tr style="font-weight:bold; background:#fafbfc; border-top:2px solid var(--ink);">
-          <td colspan="4" class="right">TOTAL (${matchedBills.length} Invoices):</td>
-          <td class="right" style="color:var(--ink);">${money(totalBilled)}</td>
-          <td class="right" style="color:var(--green);">${money(totalPaid)}</td>
-          <td class="right" style="color:#b42318;">${money(totalBal)}</td>
-          <td></td>
-        </tr>
-      </tfoot>
     </table>
   `;
 }
 
-function printCustomerStatement() {
-  const panel = document.getElementById('stmtSummaryPanel');
-  if (!panel) return;
+async function savePaymentReceipt() {
+  const billNo = document.getElementById('payBillSelect')?.value;
+  if (!billNo) return alert("Please select an invoice number.");
 
-  const custSel = document.getElementById('stmtCustomer');
-  const custName = (custSel && custSel.value) ? custSel.value : 'All Customers';
-  const mSel = document.getElementById('stmtMonth');
-  const period = (mSel && mSel.value) ? (mSel.options[mSel.selectedIndex]?.text || mSel.value) : 'All Months';
+  const b = (data.bills || []).find(x => String(x.no) === String(billNo));
+  if (!b) return alert("Invoice not found.");
 
-  const w = window.open('', '_blank');
-  w.document.write(`
-    <!doctype html>
-    <html>
-    <head>
-      <title>Customer Monthly Statement - ${esc(custName)}</title>
-      <style>
-        body { font-family: system-ui, -apple-system, sans-serif; padding: 25px; color: #182230; }
-        h1 { margin: 0 0 4px; font-size: 22px; text-transform: uppercase; }
-        p { margin: 2px 0 16px; font-size: 13px; color: #475467; }
-        table { width: 100%; border-collapse: collapse; margin-top: 14px; }
-        th, td { border: 1px solid #d0d5dd; padding: 8px 10px; font-size: 12px; text-align: left; }
-        th { background: #f2f4f7; font-weight: bold; }
-        .right { text-align: right; }
-        .cards { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 16px; }
-        .card { border: 1px solid #d0d5dd; border-radius: 8px; padding: 12px; }
-        .label { font-size: 11px; font-weight: 600; color: #475467; }
-        .num { font-size: 18px; font-weight: 700; margin-top: 4px; }
-        .btn { display: none; }
-      </style>
-    </head>
-    <body>
-      <h1>${esc(data.settings.name)}</h1>
-      <p><b>Statement Billed To:</b> ${esc(custName)} &nbsp;|&nbsp; <b>Billing Period:</b> ${esc(period)}</p>
-      ${panel.innerHTML}
-    </body>
-    </html>
-  `);
-  w.document.close();
-  w.focus();
-  setTimeout(() => { w.print(); }, 400);
+  const amt = Number(document.getElementById('payAmount')?.value) || 0;
+  if (amt <= 0) return alert("Please enter a valid received payment amount greater than 0.");
+
+  const date = document.getElementById('payDate')?.value || new Date().toISOString().slice(0, 10);
+  const mode = document.getElementById('payMode')?.value || 'UPI / Online';
+  const refNo = (document.getElementById('payRefNo')?.value || '').trim();
+  const receivedIn = (document.getElementById('payReceivedIn')?.value || '').trim();
+  const remarks = (document.getElementById('payRemarks')?.value || '').trim();
+
+  const paymentRecord = {
+    id: genUUID(),
+    billNo: String(b.no),
+    custName: b.cust,
+    amount: round2(amt),
+    date: date,
+    mode: mode,
+    refNo: refNo,
+    receivedIn: receivedIn,
+    remarks: remarks || `Payment received against Bill #${b.no}`
+  };
+
+  data.payments = data.payments || [];
+  data.payments.unshift(paymentRecord);
+
+  // Update Bill Paid Amount & Balance
+  const totalBillAmt = getBillAmount(b);
+  const newPaid = round2((Number(b.paid) || 0) + amt);
+  const newBal = round2(totalBillAmt - newPaid);
+
+  b.paid = newPaid;
+  b.bal = newBal;
+
+  persist();
+
+  // Sync updated invoice and payment record to cloud
+  setSyncStatus('Saving payment to cloud...', true);
+  cloudReq('bills?invoice_no=eq.' + encodeURIComponent(b.no), 'PATCH', {
+    amount_paid: Number(newPaid),
+    balance: Number(newBal)
+  });
+
+  cloudReq('customer_payments?on_conflict=id', 'POST', {
+    id: paymentRecord.id,
+    bill_no: paymentRecord.billNo,
+    customer_name: paymentRecord.custName,
+    amount: paymentRecord.amount,
+    payment_date: paymentRecord.date,
+    mode: paymentRecord.mode,
+    ref_no: paymentRecord.refNo || null,
+    received_in: paymentRecord.receivedIn || null,
+    remarks: paymentRecord.remarks || null
+  });
+
+  closePaymentModal();
+  renderDash();
+  renderBills();
+  populateStatementFilters();
+  generateCustomerMonthlyStatement();
+  syncLedgerCustomersDropdown();
+
+  // If customer is selected in ledger, refresh it immediately
+  const ledgerCustSel = document.getElementById('ledgerCustomer');
+  if (ledgerCustSel && (!ledgerCustSel.value || ledgerCustSel.value === b.cust)) {
+    ledgerCustSel.value = b.cust;
+    renderCustomerLedger();
+  }
+  renderAllCustomersLedgerTable();
+
+  setSyncStatus('Cloud Synced', true);
+  alert(`Payment of ${money(amt)} against Bill #${b.no} has been recorded successfully and reflected in the Customer Ledger!`);
 }
 
-function getVehicleExpiryAlerts() {
-  const alerts = [];
-  const today = new Date();
-  today.setHours(0,0,0,0);
+async function deletePaymentReceipt(payId) {
+  if (!confirm("Are you sure you want to delete this payment receipt? This will adjust the bill balance and ledger.")) return;
 
-  const docTypes = [
-    { key: 'insurance', label: 'Insurance' },
-    { key: 'permit', label: 'Permit' },
-    { key: 'fitness', label: 'Fitness' },
-    { key: 'auth_validity', label: 'Authorisation' },
-    { key: 'pucc', label: 'PUCC' },
-    { key: 'vltd', label: 'VLTD' }
-  ];
+  const pIdx = (data.payments || []).findIndex(p => p.id === payId);
+  if (pIdx === -1) return;
 
-  (data.vehicles || []).forEach(v => {
-    docTypes.forEach(doc => {
-      const dateStr = v[doc.key];
-      if (!dateStr) return;
-      const expDate = parseBillDate(dateStr);
-      if (!expDate) return;
-      expDate.setHours(0,0,0,0);
+  const p = data.payments[pIdx];
+  const b = (data.bills || []).find(x => String(x.no) === String(p.billNo));
 
-      const diffTime = expDate.getTime() - today.getTime();
-      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+  if (b) {
+    const totalBillAmt = getBillAmount(b);
+    const newPaid = Math.max(0, round2((Number(b.paid) || 0) - (Number(p.amount) || 0)));
+    const newBal = round2(totalBillAmt - newPaid);
+    b.paid = newPaid;
+    b.bal = newBal;
 
-      if (diffDays <= 30) {
-        alerts.push({
-          reg: v.reg,
-          model: v.model,
-          type: v.type,
-          docName: doc.label,
-          docKey: doc.key,
-          expiryDate: dateStr,
-          daysLeft: diffDays,
-          isExpired: diffDays < 0
-        });
-      }
+    cloudReq('bills?invoice_no=eq.' + encodeURIComponent(b.no), 'PATCH', {
+      amount_paid: Number(newPaid),
+      balance: Number(newBal)
     });
-  });
-
-  alerts.sort((a, b) => a.daysLeft - b.daysLeft);
-  return alerts;
-}
-
-function updateAlertBadges() {
-  const alerts = getVehicleExpiryAlerts();
-  const count = alerts.length;
-  
-  const navBadge = document.getElementById('navAlertBadge');
-  if (navBadge) {
-    if (count > 0) {
-      navBadge.innerText = count;
-      navBadge.style.display = 'inline-block';
-    } else {
-      navBadge.style.display = 'none';
-    }
   }
 
-  const statAlerts = document.getElementById('statAlerts');
-  if (statAlerts) {
-    statAlerts.innerText = count;
-  }
-}
-
-function renderDocAlertsPage() {
-  const container = document.getElementById('alertsContainer');
-  if (!container) return;
-
-  const alerts = getVehicleExpiryAlerts();
-
-  if (!alerts.length) {
-    container.innerHTML = '<div style="padding:20px; text-align:center; color:var(--green); font-weight:700;">✅ All fleet documents (Insurance, Permit, Fitness, Authorisation, PUCC & VLTD) are active & valid for the next 30 days!</div>';
-    return;
-  }
-
-  container.innerHTML = `
-    <table>
-      <thead>
-        <tr>
-          <th>Vehicle No.</th>
-          <th>Model</th>
-          <th>Document Type</th>
-          <th>Expiry Date</th>
-          <th>Status</th>
-          <th class="right">Action</th>
-        </tr>
-      </thead>
-      <tbody>
-        ${alerts.map(a => `
-          <tr>
-            <td><b>${esc(a.reg)}</b></td>
-            <td>${esc(a.model || 'Car')}</td>
-            <td><b>${esc(a.docName)}</b></td>
-            <td>${fmtDate(a.expiryDate)}</td>
-            <td>
-              <span class="badge ${a.isExpired ? 'badge-expired' : 'badge-soon'}">
-                ${a.isExpired ? `EXPIRED (${Math.abs(a.daysLeft)} days ago)` : `Expiring in ${a.daysLeft} day(s)`}
-              </span>
-            </td>
-            <td class="right">
-              <button class="btn light" style="padding:4px 9px; font-size:12px;" onclick="editVehicle('${esc(a.reg)}')">Update Expiry</button>
-            </td>
-          </tr>
-        `).join('')}
-      </tbody>
-    </table>
-  `;
-}
-
-function clearCustomerForm() {
-  editingCustId = null;
-  ['clientName', 'clientEmail', 'clientPhone', 'clientGst', 'clientAddress', 'clientNotes'].forEach(id => {
-    const el = document.getElementById(id);
-    if (el) el.value = '';
-  });
-}
-
-async function saveCustomer() {
-  const name = (document.getElementById('clientName')?.value || '').trim();
-  if (!name) return alert("Please enter Customer / Company Name.");
-
-  const id = (editingCustId && isValidUUID(editingCustId)) ? editingCustId : genUUID();
-  const record = {
-    id: id,
-    name,
-    email: document.getElementById('clientEmail')?.value.trim() || null,
-    phone: document.getElementById('clientPhone')?.value.trim() || null,
-    gstin: document.getElementById('clientGst')?.value.trim() || null,
-    address: document.getElementById('clientAddress')?.value.trim() || null,
-    notes: document.getElementById('clientNotes')?.value.trim() || null
-  };
-
-  setSyncStatus('Saving Customer...', true);
-  const res = await cloudReq('customers?on_conflict=id', 'POST', record);
-
-  let finalRecord = record;
-  if (res.ok && Array.isArray(res.data) && res.data.length > 0) {
-    finalRecord = { ...record, id: String(res.data[0].id) };
-  }
-
-  const existingIdx = data.customers.findIndex(c => String(c.id) === String(finalRecord.id));
-  if (existingIdx > -1) data.customers[existingIdx] = finalRecord;
-  else data.customers.push(finalRecord);
+  data.payments.splice(pIdx, 1);
   persist();
 
-  clearCustomerForm();
-  renderCustomersTable();
-  syncCustomerDropdown();
-  syncLedgerCustomersDropdown();
-  populateStatementFilters();
+  cloudReq(`customer_payments?id=eq.${encodeURIComponent(payId)}`, 'DELETE');
+
+  applyBillToPaymentModal();
   renderDash();
-
-  if (res.ok) {
-    setSyncStatus('Cloud Synced', true);
-    alert("Customer saved and updated on cloud database!");
-  } else {
-    setSyncStatus('Saved locally only', false);
-    alert("Saved locally, but failed to push to database: " + res.error);
-  }
+  renderBills();
+  renderCustomerLedger();
+  renderAllCustomersLedgerTable();
 }
 
-function renderCustomersTable() {
-  const q = (document.getElementById('customerSearch')?.value || '').toLowerCase();
-  const filtered = data.customers.filter(c => !q || (c.name && c.name.toLowerCase().includes(q)) || (c.phone && c.phone.includes(q)) || (c.email && c.email.toLowerCase().includes(q)));
-  const container = document.getElementById('customerTable');
-  if (!container) return;
-
-  container.innerHTML = filtered.length ? `
-    <table>
-      <thead><tr><th>Customer / Company</th><th>Email</th><th>Phone</th><th>GSTIN</th><th>Address</th><th class="right">Action</th></tr></thead>
-      <tbody>
-        ${filtered.map(c => `
-          <tr>
-            <td><b>${esc(c.name)}</b></td>
-            <td>${esc(c.email || '—')}</td>
-            <td>${esc(c.phone || '—')}</td>
-            <td>${esc(c.gstin || '—')}</td>
-            <td>${esc(c.address || '—')}</td>
-            <td class="right">
-              <button class="btn light" onclick="editCustomer('${esc(c.id)}')">Edit</button>
-              <button class="btn danger" onclick="deleteCustomer('${esc(c.id)}')">Del</button>
-            </td>
-          </tr>`).join('')}
-      </tbody>
-    </table>` : '<div class="empty">No registered customers found.</div>';
-}
-
-function editCustomer(id) {
-  const c = data.customers.find(x => String(x.id) === String(id));
-  if (!c) return;
-  editingCustId = String(c.id);
-  if (document.getElementById('clientName')) document.getElementById('clientName').value = c.name || '';
-  if (document.getElementById('clientEmail')) document.getElementById('clientEmail').value = c.email || '';
-  if (document.getElementById('clientPhone')) document.getElementById('clientPhone').value = c.phone || '';
-  if (document.getElementById('clientGst')) document.getElementById('clientGst').value = c.gstin || '';
-  if (document.getElementById('clientAddress')) document.getElementById('clientAddress').value = c.address || '';
-  if (document.getElementById('clientNotes')) document.getElementById('clientNotes').value = c.notes || '';
-  document.getElementById('customers')?.scrollIntoView({ behavior: 'smooth' });
-}
-
-async function deleteCustomer(id) {
-  if (!confirm("Delete this customer from all devices?")) return;
-  setSyncStatus('Deleting customer...', true);
-  const res = await cloudReq(`customers?id=eq.${encodeURIComponent(id)}`, 'DELETE');
-  data.customers = data.customers.filter(c => String(c.id) !== String(id));
-  persist();
-  renderCustomersTable();
-  syncCustomerDropdown();
-  syncLedgerCustomersDropdown();
-  populateStatementFilters();
-  renderDash();
-  setSyncStatus(res.ok ? 'Cloud Synced' : 'Sync Error', res.ok);
-}
-
-function syncCustomerDropdown() {
-  const sel = document.getElementById('custSelect');
-  if (!sel) return;
-  sel.innerHTML = '<option value="">-- Choose registered customer --</option>' +
-    data.customers.map(c => `<option value="${esc(c.id)}">${esc(c.name)} ${c.phone ? '(' + esc(c.phone) + ')' : ''}</option>`).join('');
-}
-
-function applyCustomerSelection() {
-  const id = document.getElementById('custSelect')?.value;
-  if (!id) return;
-  const c = data.customers.find(x => String(x.id) === String(id));
-  if (c) {
-    if (document.getElementById('customer')) document.getElementById('customer').value = c.name || '';
-    if (document.getElementById('custAddress')) document.getElementById('custAddress').value = c.address || '';
-    if (document.getElementById('custEmail')) document.getElementById('custEmail').value = c.email || '';
-    if (document.getElementById('custPhone')) document.getElementById('custPhone').value = c.phone || '';
-    if (document.getElementById('custGstin')) document.getElementById('custGstin').value = c.gstin || 'Unregistered';
-  }
-}
-
-/* ==================== VENDOR LOGIC ==================== */
-function clearVendorForm() {
-  editingVendorId = null;
-  ['venName', 'venContact', 'venPhone', 'venCity', 'venNotes'].forEach(id => {
-    const el = document.getElementById(id);
-    if (el) el.value = '';
-  });
-}
-
-async function saveVendor() {
-  const name = (document.getElementById('venName')?.value || '').trim();
-  if (!name) return alert("Please enter Vendor / Agency Name.");
-
-  const id = (editingVendorId && isValidUUID(editingVendorId)) ? editingVendorId : genUUID();
-  const record = {
-    id: id,
-    name,
-    contact: document.getElementById('venContact')?.value.trim() || null,
-    phone: document.getElementById('venPhone')?.value.trim() || null,
-    city: document.getElementById('venCity')?.value.trim() || null,
-    notes: document.getElementById('venNotes')?.value.trim() || null
-  };
-
-  setSyncStatus('Saving Vendor...', true);
-  const res = await cloudReq('vendors?on_conflict=id', 'POST', record);
-
-  let finalRecord = record;
-  if (res.ok && Array.isArray(res.data) && res.data.length > 0) {
-    finalRecord = { ...record, id: String(res.data[0].id) };
-  }
-
-  const existingIdx = data.vendors.findIndex(v => String(v.id) === String(finalRecord.id));
-  if (existingIdx > -1) data.vendors[existingIdx] = finalRecord;
-  else data.vendors.push(finalRecord);
-  persist();
-
-  clearVendorForm();
-  renderVendorsTable();
-  syncVendorDropdowns();
-  renderDash();
-
-  if (res.ok) {
-    setSyncStatus('Cloud Synced', true);
-    alert("Vendor saved and synced successfully!");
-  } else {
-    setSyncStatus('Saved locally only', false);
-    alert("Saved locally, but failed to sync to database: " + res.error);
-  }
-}
-
-function renderVendorsTable() {
-  const q = (document.getElementById('vendorSearch')?.value || '').toLowerCase();
-  const filtered = data.vendors.filter(v => !q || (v.name && v.name.toLowerCase().includes(q)) || (v.phone && v.phone.includes(q)));
-  const container = document.getElementById('vendorTable');
-  if (!container) return;
-
-  container.innerHTML = filtered.length ? `
-    <table>
-      <thead><tr><th>Agency Name</th><th>Contact Person</th><th>Phone</th><th>Location</th><th>Rates / Notes</th><th class="right">Action</th></tr></thead>
-      <tbody>
-        ${filtered.map(v => `
-          <tr>
-            <td><b>${esc(v.name)}</b></td>
-            <td>${esc(v.contact || '—')}</td>
-            <td>${esc(v.phone || '—')}</td>
-            <td>${esc(v.city || '—')}</td>
-            <td>${esc(v.notes || '—')}</td>
-            <td class="right">
-              <button class="btn light" onclick="editVendor('${esc(v.id)}')">Edit</button>
-              <button class="btn danger" onclick="deleteVendor('${esc(v.id)}')">Del</button>
-            </td>
-          </tr>`).join('')}
-      </tbody>
-    </table>` : '<div class="empty">No vendor records found.</div>';
-}
-
-function editVendor(id) {
-  const v = data.vendors.find(x => String(x.id) === String(id));
-  if (!v) return;
-  editingVendorId = String(v.id);
-  if (document.getElementById('venName')) document.getElementById('venName').value = v.name || '';
-  if (document.getElementById('venContact')) document.getElementById('venContact').value = v.contact || '';
-  if (document.getElementById('venPhone')) document.getElementById('venPhone').value = v.phone || '';
-  if (document.getElementById('venCity')) document.getElementById('venCity').value = v.city || '';
-  if (document.getElementById('venNotes')) document.getElementById('venNotes').value = v.notes || '';
-  document.getElementById('vendors')?.scrollIntoView({ behavior: 'smooth' });
-}
-
-async function deleteVendor(id) {
-  if (!confirm("Delete this vendor from all devices?")) return;
-  setSyncStatus('Deleting vendor...', true);
-  const res = await cloudReq(`vendors?id=eq.${encodeURIComponent(id)}`, 'DELETE');
-  data.vendors = data.vendors.filter(v => String(v.id) !== String(id));
-  persist();
-  renderVendorsTable();
-  syncVendorDropdowns();
-  renderDash();
-  setSyncStatus(res.ok ? 'Cloud Synced' : 'Sync Error', res.ok);
-}
-
-function syncVendorDropdowns() {
-  const sel = document.getElementById('vehVendor');
-  if (!sel) return;
-  const curr = sel.value;
-  sel.innerHTML = '<option value="">-- Select Vendor --</option>' +
-    data.vendors.map(v => `<option value="${esc(v.name)}">${esc(v.name)}</option>`).join('');
-  if (curr) sel.value = curr;
-}
-
-/* ==================== FLEET LOGIC ==================== */
-function toggleVendorSelect() {
-  const typeEl = document.getElementById('vehType');
-  const wrap = document.getElementById('vendorSelectWrap');
-  if (typeEl && wrap) {
-    wrap.style.display = (typeEl.value === 'Vendor') ? 'block' : 'none';
-  }
-}
-
-function clearVehicleForm() {
-  editingVehReg = null;
-  ['vehReg', 'vehModel', 'vehDriver', 'vehInsurance', 'vehPermit', 'vehFitness', 'vehAuth', 'vehPucc', 'vehVltd'].forEach(id => {
-    const el = document.getElementById(id);
-    if (el) el.value = '';
-  });
-  const typeEl = document.getElementById('vehType');
-  if (typeEl) typeEl.value = 'Own';
-  const venEl = document.getElementById('vehVendor');
-  if (venEl) venEl.value = '';
-  toggleVendorSelect();
-}
-
-async function saveVehicle() {
-  const regEl = document.getElementById('vehReg');
-  const reg = (regEl ? regEl.value : '').trim().toUpperCase();
-  const model = (document.getElementById('vehModel')?.value || '').trim();
-  const type = document.getElementById('vehType')?.value || 'Own';
-  const vendor = (type === 'Vendor') ? (document.getElementById('vehVendor')?.value || '') : '';
-
-  if (!reg) return alert("Vehicle registration number is required (e.g. MP 04 EA 1234).");
-  if (type === 'Vendor' && !vendor) return alert("Please select the vendor providing this vehicle.");
-
-  const record = {
-    reg: String(reg),
-    model: model || null,
-    type,
-    vendor: vendor || null,
-    driver: document.getElementById('vehDriver')?.value.trim() || null,
-    insurance: document.getElementById('vehInsurance')?.value || null,
-    permit: document.getElementById('vehPermit')?.value || null,
-    fitness: document.getElementById('vehFitness')?.value || null,
-    auth_validity: document.getElementById('vehAuth')?.value || null,
-    pucc: document.getElementById('vehPucc')?.value || null,
-    vltd: document.getElementById('vehVltd')?.value || null
-  };
-
-  setSyncStatus('Saving vehicle...', true);
-
-  if (editingVehReg && editingVehReg.toUpperCase() !== reg) {
-    await cloudReq(`vehicles?reg=eq.${encodeURIComponent(editingVehReg)}`, 'DELETE');
-    data.vehicles = data.vehicles.filter(v => v.reg.toUpperCase() !== editingVehReg.toUpperCase());
-  }
-
-  const res = await cloudReq('vehicles?on_conflict=reg', 'POST', record);
-
-  const existingIdx = data.vehicles.findIndex(v => v.reg.toUpperCase() === reg);
-  if (existingIdx > -1) data.vehicles[existingIdx] = record;
-  else data.vehicles.push(record);
-  persist();
-
-  clearVehicleForm();
-  renderFleetTable();
-  updateAlertBadges();
-  syncAdvVehiclesDropdown();
-  renderDash();
-
-  if (res.ok) {
-    setSyncStatus('Cloud Synced', true);
-    alert("Vehicle saved and synced to database!");
-  } else {
-    setSyncStatus('Saved locally only', false);
-    alert("Saved locally, but failed to sync to database: " + res.error);
-  }
-}
-
-function renderFleetTable() {
-  const q = (document.getElementById('fleetSearch')?.value || '').toLowerCase();
-  const filtered = data.vehicles.filter(v => !q || (v.reg && v.reg.toLowerCase().includes(q)) || (v.model && v.model.toLowerCase().includes(q)));
-  
-  const container = document.getElementById('fleetTable');
-  if (!container) return;
-
-  const today = new Date().toISOString().slice(0, 10);
-  const nextMonth = new Date(Date.now() + 30 * 86400000).toISOString().slice(0, 10);
-
-  function getDocBadge(dateVal) {
-    if (!dateVal) return '—';
-    if (dateVal < today) return `<span class="badge badge-expired">${fmtDate(dateVal)} (Exp)</span>`;
-    if (dateVal <= nextMonth) return `<span class="badge badge-soon">${fmtDate(dateVal)}</span>`;
-    return `<span class="badge badge-ok">${fmtDate(dateVal)}</span>`;
-  }
-
-  container.innerHTML = filtered.length ? `
-    <table>
-      <thead>
-        <tr>
-          <th>Vehicle No.</th>
-          <th>Model</th>
-          <th>Source</th>
-          <th>Insurance</th>
-          <th>Permit</th>
-          <th>Fitness</th>
-          <th>Auth.</th>
-          <th>PUCC</th>
-          <th>VLTD</th>
-          <th class="right">Action</th>
-        </tr>
-      </thead>
-      <tbody>
-        ${filtered.map(v => `
-          <tr>
-            <td><b>${esc(v.reg)}</b></td>
-            <td>${esc(v.model || '—')}</td>
-            <td><span class="badge ${v.type === 'Own' ? 'badge-own' : 'badge-vendor'}">${esc(v.type)}</span></td>
-            <td>${getDocBadge(v.insurance)}</td>
-            <td>${getDocBadge(v.permit)}</td>
-            <td>${getDocBadge(v.fitness)}</td>
-            <td>${getDocBadge(v.auth_validity)}</td>
-            <td>${getDocBadge(v.pucc)}</td>
-            <td>${getDocBadge(v.vltd)}</td>
-            <td class="right">
-              <button class="btn light" onclick="editVehicle('${esc(v.reg)}')">Edit</button>
-              <button class="btn danger" onclick="deleteVehicle('${esc(v.reg)}')">Del</button>
-            </td>
-          </tr>
-        `).join('')}
-      </tbody>
-    </table>` : '<div class="empty">No vehicles added to the fleet yet.</div>';
-}
-
-function editVehicle(reg) {
-  const v = data.vehicles.find(x => x.reg.toUpperCase() === reg.toUpperCase());
-  if (!v) return;
-  editingVehReg = v.reg;
-  showPage('fleet');
-
-  if (document.getElementById('vehReg')) document.getElementById('vehReg').value = v.reg || '';
-  if (document.getElementById('vehModel')) document.getElementById('vehModel').value = v.model || '';
-  if (document.getElementById('vehType')) document.getElementById('vehType').value = v.type || 'Own';
-  
-  syncVendorDropdowns();
-  toggleVendorSelect();
-  if (document.getElementById('vehVendor')) document.getElementById('vehVendor').value = v.vendor || '';
-  if (document.getElementById('vehDriver')) document.getElementById('vehDriver').value = v.driver || '';
-  if (document.getElementById('vehInsurance')) document.getElementById('vehInsurance').value = v.insurance || '';
-  if (document.getElementById('vehPermit')) document.getElementById('vehPermit').value = v.permit || '';
-  if (document.getElementById('vehFitness')) document.getElementById('vehFitness').value = v.fitness || '';
-  if (document.getElementById('vehAuth')) document.getElementById('vehAuth').value = v.auth_validity || '';
-  if (document.getElementById('vehPucc')) document.getElementById('vehPucc').value = v.pucc || '';
-  if (document.getElementById('vehVltd')) document.getElementById('vehVltd').value = v.vltd || '';
-  
-  document.getElementById('fleet')?.scrollIntoView({ behavior: 'smooth' });
-}
-
-async function deleteVehicle(reg) {
-  if (!confirm("Remove vehicle " + reg + " from all devices?")) return;
-  setSyncStatus('Deleting vehicle...', true);
-  const res = await cloudReq(`vehicles?reg=eq.${encodeURIComponent(reg)}`, 'DELETE');
-  data.vehicles = data.vehicles.filter(v => v.reg.toUpperCase() !== reg.toUpperCase());
-  persist();
-  renderFleetTable();
-  updateAlertBadges();
-  syncAdvVehiclesDropdown();
-  renderDash();
-  setSyncStatus(res.ok ? 'Cloud Synced' : 'Sync Error', res.ok);
-}
-
-/* ==================== BILLING / INVOICING LOGIC ==================== */
+/* ==================== BILLING / CALCULATION LOGIC ==================== */
 function calculateAmounts() {
   let subtotal = 0;
   const cards = document.querySelectorAll('.duty-item-box');
@@ -3414,6 +3165,7 @@ function previewBill() {
   showPage('preview');
 }
 
+/* ==================== PRECISE 1-PAGE PDF GENERATION ==================== */
 async function shareBillWhatsApp() {
   const b = activePreviewBill || getBillData();
   if (!b || !b.cust) return alert("Please create or preview a bill first.");
@@ -3798,7 +3550,6 @@ function renderDash() {
     document.getElementById('statCustBalance').innerText = money(allCustOutstanding);
   }
 
-  // Calculate Net Outstanding Advances Due
   let netAdvDue = 0;
   (data.driverAdvances || []).forEach(a => {
     const m = getAdvanceMetrics(a);
@@ -3865,7 +3616,7 @@ function renderDash() {
       <table>
         <thead><tr><th>No</th><th>Customer</th><th>Duties</th><th>Date</th><th class="right">Amount</th><th></th></tr></thead>
         <tbody>
-          ${list.map(b => `<tr><td>${esc(b.no)}</td><td>${esc(b.cust)}</td><td>${b.duties ? b.duties.length : 1}</td><td>${fmtDate(b.date || (b.duties && b.duties[0] && b.duties[0].tdate))}</td><td class="right">${money(b.total)}</td><td class="right"><button class="btn light" onclick="editBill('${esc(b.no)}')">Edit</button> <button class="btn dark" onclick="viewBill('${esc(b.no)}')">View</button></td></tr>`).join('')}
+          ${list.map(b => `<tr><td>#${esc(b.no)}</td><td>${esc(b.cust)}</td><td>${b.duties ? b.duties.length : 1}</td><td>${fmtDate(b.date || (b.duties && b.duties[0] && b.duties[0].tdate))}</td><td class="right">${money(b.total)}</td><td class="right"><button class="btn light" onclick="editBill('${esc(b.no)}')">Edit</button> <button class="btn dark" onclick="viewBill('${esc(b.no)}')">View</button></td></tr>`).join('')}
         </tbody>
       </table>` : '<div class="empty">No invoices recorded yet.</div>';
   }
@@ -3938,22 +3689,29 @@ function renderBills() {
 
   tableEl.innerHTML = filtered.length ? `
     <table>
-      <thead><tr><th>No</th><th>Customer</th><th>Duties</th><th>Date</th><th class="right">Total</th><th class="right">Balance</th><th class="right">Actions</th></tr></thead>
+      <thead><tr><th>No</th><th>Customer</th><th>Duties</th><th>Date</th><th class="right">Total</th><th class="right">Received</th><th class="right">Balance</th><th class="right">Actions</th></tr></thead>
       <tbody>
-        ${filtered.map(b => `
+        ${filtered.map(b => {
+          const tot = getBillAmount(b);
+          const pd = Number(b.paid) || 0;
+          const bl = round2(tot - pd);
+          return `
           <tr>
-            <td>${esc(b.no)}</td>
+            <td><b>#${esc(b.no)}</b></td>
             <td>${esc(b.cust)}</td>
-            <td>${b.duties.length} Duty(s)</td>
+            <td>${b.duties ? b.duties.length : 1} Duty(s)</td>
             <td>${fmtDate(b.date)}</td>
-            <td class="right">${money(b.total)}</td>
-            <td class="right">${money(b.bal)}</td>
-            <td class="right">
+            <td class="right" style="font-weight:700;">${money(tot)}</td>
+            <td class="right" style="color:var(--green); font-weight:600;">${money(pd)}</td>
+            <td class="right" style="color:${bl <= 0 ? 'var(--green)' : 'var(--accent)'}; font-weight:800;">${money(bl)}</td>
+            <td class="right" style="white-space:nowrap;">
+              <button class="btn success" style="padding:4px 8px; font-size:12px;" onclick="openPaymentModal('${esc(b.no)}')">₹ Pay</button>
               <button class="btn light" onclick="editBill('${esc(b.no)}')">Edit</button>
               <button class="btn dark" onclick="viewBill('${esc(b.no)}')">View</button>
               <button class="btn danger" onclick="deleteBill('${esc(b.no)}')">Del</button>
             </td>
-          </tr>`).join('')}
+          </tr>`;
+        }).join('')}
       </tbody>
     </table>` : '<div class="empty">No matching invoices found.</div>';
 }
@@ -3997,6 +3755,689 @@ async function deleteBill(no) {
   setSyncStatus(res.ok ? 'Cloud Synced' : 'Sync Error', res.ok);
 }
 
+/* ==================== CUSTOMER MONTHLY STATEMENTS ==================== */
+function populateStatementFilters() {
+  const custSel = document.getElementById('stmtCustomer');
+  const monthSel = document.getElementById('stmtMonth');
+  if (!custSel || !monthSel) return;
+
+  const currentCust = custSel.value;
+  const currentMonth = monthSel.value;
+
+  const namesSet = new Set((data.customers || []).map(c => (c.name || '').trim()).filter(Boolean));
+  (data.bills || []).forEach(b => {
+    if (b.cust && b.cust.trim()) namesSet.add(b.cust.trim());
+  });
+
+  const sortedNames = Array.from(namesSet).sort((a, b) => a.localeCompare(b));
+  custSel.innerHTML = '<option value="">-- All Customers --</option>' + 
+    sortedNames.map(name => `<option value="${esc(name)}">${esc(name)}</option>`).join('');
+  if (currentCust && sortedNames.includes(currentCust)) custSel.value = currentCust;
+
+  const monthsMap = {};
+  (data.bills || []).forEach(b => {
+    const d = parseBillDate(b.date || (b.duties && b.duties[0] && b.duties[0].tdate));
+    if (d) {
+      const y = d.getFullYear();
+      const m = String(d.getMonth() + 1).padStart(2, '0');
+      const key = `${y}-${m}`;
+      monthsMap[key] = d.toLocaleDateString('en-IN', { month: 'long', year: 'numeric' });
+    }
+  });
+
+  const sortedMonthKeys = Object.keys(monthsMap).sort().reverse();
+  monthSel.innerHTML = '<option value="">-- All Months --</option>' +
+    sortedMonthKeys.map(k => `<option value="${k}">${monthsMap[k]}</option>`).join('');
+  if (currentMonth && sortedMonthKeys.includes(currentMonth)) monthSel.value = currentMonth;
+}
+
+function generateCustomerMonthlyStatement() {
+  const selectedCust = (document.getElementById('stmtCustomer')?.value || '').trim().toLowerCase();
+  const selectedMonth = document.getElementById('stmtMonth')?.value || '';
+
+  let totalBilled = 0;
+  let totalPaid = 0;
+  let totalBal = 0;
+
+  const matchedBills = (data.bills || []).filter(b => {
+    if (selectedCust && (!b.cust || b.cust.trim().toLowerCase() !== selectedCust)) {
+      return false;
+    }
+    if (selectedMonth) {
+      const d = parseBillDate(b.date || (b.duties && b.duties[0] && b.duties[0].tdate));
+      if (!d) return false;
+      const bMonth = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+      if (bMonth !== selectedMonth) return false;
+    }
+    return true;
+  });
+
+  matchedBills.forEach(b => {
+    const amt = getBillAmount(b);
+    const paid = Number(b.paid) || 0;
+    const bal = Number(b.bal) || (amt - paid);
+    totalBilled = round2(totalBilled + amt);
+    totalPaid = round2(totalPaid + paid);
+    totalBal = round2(totalBal + bal);
+  });
+
+  if (document.getElementById('stmtCount')) document.getElementById('stmtCount').innerText = matchedBills.length;
+  if (document.getElementById('stmtTotal')) document.getElementById('stmtTotal').innerText = money(totalBilled);
+  if (document.getElementById('stmtPaid')) document.getElementById('stmtPaid').innerText = money(totalPaid);
+  if (document.getElementById('stmtBalance')) document.getElementById('stmtBalance').innerText = money(totalBal);
+
+  const container = document.getElementById('stmtTableContainer');
+  if (!container) return;
+
+  if (!matchedBills.length) {
+    container.innerHTML = '<div style="padding:24px; text-align:center; color:var(--muted);">No invoices found for the selected customer & month.</div>';
+    return;
+  }
+
+  container.innerHTML = `
+    <table>
+      <thead>
+        <tr>
+          <th>Bill No</th>
+          <th>Date</th>
+          <th>Customer</th>
+          <th>Duties / Particulars</th>
+          <th class="right">Total</th>
+          <th class="right">Advance Paid</th>
+          <th class="right">Balance Due</th>
+          <th class="right">Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${matchedBills.map(b => {
+          const amt = getBillAmount(b);
+          const p = Number(b.paid) || 0;
+          const bl = Number(b.bal) || (amt - p);
+          const dutiesDesc = b.duties && b.duties.length ? b.duties.map(d => d.trip).join(' | ') : 'Taxi Hire Charges';
+          return `
+            <tr>
+              <td><b>#${esc(b.no)}</b></td>
+              <td>${fmtDate(b.date)}</td>
+              <td><b>${esc(b.cust)}</b></td>
+              <td style="max-width:280px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${esc(dutiesDesc)}</td>
+              <td class="right" style="font-weight:700;">${money(amt)}</td>
+              <td class="right" style="color:var(--green);">${money(p)}</td>
+              <td class="right" style="color:#b42318; font-weight:700;">${money(bl)}</td>
+              <td class="right">
+                <button class="btn dark" style="padding:4px 9px; font-size:12px;" onclick="viewBill('${esc(b.no)}')">View</button>
+              </td>
+            </tr>
+          `;
+        }).join('')}
+      </tbody>
+      <tfoot>
+        <tr style="font-weight:bold; background:#fafbfc; border-top:2px solid var(--ink);">
+          <td colspan="4" class="right">TOTAL (${matchedBills.length} Invoices):</td>
+          <td class="right" style="color:var(--ink);">${money(totalBilled)}</td>
+          <td class="right" style="color:var(--green);">${money(totalPaid)}</td>
+          <td class="right" style="color:#b42318;">${money(totalBal)}</td>
+          <td></td>
+        </tr>
+      </tfoot>
+    </table>
+  `;
+}
+
+function printCustomerStatement() {
+  const panel = document.getElementById('stmtSummaryPanel');
+  if (!panel) return;
+
+  const custSel = document.getElementById('stmtCustomer');
+  const custName = (custSel && custSel.value) ? custSel.value : 'All Customers';
+  const mSel = document.getElementById('stmtMonth');
+  const period = (mSel && mSel.value) ? (mSel.options[mSel.selectedIndex]?.text || mSel.value) : 'All Months';
+
+  const w = window.open('', '_blank');
+  w.document.write(`
+    <!doctype html>
+    <html>
+    <head>
+      <title>Customer Monthly Statement - ${esc(custName)}</title>
+      <style>
+        body { font-family: system-ui, -apple-system, sans-serif; padding: 25px; color: #182230; }
+        h1 { margin: 0 0 4px; font-size: 22px; text-transform: uppercase; }
+        p { margin: 2px 0 16px; font-size: 13px; color: #475467; }
+        table { width: 100%; border-collapse: collapse; margin-top: 14px; }
+        th, td { border: 1px solid #d0d5dd; padding: 8px 10px; font-size: 12px; text-align: left; }
+        th { background: #f2f4f7; font-weight: bold; }
+        .right { text-align: right; }
+        .cards { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 16px; }
+        .card { border: 1px solid #d0d5dd; border-radius: 8px; padding: 12px; }
+        .label { font-size: 11px; font-weight: 600; color: #475467; }
+        .num { font-size: 18px; font-weight: 700; margin-top: 4px; }
+        .btn { display: none; }
+      </style>
+    </head>
+    <body>
+      <h1>${esc(data.settings.name)}</h1>
+      <p><b>Statement Billed To:</b> ${esc(custName)} &nbsp;|&nbsp; <b>Billing Period:</b> ${esc(period)}</p>
+      ${panel.innerHTML}
+    </body>
+    </html>
+  `);
+  w.document.close();
+  w.focus();
+  setTimeout(() => { w.print(); }, 400);
+}
+
+/* ==================== DOCUMENT EXPIRY NOTIFICATIONS ==================== */
+function getVehicleExpiryAlerts() {
+  const alerts = [];
+  const today = new Date();
+  today.setHours(0,0,0,0);
+
+  const docTypes = [
+    { key: 'insurance', label: 'Insurance' },
+    { key: 'permit', label: 'Permit' },
+    { key: 'fitness', label: 'Fitness' },
+    { key: 'auth_validity', label: 'Authorisation' },
+    { key: 'pucc', label: 'PUCC' },
+    { key: 'vltd', label: 'VLTD' }
+  ];
+
+  (data.vehicles || []).forEach(v => {
+    docTypes.forEach(doc => {
+      const dateStr = v[doc.key];
+      if (!dateStr) return;
+      const expDate = parseBillDate(dateStr);
+      if (!expDate) return;
+      expDate.setHours(0,0,0,0);
+
+      const diffTime = expDate.getTime() - today.getTime();
+      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+      if (diffDays <= 30) {
+        alerts.push({
+          reg: v.reg,
+          model: v.model,
+          type: v.type,
+          docName: doc.label,
+          docKey: doc.key,
+          expiryDate: dateStr,
+          daysLeft: diffDays,
+          isExpired: diffDays < 0
+        });
+      }
+    });
+  });
+
+  alerts.sort((a, b) => a.daysLeft - b.daysLeft);
+  return alerts;
+}
+
+function updateAlertBadges() {
+  const alerts = getVehicleExpiryAlerts();
+  const count = alerts.length;
+  
+  const navBadge = document.getElementById('navAlertBadge');
+  if (navBadge) {
+    if (count > 0) {
+      navBadge.innerText = count;
+      navBadge.style.display = 'inline-block';
+    } else {
+      navBadge.style.display = 'none';
+    }
+  }
+
+  const statAlerts = document.getElementById('statAlerts');
+  if (statAlerts) {
+    statAlerts.innerText = count;
+  }
+}
+
+function renderDocAlertsPage() {
+  const container = document.getElementById('alertsContainer');
+  if (!container) return;
+
+  const alerts = getVehicleExpiryAlerts();
+
+  if (!alerts.length) {
+    container.innerHTML = '<div style="padding:20px; text-align:center; color:var(--green); font-weight:700;">✅ All fleet documents (Insurance, Permit, Fitness, Authorisation, PUCC & VLTD) are active & valid for the next 30 days!</div>';
+    return;
+  }
+
+  container.innerHTML = `
+    <table>
+      <thead>
+        <tr>
+          <th>Vehicle No.</th>
+          <th>Model</th>
+          <th>Document Type</th>
+          <th>Expiry Date</th>
+          <th>Status</th>
+          <th class="right">Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${alerts.map(a => `
+          <tr>
+            <td><b>${esc(a.reg)}</b></td>
+            <td>${esc(a.model || 'Car')}</td>
+            <td><b>${esc(a.docName)}</b></td>
+            <td>${fmtDate(a.expiryDate)}</td>
+            <td>
+              <span class="badge ${a.isExpired ? 'badge-expired' : 'badge-soon'}">
+                ${a.isExpired ? `EXPIRED (${Math.abs(a.daysLeft)} days ago)` : `Expiring in ${a.daysLeft} day(s)`}
+              </span>
+            </td>
+            <td class="right">
+              <button class="btn light" style="padding:4px 9px; font-size:12px;" onclick="editVehicle('${esc(a.reg)}')">Update Expiry</button>
+            </td>
+          </tr>
+        `).join('')}
+      </tbody>
+    </table>
+  `;
+}
+
+/* ==================== CUSTOMERS LOGIC ==================== */
+function clearCustomerForm() {
+  editingCustId = null;
+  ['clientName', 'clientEmail', 'clientPhone', 'clientGst', 'clientAddress', 'clientNotes'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.value = '';
+  });
+}
+
+async function saveCustomer() {
+  const name = (document.getElementById('clientName')?.value || '').trim();
+  if (!name) return alert("Please enter Customer / Company Name.");
+
+  const id = (editingCustId && isValidUUID(editingCustId)) ? editingCustId : genUUID();
+  const record = {
+    id: id,
+    name,
+    email: document.getElementById('clientEmail')?.value.trim() || null,
+    phone: document.getElementById('clientPhone')?.value.trim() || null,
+    gstin: document.getElementById('clientGst')?.value.trim() || null,
+    address: document.getElementById('clientAddress')?.value.trim() || null,
+    notes: document.getElementById('clientNotes')?.value.trim() || null
+  };
+
+  setSyncStatus('Saving Customer...', true);
+  const res = await cloudReq('customers?on_conflict=id', 'POST', record);
+
+  let finalRecord = record;
+  if (res.ok && Array.isArray(res.data) && res.data.length > 0) {
+    finalRecord = { ...record, id: String(res.data[0].id) };
+  }
+
+  const existingIdx = data.customers.findIndex(c => String(c.id) === String(finalRecord.id));
+  if (existingIdx > -1) data.customers[existingIdx] = finalRecord;
+  else data.customers.push(finalRecord);
+  persist();
+
+  clearCustomerForm();
+  renderCustomersTable();
+  syncCustomerDropdown();
+  populateStatementFilters();
+  syncLedgerCustomersDropdown();
+  renderDash();
+
+  if (res.ok) {
+    setSyncStatus('Cloud Synced', true);
+    alert("Customer saved and updated on cloud database!");
+  } else {
+    setSyncStatus('Saved locally only', false);
+    alert("Saved locally, but failed to push to database: " + res.error);
+  }
+}
+
+function renderCustomersTable() {
+  const q = (document.getElementById('customerSearch')?.value || '').toLowerCase();
+  const filtered = data.customers.filter(c => !q || (c.name && c.name.toLowerCase().includes(q)) || (c.phone && c.phone.includes(q)) || (c.email && c.email.toLowerCase().includes(q)));
+  const container = document.getElementById('customerTable');
+  if (!container) return;
+
+  container.innerHTML = filtered.length ? `
+    <table>
+      <thead><tr><th>Customer / Company</th><th>Email</th><th>Phone</th><th>GSTIN</th><th>Address</th><th class="right">Action</th></tr></thead>
+      <tbody>
+        ${filtered.map(c => `
+          <tr>
+            <td><b>${esc(c.name)}</b></td>
+            <td>${esc(c.email || '—')}</td>
+            <td>${esc(c.phone || '—')}</td>
+            <td>${esc(c.gstin || '—')}</td>
+            <td>${esc(c.address || '—')}</td>
+            <td class="right">
+              <button class="btn light" onclick="editCustomer('${esc(c.id)}')">Edit</button>
+              <button class="btn danger" onclick="deleteCustomer('${esc(c.id)}')">Del</button>
+            </td>
+          </tr>`).join('')}
+      </tbody>
+    </table>` : '<div class="empty">No registered customers found.</div>';
+}
+
+function editCustomer(id) {
+  const c = data.customers.find(x => String(x.id) === String(id));
+  if (!c) return;
+  editingCustId = String(c.id);
+  if (document.getElementById('clientName')) document.getElementById('clientName').value = c.name || '';
+  if (document.getElementById('clientEmail')) document.getElementById('clientEmail').value = c.email || '';
+  if (document.getElementById('clientPhone')) document.getElementById('clientPhone').value = c.phone || '';
+  if (document.getElementById('clientGst')) document.getElementById('clientGst').value = c.gstin || '';
+  if (document.getElementById('clientAddress')) document.getElementById('clientAddress').value = c.address || '';
+  if (document.getElementById('clientNotes')) document.getElementById('clientNotes').value = c.notes || '';
+  document.getElementById('customers')?.scrollIntoView({ behavior: 'smooth' });
+}
+
+async function deleteCustomer(id) {
+  if (!confirm("Delete this customer from all devices?")) return;
+  setSyncStatus('Deleting customer...', true);
+  const res = await cloudReq(`customers?id=eq.${encodeURIComponent(id)}`, 'DELETE');
+  data.customers = data.customers.filter(c => String(c.id) !== String(id));
+  persist();
+  renderCustomersTable();
+  syncCustomerDropdown();
+  populateStatementFilters();
+  syncLedgerCustomersDropdown();
+  renderDash();
+  setSyncStatus(res.ok ? 'Cloud Synced' : 'Sync Error', res.ok);
+}
+
+function syncCustomerDropdown() {
+  const sel = document.getElementById('custSelect');
+  if (!sel) return;
+  sel.innerHTML = '<option value="">-- Choose registered customer --</option>' +
+    data.customers.map(c => `<option value="${esc(c.id)}">${esc(c.name)} ${c.phone ? '(' + esc(c.phone) + ')' : ''}</option>`).join('');
+}
+
+function applyCustomerSelection() {
+  const id = document.getElementById('custSelect')?.value;
+  if (!id) return;
+  const c = data.customers.find(x => String(x.id) === String(id));
+  if (c) {
+    if (document.getElementById('customer')) document.getElementById('customer').value = c.name || '';
+    if (document.getElementById('custAddress')) document.getElementById('custAddress').value = c.address || '';
+    if (document.getElementById('custEmail')) document.getElementById('custEmail').value = c.email || '';
+    if (document.getElementById('custPhone')) document.getElementById('custPhone').value = c.phone || '';
+    if (document.getElementById('custGstin')) document.getElementById('custGstin').value = c.gstin || 'Unregistered';
+  }
+}
+
+/* ==================== VENDOR LOGIC ==================== */
+function clearVendorForm() {
+  editingVendorId = null;
+  ['venName', 'venContact', 'venPhone', 'venCity', 'venNotes'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.value = '';
+  });
+}
+
+async function saveVendor() {
+  const name = (document.getElementById('venName')?.value || '').trim();
+  if (!name) return alert("Please enter Vendor / Agency Name.");
+
+  const id = (editingVendorId && isValidUUID(editingVendorId)) ? editingVendorId : genUUID();
+  const record = {
+    id: id,
+    name,
+    contact: document.getElementById('venContact')?.value.trim() || null,
+    phone: document.getElementById('venPhone')?.value.trim() || null,
+    city: document.getElementById('venCity')?.value.trim() || null,
+    notes: document.getElementById('venNotes')?.value.trim() || null
+  };
+
+  setSyncStatus('Saving Vendor...', true);
+  const res = await cloudReq('vendors?on_conflict=id', 'POST', record);
+
+  let finalRecord = record;
+  if (res.ok && Array.isArray(res.data) && res.data.length > 0) {
+    finalRecord = { ...record, id: String(res.data[0].id) };
+  }
+
+  const existingIdx = data.vendors.findIndex(v => String(v.id) === String(finalRecord.id));
+  if (existingIdx > -1) data.vendors[existingIdx] = finalRecord;
+  else data.vendors.push(finalRecord);
+  persist();
+
+  clearVendorForm();
+  renderVendorsTable();
+  syncVendorDropdowns();
+  renderDash();
+
+  if (res.ok) {
+    setSyncStatus('Cloud Synced', true);
+    alert("Vendor saved and synced successfully!");
+  } else {
+    setSyncStatus('Saved locally only', false);
+    alert("Saved locally, but failed to sync to database: " + res.error);
+  }
+}
+
+function renderVendorsTable() {
+  const q = (document.getElementById('vendorSearch')?.value || '').toLowerCase();
+  const filtered = data.vendors.filter(v => !q || (v.name && v.name.toLowerCase().includes(q)) || (v.phone && v.phone.includes(q)));
+  const container = document.getElementById('vendorTable');
+  if (!container) return;
+
+  container.innerHTML = filtered.length ? `
+    <table>
+      <thead><tr><th>Agency Name</th><th>Contact Person</th><th>Phone</th><th>Location</th><th>Rates / Notes</th><th class="right">Action</th></tr></thead>
+      <tbody>
+        ${filtered.map(v => `
+          <tr>
+            <td><b>${esc(v.name)}</b></td>
+            <td>${esc(v.contact || '—')}</td>
+            <td>${esc(v.phone || '—')}</td>
+            <td>${esc(v.city || '—')}</td>
+            <td>${esc(v.notes || '—')}</td>
+            <td class="right">
+              <button class="btn light" onclick="editVendor('${esc(v.id)}')">Edit</button>
+              <button class="btn danger" onclick="deleteVendor('${esc(v.id)}')">Del</button>
+            </td>
+          </tr>`).join('')}
+      </tbody>
+    </table>` : '<div class="empty">No vendor records found.</div>';
+}
+
+function editVendor(id) {
+  const v = data.vendors.find(x => String(x.id) === String(id));
+  if (!v) return;
+  editingVendorId = String(v.id);
+  if (document.getElementById('venName')) document.getElementById('venName').value = v.name || '';
+  if (document.getElementById('venContact')) document.getElementById('venContact').value = v.contact || '';
+  if (document.getElementById('venPhone')) document.getElementById('venPhone').value = v.phone || '';
+  if (document.getElementById('venCity')) document.getElementById('venCity').value = v.city || '';
+  if (document.getElementById('venNotes')) document.getElementById('venNotes').value = v.notes || '';
+  document.getElementById('vendors')?.scrollIntoView({ behavior: 'smooth' });
+}
+
+async function deleteVendor(id) {
+  if (!confirm("Delete this vendor from all devices?")) return;
+  setSyncStatus('Deleting vendor...', true);
+  const res = await cloudReq(`vendors?id=eq.${encodeURIComponent(id)}`, 'DELETE');
+  data.vendors = data.vendors.filter(v => String(v.id) !== String(id));
+  persist();
+  renderVendorsTable();
+  syncVendorDropdowns();
+  renderDash();
+  setSyncStatus(res.ok ? 'Cloud Synced' : 'Sync Error', res.ok);
+}
+
+function syncVendorDropdowns() {
+  const sel = document.getElementById('vehVendor');
+  if (!sel) return;
+  const curr = sel.value;
+  sel.innerHTML = '<option value="">-- Select Vendor --</option>' +
+    data.vendors.map(v => `<option value="${esc(v.name)}">${esc(v.name)}</option>`).join('');
+  if (curr) sel.value = curr;
+}
+
+/* ==================== FLEET LOGIC ==================== */
+function toggleVendorSelect() {
+  const typeEl = document.getElementById('vehType');
+  const wrap = document.getElementById('vendorSelectWrap');
+  if (typeEl && wrap) {
+    wrap.style.display = (typeEl.value === 'Vendor') ? 'block' : 'none';
+  }
+}
+
+function clearVehicleForm() {
+  editingVehReg = null;
+  ['vehReg', 'vehModel', 'vehDriver', 'vehInsurance', 'vehPermit', 'vehFitness', 'vehAuth', 'vehPucc', 'vehVltd'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.value = '';
+  });
+  const typeEl = document.getElementById('vehType');
+  if (typeEl) typeEl.value = 'Own';
+  const venEl = document.getElementById('vehVendor');
+  if (venEl) venEl.value = '';
+  toggleVendorSelect();
+}
+
+async function saveVehicle() {
+  const regEl = document.getElementById('vehReg');
+  const reg = (regEl ? regEl.value : '').trim().toUpperCase();
+  const model = (document.getElementById('vehModel')?.value || '').trim();
+  const type = document.getElementById('vehType')?.value || 'Own';
+  const vendor = (type === 'Vendor') ? (document.getElementById('vehVendor')?.value || '') : '';
+
+  if (!reg) return alert("Vehicle registration number is required (e.g. MP 04 EA 1234).");
+  if (type === 'Vendor' && !vendor) return alert("Please select the vendor providing this vehicle.");
+
+  const record = {
+    reg: String(reg),
+    model: model || null,
+    type,
+    vendor: vendor || null,
+    driver: document.getElementById('vehDriver')?.value.trim() || null,
+    insurance: document.getElementById('vehInsurance')?.value || null,
+    permit: document.getElementById('vehPermit')?.value || null,
+    fitness: document.getElementById('vehFitness')?.value || null,
+    auth_validity: document.getElementById('vehAuth')?.value || null,
+    pucc: document.getElementById('vehPucc')?.value || null,
+    vltd: document.getElementById('vehVltd')?.value || null
+  };
+
+  setSyncStatus('Saving vehicle...', true);
+
+  if (editingVehReg && editingVehReg.toUpperCase() !== reg) {
+    await cloudReq(`vehicles?reg=eq.${encodeURIComponent(editingVehReg)}`, 'DELETE');
+    data.vehicles = data.vehicles.filter(v => v.reg.toUpperCase() !== editingVehReg.toUpperCase());
+  }
+
+  const res = await cloudReq('vehicles?on_conflict=reg', 'POST', record);
+
+  const existingIdx = data.vehicles.findIndex(v => v.reg.toUpperCase() === reg);
+  if (existingIdx > -1) data.vehicles[existingIdx] = record;
+  else data.vehicles.push(record);
+  persist();
+
+  clearVehicleForm();
+  renderFleetTable();
+  updateAlertBadges();
+  syncAdvVehiclesDropdown();
+  renderDash();
+
+  if (res.ok) {
+    setSyncStatus('Cloud Synced', true);
+    alert("Vehicle saved and synced to database!");
+  } else {
+    setSyncStatus('Saved locally only', false);
+    alert("Saved locally, but failed to sync to database: " + res.error);
+  }
+}
+
+function renderFleetTable() {
+  const q = (document.getElementById('fleetSearch')?.value || '').toLowerCase();
+  const filtered = data.vehicles.filter(v => !q || (v.reg && v.reg.toLowerCase().includes(q)) || (v.model && v.model.toLowerCase().includes(q)));
+  
+  const container = document.getElementById('fleetTable');
+  if (!container) return;
+
+  const today = new Date().toISOString().slice(0, 10);
+  const nextMonth = new Date(Date.now() + 30 * 86400000).toISOString().slice(0, 10);
+
+  function getDocBadge(dateVal) {
+    if (!dateVal) return '—';
+    if (dateVal < today) return `<span class="badge badge-expired">${fmtDate(dateVal)} (Exp)</span>`;
+    if (dateVal <= nextMonth) return `<span class="badge badge-soon">${fmtDate(dateVal)}</span>`;
+    return `<span class="badge badge-ok">${fmtDate(dateVal)}</span>`;
+  }
+
+  container.innerHTML = filtered.length ? `
+    <table>
+      <thead>
+        <tr>
+          <th>Vehicle No.</th>
+          <th>Model</th>
+          <th>Source</th>
+          <th>Insurance</th>
+          <th>Permit</th>
+          <th>Fitness</th>
+          <th>Auth.</th>
+          <th>PUCC</th>
+          <th>VLTD</th>
+          <th class="right">Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${filtered.map(v => `
+          <tr>
+            <td><b>${esc(v.reg)}</b></td>
+            <td>${esc(v.model || '—')}</td>
+            <td><span class="badge ${v.type === 'Own' ? 'badge-own' : 'badge-vendor'}">${esc(v.type)}</span></td>
+            <td>${getDocBadge(v.insurance)}</td>
+            <td>${getDocBadge(v.permit)}</td>
+            <td>${getDocBadge(v.fitness)}</td>
+            <td>${getDocBadge(v.auth_validity)}</td>
+            <td>${getDocBadge(v.pucc)}</td>
+            <td>${getDocBadge(v.vltd)}</td>
+            <td class="right">
+              <button class="btn light" onclick="editVehicle('${esc(v.reg)}')">Edit</button>
+              <button class="btn danger" onclick="deleteVehicle('${esc(v.reg)}')">Del</button>
+            </td>
+          </tr>
+        `).join('')}
+      </tbody>
+    </table>` : '<div class="empty">No vehicles added to the fleet yet.</div>';
+}
+
+function editVehicle(reg) {
+  const v = data.vehicles.find(x => x.reg.toUpperCase() === reg.toUpperCase());
+  if (!v) return;
+  editingVehReg = v.reg;
+  showPage('fleet');
+
+  if (document.getElementById('vehReg')) document.getElementById('vehReg').value = v.reg || '';
+  if (document.getElementById('vehModel')) document.getElementById('vehModel').value = v.model || '';
+  if (document.getElementById('vehType')) document.getElementById('vehType').value = v.type || 'Own';
+  
+  syncVendorDropdowns();
+  toggleVendorSelect();
+  if (document.getElementById('vehVendor')) document.getElementById('vehVendor').value = v.vendor || '';
+  if (document.getElementById('vehDriver')) document.getElementById('vehDriver').value = v.driver || '';
+  if (document.getElementById('vehInsurance')) document.getElementById('vehInsurance').value = v.insurance || '';
+  if (document.getElementById('vehPermit')) document.getElementById('vehPermit').value = v.permit || '';
+  if (document.getElementById('vehFitness')) document.getElementById('vehFitness').value = v.fitness || '';
+  if (document.getElementById('vehAuth')) document.getElementById('vehAuth').value = v.auth_validity || '';
+  if (document.getElementById('vehPucc')) document.getElementById('vehPucc').value = v.pucc || '';
+  if (document.getElementById('vehVltd')) document.getElementById('vehVltd').value = v.vltd || '';
+  
+  document.getElementById('fleet')?.scrollIntoView({ behavior: 'smooth' });
+}
+
+async function deleteVehicle(reg) {
+  if (!confirm("Remove vehicle " + reg + " from all devices?")) return;
+  setSyncStatus('Deleting vehicle...', true);
+  const res = await cloudReq(`vehicles?reg=eq.${encodeURIComponent(reg)}`, 'DELETE');
+  data.vehicles = data.vehicles.filter(v => v.reg.toUpperCase() !== reg.toUpperCase());
+  persist();
+  renderFleetTable();
+  updateAlertBadges();
+  syncAdvVehiclesDropdown();
+  renderDash();
+  setSyncStatus(res.ok ? 'Cloud Synced' : 'Sync Error', res.ok);
+}
+
+/* ==================== SETTINGS LOGIC ==================== */
 function loadSettings() {
   const s = data.settings;
   [['setUser', 'adminUser'], ['setPass', 'adminPass'], ['setName', 'name'], ['setPhone', 'phone'], ['setGSTIN', 'gstin'], ['setSAC', 'sac'], ['setAddress', 'address'], ['setEmail', 'email'], ['setBank', 'bank'], ['setStart', 'start'], ['setSignature', 'signature']].forEach(([id, k]) => {
