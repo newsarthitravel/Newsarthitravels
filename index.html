@@ -3378,6 +3378,41 @@ async function savePaymentReceipt() {
   alert(`Payment of ${money(amt)} against Bill #${b.no} has been recorded successfully and reflected in the Customer Ledger!`);
 }
 
+async function deletePaymentReceipt(payId) {
+  if (!confirm("Are you sure you want to delete this payment receipt? This will adjust the bill balance and ledger.")) return;
+
+  const pIdx = (data.payments || []).findIndex(p => p.id === payId);
+  if (pIdx === -1) return;
+
+  const p = data.payments[pIdx];
+  const b = (data.bills || []).find(x => String(x.no) === String(p.billNo));
+
+  if (b) {
+    const totalBillAmt = getBillAmount(b);
+    const newPaid = Math.max(0, round2((Number(b.paid) || 0) - (Number(p.amount) || 0)));
+    const newBal = round2(totalBillAmt - newPaid);
+    b.paid = newPaid;
+    b.bal = newBal;
+
+    cloudReq('bills?invoice_no=eq.' + encodeURIComponent(b.no), 'PATCH', {
+      amount_paid: Number(newPaid),
+      balance: Number(newBal)
+    });
+  }
+
+  data.payments.splice(pIdx, 1);
+  persist();
+
+  cloudReq(`customer_payments?id=eq.${encodeURIComponent(payId)}`, 'DELETE');
+
+  applyBillToPaymentModal();
+  renderDash();
+  renderBills();
+  renderCustomerLedger();
+  renderAllCustomersLedgerTable();
+}
+
+
 
 /* ==================== BILLING / CALCULATION LOGIC ==================== */
 function calculateAmounts() {
