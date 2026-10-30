@@ -246,7 +246,8 @@ th{font-size:11px;text-transform:uppercase;color:#475467;background:#fafbfc}
     <p>NEW SARTHI TRAVELS — Multi-Device Live Platform</p>
   </div>
   <div style="display:flex; gap:10px; flex-wrap:wrap;">
-    <button class="btn success" onclick="openPaymentModal()"><span style="font-size:15px;">₹</span> Record Payment</button>
+    <button class="btn success" onclick="openMultiPaymentModal()" style="background:#0f766e;"><span style="font-size:15px;">📑</span> Settle Multiple Invoices</button>
+    <button class="btn success" onclick="openPaymentModal()"><span style="font-size:15px;">₹</span> Record Single Payment</button>
     <button class="btn light" onclick="syncAllFromCloud(true)">🔄 Sync Cloud</button>
     <button class="btn primary" onclick="startNewBill()">＋ New Bill</button>
   </div>
@@ -289,7 +290,7 @@ th{font-size:11px;text-transform:uppercase;color:#475467;background:#fafbfc}
         <p style="margin:0; font-size:12px; color:var(--muted);">View chronological Debit/Credit entries, running balances, payment settlements & print professional statement of accounts.</p>
       </div>
       <div style="display:flex; gap:8px; flex-wrap:wrap;">
-        <button class="btn success" onclick="openPaymentModal()"><span style="font-size:14px;">₹</span> Receive Payment</button>
+        <button class="btn success" onclick="openMultiPaymentModal(document.getElementById('ledgerCustomer')?.value)" style="background:#0f766e;"><span style="font-size:14px;">📑</span> Settle Multiple Invoices</button><button class="btn success" onclick="openPaymentModal()"><span style="font-size:14px;">₹</span> Single Bill Payment</button>
         <button class="btn light" id="btnToggleAllLedger" onclick="toggleAllLedgerView()">👥 All Customers Balance</button>
         <button class="btn primary" onclick="printCustomerLedger()">🖨️ Print Ledger</button>
         <button class="btn whatsapp" onclick="shareLedgerWhatsApp()">WhatsApp Statement</button>
@@ -556,12 +557,12 @@ th{font-size:11px;text-transform:uppercase;color:#475467;background:#fafbfc}
     </div>
 
     <!-- PAYMENT MODE TABS: SINGLE VS MULTIPLE -->
-    <div style="display:flex; gap:8px; margin-bottom:14px; border-bottom:1px solid var(--line); padding-bottom:10px;">
-      <button type="button" class="btn light" id="btnPayTabSingle" onclick="switchPayMode('single')" style="font-size:12.5px; font-weight:700;">
+    <div style="display:flex; gap:8px; margin-bottom:16px; background:#e2e8f0; padding:5px; border-radius:10px;">
+      <button type="button" class="btn" id="btnPayTabSingle" onclick="switchPayMode('single')" style="flex:1; padding:9px 12px; font-size:13px; font-weight:800; border-radius:8px; background:#fff; color:#0f172a; box-shadow:0 1px 3px rgba(0,0,0,0.1);">
         📄 Single Invoice Payment
       </button>
-      <button type="button" class="btn light" id="btnPayTabMulti" onclick="switchPayMode('multi')" style="font-size:12.5px; font-weight:700;">
-        📑 Multiple Invoices Settlement (Bulk by Customer)
+      <button type="button" class="btn" id="btnPayTabMulti" onclick="switchPayMode('multi')" style="flex:1; padding:9px 12px; font-size:13px; font-weight:800; border-radius:8px; background:transparent; color:#475467;">
+        📑 Settle Multiple Invoices (Select Multiple Bills)
       </button>
     </div>
 
@@ -2758,9 +2759,17 @@ function switchPayMode(mode) {
     if (wrapSingleAmt) wrapSingleAmt.style.display = 'none';
     if (wrapMultiAmt) wrapMultiAmt.style.display = 'block';
     
-    if (btnSingle) { btnSingle.classList.remove('primary'); btnSingle.classList.add('light'); }
-    if (btnMulti) { btnMulti.classList.remove('light'); btnMulti.classList.add('primary'); }
-    if (modalTitle) modalTitle.innerText = 'Record Multi-Invoice Customer Settlement';
+    if (btnSingle) {
+      btnSingle.style.background = 'transparent';
+      btnSingle.style.color = '#475467';
+      btnSingle.style.boxShadow = 'none';
+    }
+    if (btnMulti) {
+      btnMulti.style.background = '#0f766e';
+      btnMulti.style.color = '#ffffff';
+      btnMulti.style.boxShadow = '0 2px 6px rgba(15,118,110,0.3)';
+    }
+    if (modalTitle) modalTitle.innerText = 'Settle Multiple Invoices (Bulk Customer Payment)';
 
     syncMultiCustomerDropdown();
   } else {
@@ -2770,9 +2779,17 @@ function switchPayMode(mode) {
     if (wrapSingleAmt) wrapSingleAmt.style.display = 'block';
     if (wrapMultiAmt) wrapMultiAmt.style.display = 'none';
 
-    if (btnSingle) { btnSingle.classList.remove('light'); btnSingle.classList.add('primary'); }
-    if (btnMulti) { btnMulti.classList.remove('primary'); btnMulti.classList.add('light'); }
-    if (modalTitle) modalTitle.innerText = 'Record Payment Received';
+    if (btnSingle) {
+      btnSingle.style.background = '#172238';
+      btnSingle.style.color = '#ffffff';
+      btnSingle.style.boxShadow = '0 2px 6px rgba(23,34,56,0.3)';
+    }
+    if (btnMulti) {
+      btnMulti.style.background = 'transparent';
+      btnMulti.style.color = '#475467';
+      btnMulti.style.boxShadow = 'none';
+    }
+    if (modalTitle) modalTitle.innerText = 'Record Single Invoice Payment';
 
     syncPaymentBillDropdown(activePaymentBillNo);
     if (activePaymentBillNo) {
@@ -2840,6 +2857,18 @@ function syncMultiCustomerDropdown(selectedCustName = null) {
   if (selectedCustName) {
     sel.value = selectedCustName;
     applyMultiCustomerToPaymentModal();
+  }
+}
+
+function openMultiPaymentModal(custName = null) {
+  openPaymentModal();
+  switchPayMode('multi');
+  if (custName) {
+    const sel = document.getElementById('payMultiCustomerSelect');
+    if (sel) {
+      sel.value = custName;
+      applyMultiCustomerToPaymentModal();
+    }
   }
 }
 
