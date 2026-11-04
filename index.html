@@ -193,13 +193,19 @@ th{font-size:11px;text-transform:uppercase;color:#475467;background:#fafbfc}
     border: none !important;
     width: 100% !important;
     max-width: 100% !important;
-    height: auto !important;
-    max-height: 280mm !important;
+    min-height: 282mm !important;
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: space-between !important;
+    box-sizing: border-box !important;
     margin: 0 auto !important;
-    padding: 3mm 4mm !important;
+    padding: 5mm 6mm !important;
     color: #000 !important;
     page-break-inside: avoid !important;
     break-inside: avoid !important;
+  }
+  .inv-bottom-block {
+    margin-top: auto !important;
   }
   tr, .summary-grid, .sign-area {
     page-break-inside: avoid !important;
@@ -2006,11 +2012,31 @@ function saveDriverAdvance() {
   }
 
   persist();
+
+  setSyncStatus('Saving advance to cloud...', true);
+  const targetRecord = editingAdvId 
+    ? data.driverAdvances.find(a => a.id === editingAdvId)
+    : data.driverAdvances[0];
+
+  cloudReq('driver_advances?on_conflict=id', 'POST', {
+    id: targetRecord.id,
+    driver: targetRecord.driver,
+    vehicle: targetRecord.vehicle || null,
+    date: targetRecord.date || null,
+    amount: targetRecord.amount,
+    mode: targetRecord.mode,
+    given_by: targetRecord.givenBy || null,
+    description: targetRecord.desc || null,
+    deductions: targetRecord.deductions || []
+  }).then(res => {
+    setSyncStatus(res.ok ? 'Cloud Synced' : 'Saved locally', res.ok);
+  });
+
   clearAdvanceForm();
   updateDriverFilterOptions();
   renderDriverAdvancesTable();
   renderDash();
-  alert("Driver advance saved successfully!");
+  alert("Driver advance saved and synced successfully!");
 }
 
 function editAdvance(id) {
@@ -3903,45 +3929,49 @@ function buildInvoice(b) {
       </div>
     </div>
 
-    <table class="inv-table">
-      <thead>
-        <tr>
-          <th>Description of Duties & Route Particulars</th>
-          <th style="width:13%; text-align:center">Qty / Days</th>
-          <th class="right" style="width:15%">Rate</th>
-          <th class="right" style="width:17%">Amount</th>
-        </tr>
-      </thead>
-      <tbody>
-        ${tableRows}
-      </tbody>
-    </table>
+    <div class="inv-top-block">
+      <table class="inv-table">
+        <thead>
+          <tr>
+            <th>Description of Duties & Route Particulars</th>
+            <th style="width:13%; text-align:center">Qty / Days</th>
+            <th class="right" style="width:15%">Rate</th>
+            <th class="right" style="width:17%">Amount</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${tableRows}
+        </tbody>
+      </table>
 
-    <div class="amount-words"><b>Amount in Words:</b> ${amountWords(b.total)}</div>
-
-    <div class="summary-grid">
-      <div class="terms-box">
-        <div style="margin-bottom:4px; padding-bottom:4px; border-bottom:1px dashed #777;">
-          <b>Terms & Conditions:</b> 1. Interest @ 24% P.A. if unpaid within 15 days. 2. Subject to Bhopal Jurisdiction.
-        </div>
-        <b>Bank Account Transfer Details:</b><br>
-        ${esc(s.bank)}
-      </div>
-      <div class="totals-box">
-        <div class="total-row"><span>Subtotal</span><span>${money(b.sub)}</span></div>
-        ${gstRows}
-        <div class="total-row grand"><span>Total Amount</span><span>${money(b.total)}</span></div>
-        <div class="total-row"><span>Advance Paid</span><span>${money(b.paid)}</span></div>
-        <div class="total-row" style="font-size:12.5px; font-weight:800;"><span>Balance Due</span><span>${money(b.bal)}</span></div>
-      </div>
+      <div class="amount-words"><b>Amount in Words:</b> ${amountWords(b.total)}</div>
     </div>
 
-    ${attachedImagesHtml ? `<div class="attached-docs no-print"><b>Attached Duty Slips & Receipts (Screen Preview Only):</b><br>${attachedImagesHtml}</div>` : ''}
+    <div class="inv-bottom-block">
+      <div class="summary-grid">
+        <div class="terms-box">
+          <div style="margin-bottom:4px; padding-bottom:4px; border-bottom:1px dashed #777;">
+            <b>Terms & Conditions:</b> 1. Interest @ 24% P.A. if unpaid within 15 days. 2. Subject to Bhopal Jurisdiction.
+          </div>
+          <b>Bank Account Transfer Details:</b><br>
+          ${esc(s.bank)}
+        </div>
+        <div class="totals-box">
+          <div class="total-row"><span>Subtotal</span><span>${money(b.sub)}</span></div>
+          ${gstRows}
+          <div class="total-row grand"><span>Total Amount</span><span>${money(b.total)}</span></div>
+          <div class="total-row"><span>Advance Paid</span><span>${money(b.paid)}</span></div>
+          <div class="total-row" style="font-size:12.5px; font-weight:800;"><span>Balance Due</span><span>${money(b.bal)}</span></div>
+        </div>
+      </div>
 
-    <div class="sign-area">
-      <p style="margin:0;">For <b>${esc(s.name)}</b></p>
-      ${signatureHtml}
-      <p style="margin:0; font-size:11.5px;"><b>Authorized Signatory</b></p>
+      ${attachedImagesHtml ? `<div class="attached-docs no-print"><b>Attached Duty Slips & Receipts (Screen Preview Only):</b><br>${attachedImagesHtml}</div>` : ''}
+
+      <div class="sign-area">
+        <p style="margin:0;">For <b>${esc(s.name)}</b></p>
+        ${signatureHtml}
+        <p style="margin:0; font-size:11.5px;"><b>Authorized Signatory</b></p>
+      </div>
     </div>
   `;
 }
